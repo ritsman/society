@@ -14,6 +14,7 @@ import Bills from "./Pages/Societies/Bills";
 import Payment from "./Pages/Transaction/Payment";
 import Receipt from "./Pages/Transaction/Receipt";
 import Purchase from "./Pages/Transaction/Purchase";
+import MaintenanceHeaders from "./Pages/Master/MaintenanceHeaders";
 
 const router = createBrowserRouter([
   {
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: "master/groups",
         element: <Group />,
+      },
+      {
+        path: "master/headers",
+        element: <MaintenanceHeaders />,
       },
       {
         path: "society/bills",

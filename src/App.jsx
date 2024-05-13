@@ -15,7 +15,7 @@ function App() {
   function handleItemClick(name) {
     console.log(name);
     setActiveItem(name);
-    setVisible(true);
+    // setVisible(true);
   }
   return (
     <div className="w-screen">

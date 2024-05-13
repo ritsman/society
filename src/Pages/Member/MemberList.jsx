@@ -85,64 +85,72 @@ const MemberList = () => {
   };
 
   return (
-    <div className="md:py-24 h-screen overflow-y-scroll gap-6">
-      <h1 className="text-2xl mb-5"></h1>
-      <div className=" flex justify-end mr-10">
-        <button
-          onClick={handleExportData}
-          className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
-        >
-          Export
-        </button>
-        <button
-          onClick={downloadFormat}
-          className=" border border-slate-600 hover:bg-slate-600 hover:text-white  px-4 py-2 rounded-md m-2"
-        >
-          Download Format
-        </button>
-        <button
-          onClick={handleFileUpload}
-          className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
-        >
-          Upload
-        </button>
+    <>
+      <div className="md:flex md:justify-end pt-24 pr-20">
+        <span>
+          <a href="/">Home</a> &gt; <a href="/member">Member</a> &gt;
+          <span className="font-semibold"> Member List</span>
+        </span>
       </div>
+      <div className="pt-10 h-screen overflow-y-auto  gap-6">
+        <h1 className="text-2xl mb-5"></h1>
+        <div className=" flex justify-end mr-10">
+          <button
+            onClick={handleExportData}
+            className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
+          >
+            Export
+          </button>
+          <button
+            onClick={downloadFormat}
+            className=" border border-slate-600 hover:bg-slate-600 hover:text-white  px-4 py-2 rounded-md m-2"
+          >
+            Download Format
+          </button>
+          <button
+            onClick={handleFileUpload}
+            className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
+          >
+            Upload
+          </button>
+        </div>
 
-      <div className=" border border-2 rounded-md m-10 overflow-y-auto">
-        <form className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
-          <div className="mb-4">
-            <label htmlFor="firstName" className="block font-bold mb-2 mt-4">
-              Upload Type
-            </label>
-            <select className="w-full px-5 py-3 border focus:outline-none border-gray-300 rounded">
-              <option value="select type" selected disabled>
-                Select Type
-              </option>
-              <option value="member master">Member Master</option>
-            </select>
-          </div>
-          <div className="mb-4">
-            <label htmlFor="firstName" className="block font-bold mb-2 mt-4">
-              Select File
-            </label>
-            <input
-              type="file"
-              onChange={handleFile}
-              className="w-full px-5 py-2 border focus:outline-none border-gray-300 rounded"
-            />
-          </div>
-
-          {typeError && (
-            <div className="h-10 mt-12  bg-red-100 rounded-md px-6  border border-red-500 text-center">
-              {typeError}
+        <div className=" border border-2 rounded-md m-10 overflow-y-auto">
+          <form className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
+            <div className="mb-4">
+              <label htmlFor="firstName" className="block font-bold mb-2 mt-4">
+                Upload Type
+              </label>
+              <select className="w-full px-5 py-3 border focus:outline-none border-gray-300 rounded">
+                <option value="select type" selected disabled>
+                  Select Type
+                </option>
+                <option value="member master">Member Master</option>
+              </select>
             </div>
-          )}
-        </form>
+            <div className="mb-4">
+              <label htmlFor="firstName" className="block font-bold mb-2 mt-4">
+                Select File
+              </label>
+              <input
+                type="file"
+                onChange={handleFile}
+                className="w-full px-5 py-2 border focus:outline-none border-gray-300 rounded"
+              />
+            </div>
+
+            {typeError && (
+              <div className="h-10 mt-12  bg-red-100 rounded-md px-6  border border-red-500 text-center">
+                {typeError}
+              </div>
+            )}
+          </form>
+        </div>
+        <div className="w-screen m-5">
+          {excelData ? <UploadedData excelData={excelData} /> : null}
+        </div>
       </div>
-      <div className="w-screen m-5">
-        {excelData ? <UploadedData excelData={excelData} /> : null}
-      </div>
-    </div>
+    </>
   );
 };
 

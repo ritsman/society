@@ -5,6 +5,7 @@ const Master = () => {
   const cards = [
     { name: "Ledger", path: "/master/ledger" },
     { name: "Groups", path: "/master/groups" },
+    { name: "Maintenance Headers", path: "/master/headers" },
   ];
 
   return (

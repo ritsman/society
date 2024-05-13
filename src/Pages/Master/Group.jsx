@@ -49,7 +49,13 @@ const Group = () => {
 
   return (
     <div>
-      <div className="md:py-24 h-screen overflow-y-auto  gap-6">
+      <div className="pl-5 md:flex md:justify-end pt-24 md:pr-20">
+        <span>
+          <a href="/">Home</a> &gt; <a href="/master">Master</a> &gt;
+          <span className="font-semibold"> Group</span>
+        </span>
+      </div>
+      <div className="pt-10  h-screen overflow-y-auto  gap-6">
         <h1 className="text-center text-2xl mb-5">ADD YOUR GROUP</h1>
 
         <form
