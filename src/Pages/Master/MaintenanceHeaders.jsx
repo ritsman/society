@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import * as XLSX from "xlsx";
-import UploadedData from "./UploadedData";
+import UploadedData from "../../components/UploadedData";
 
 const MaintenanceHeaders = () => {
   const options = [
@@ -56,30 +56,6 @@ const MaintenanceHeaders = () => {
 
   const handleUpload = () => {
     setUpload(true);
-  };
-
-  const handleFile = (e) => {
-    let fileTypes = [
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "text/csv",
-    ];
-    let selectedFile = e.target.files[0];
-    if (selectedFile) {
-      if (selectedFile && fileTypes.includes(selectedFile.type)) {
-        setTypeError(null);
-        let reader = new FileReader();
-        reader.readAsArrayBuffer(selectedFile);
-        reader.onload = (e) => {
-          setExcelFile(e.target.result);
-        };
-      } else {
-        setTypeError("Please select only excel file types");
-        setExcelFile(null);
-      }
-    } else {
-      console.log("Please select your file");
-    }
   };
 
   const handleFileImport = async () => {
@@ -141,7 +117,7 @@ const MaintenanceHeaders = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    XLSX.writeFile(workbook, "excel_template.xlsx");
+    XLSX.writeFile(workbook, "heads_template.xlsx");
   };
 
   return (
@@ -154,7 +130,7 @@ const MaintenanceHeaders = () => {
       </div>
       <div className="pt-10  h-screen overflow-y-auto  gap-6">
         <h1 className="text-center text-2xl mb-5">
-          ADD YOUR MAINTENANCE HEADER
+          ADD YOUR MAINTENANCE HEADS
         </h1>
 
         <div className=" flex justify-end mr-10">
