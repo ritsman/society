@@ -13,6 +13,8 @@ const Sidebar = ({ visible, activeItem }) => {
         return MenuItems.dashboard;
       case "member":
         return MenuItems.member;
+      case "master":
+        return MenuItems.master;
       default:
         return MenuItems.dashboard;
     }
@@ -22,7 +24,7 @@ const Sidebar = ({ visible, activeItem }) => {
 
   return (
     <div
-      className={`bg-gray-800 text-white h-screen overflow-auto   w-[250px]  ${
+      className={`bg-gray-800 text-white h-screen overflow-auto w-[250px]  ${
         visible
           ? "translate-x-0 transition-transform duration-300 ease-in-out"
           : "-translate-x-full transition-transform duration-300 ease-in-out"

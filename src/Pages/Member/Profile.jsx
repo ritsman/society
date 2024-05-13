@@ -12,6 +12,10 @@ const Profile = () => {
     area: "",
     societyNocStatus: "",
     occupancy: "",
+    maintenance_amt: "",
+    noc: "",
+    arrears: "",
+    rate: "",
     societyShareCertificate: "",
     memberSince: "",
     societyAddress: "",
@@ -147,7 +151,6 @@ const Profile = () => {
               required
             />
           </div>
-
           <div className="mb-4">
             <label htmlFor="wingNo" className="block font-bold mb-2">
               Wing No.
@@ -198,6 +201,63 @@ const Profile = () => {
               <option value="self">Self</option>
               <option value="rented">Rented</option>
             </select>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="maintenance_amt" className="block font-bold mb-2">
+              Maintenance Amount
+            </label>
+            <input
+              type="text"
+              id="maintenance_amt"
+              name="maintenance_amt"
+              value={formData.maintenance_amt}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="arrears" className="block font-bold mb-2">
+              Arrears
+            </label>
+            <input
+              type="text"
+              id="arrears"
+              name="arrears"
+              value={formData.arrears}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="rate" className="block font-bold mb-2">
+              Interest Rate
+            </label>
+            <input
+              type="text"
+              id="rate"
+              name="rate"
+              value={formData.rate}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="noc" className="block font-bold mb-2">
+              Non Occupancy Charges
+            </label>
+            <input
+              type="text"
+              id="noc"
+              name="noc"
+              value={formData.noc}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+              required
+            />
           </div>
 
           <div className="col-span-2">
