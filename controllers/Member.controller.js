@@ -29,3 +29,14 @@ export const Profile = async (req, res) => {
     console.log(error);
   }
 };
+
+export const getMemberList = async (req, res) => {
+  console.log("reached inside getMemberList controller");
+  try {
+    let result = await profile.find({});
+    res.send(result);
+  } catch (error) {
+    res.send(error);
+    console.log(error);
+  }
+};

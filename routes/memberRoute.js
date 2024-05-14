@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 
 const router = express.Router();
-import { Profile } from "../controllers/Member.controller.js";
+import { Profile, getMemberList } from "../controllers/Member.controller.js";
 
 let storage = multer.diskStorage({
   destination: "Assets/images",
@@ -16,5 +16,5 @@ let upload = multer({
 });
 
 router.post("/postProfile", upload.single("photo"), Profile);
-
+router.get("/getMemberList", getMemberList);
 export default router;
