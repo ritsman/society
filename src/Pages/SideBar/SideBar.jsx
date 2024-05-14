@@ -13,6 +13,8 @@ const Sidebar = ({ visible, activeItem }) => {
         return MenuItems.dashboard;
       case "member":
         return MenuItems.member;
+      case "master":
+        return MenuItems.master;
       default:
         return MenuItems.dashboard;
     }

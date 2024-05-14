@@ -41,4 +41,8 @@ export const MenuItems = {
     { key: 2, name: "Transactions", path: "/member/transactions" },
     { key: 3, name: "Member List", path: "/member/member-list" },
   ],
+  master: [
+    { key: 1, name: "Ledger", path: "/master/ledger" },
+    { key: 2, name: "Groups", path: "/master/groups" },
+  ],
 };

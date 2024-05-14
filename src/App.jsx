@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import "./App.css";
 import Sidebar from "./Pages/SideBar/SideBar.jsx";
+import Breadcrumbs from "./components/BreadCrumps.jsx";
 
 function App() {
   const [activeItem, setActiveItem] = useState("dashboard");
@@ -17,6 +18,23 @@ function App() {
     setActiveItem(name);
     setVisible(true);
   }
+
+  let paths = [
+    { title: "Home", link: "/" },
+    { title: "Master", link: "/master" },
+    { title: "Ledger", link: "/master/ledger" },
+    { title: "Groups", link: "/master/groups" },
+    { title: "Master", link: "/master" },
+    { title: "Member", link: "/member" },
+    { title: "newLedger", link: "/master/ledger/newledger" },
+    { title: "Society", link: "/society" },
+    { title: "Bills", link: "/society/bills" },
+    { title: "Profile", link: "/member/profile" },
+    { title: "Transactions", link: "/member/transactions" },
+    { title: "Member List", link: "/member/member-list" },
+    { title: "Maintainance Head", link: "/master/maintainance-head" },
+  ];
+
   return (
     <div className="w-screen">
       <NavBar
@@ -35,6 +53,7 @@ function App() {
         </div>
         <div className="w-screen flex justify-end ">
           <div className={`${visible ? "w-[80%]" : "w-screen"}  `}>
+            <Breadcrumbs paths={paths} />
             <Outlet />
           </div>
         </div>
