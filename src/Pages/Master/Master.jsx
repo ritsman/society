@@ -2,14 +2,13 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 
 const Master = () => {
+
   const cards = [
     { name: "Ledger", path: "/master/ledger" },
     { name: "Groups", path: "/master/groups" },
-    { name: "Maintenance Heads", path: "/master/headers" },
-  ];
-
-  return (
-    <>
+    { name: "Maintenance Heads", path: "/master/maintenance-head" },]
+  
+  return (<>
       <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-24 overflow-y-auto h-screen">
         <h1 className="text-3xl font-bold mb-6">Master</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

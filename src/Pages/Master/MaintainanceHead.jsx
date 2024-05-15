@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import * as XLSX from "xlsx";
 import UploadedData from "../../components/UploadedData";
+import axios from "axios";
 
 const MaintenanceHeaders = () => {
   const options = [
@@ -44,9 +45,21 @@ const MaintenanceHeaders = () => {
     setSelectedValue(value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log({ headers: headers, under: selectedValue });
+
+    try {
+      let result = await axios.post(
+        "https://a2.arya-erp.in/api2/socapi/api/master/masterHead",
+        [{ Header: headers, Under: selectedValue }]
+      );
+      console.log(result);
+      setHeaders("");
+      setSelectedValue("");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const [upload, setUpload] = useState(false);
@@ -54,8 +67,43 @@ const MaintenanceHeaders = () => {
   const [typeError, setTypeError] = useState(null);
   const [excelData, setExcelData] = useState(null);
 
-  const handleUpload = () => {
+  const handleUpload = async (e) => {
     setUpload(true);
+    e.preventDefault();
+    try {
+      let result = await axios.post(
+        "https://a2.arya-erp.in/api2/socapi/api/master/masterHead",
+
+        excelData
+      );
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleFile = (e) => {
+    let fileTypes = [
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/csv",
+    ];
+    let selectedFile = e.target.files[0];
+    if (selectedFile) {
+      if (selectedFile && fileTypes.includes(selectedFile.type)) {
+        setTypeError(null);
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(selectedFile);
+        reader.onload = (e) => {
+          setExcelFile(e.target.result);
+        };
+      } else {
+        setTypeError("Please select only excel file types");
+        setExcelFile(null);
+      }
+    } else {
+      console.log("Please select your file");
+    }
   };
 
   const handleFileImport = async () => {
@@ -117,20 +165,17 @@ const MaintenanceHeaders = () => {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    XLSX.writeFile(workbook, "heads_template.xlsx");
+    XLSX.writeFile(workbook, "excel_template.xlsx");
   };
 
   return (
     <div>
-      <div className="pl-5 md:flex md:justify-end pt-24 md:pr-20">
-        <span>
-          <a href="/">Home</a> &gt; <a href="/master">Master</a> &gt;
-          <span className="font-semibold"> Header</span>
-        </span>
-      </div>
-      <div className="pt-10  h-screen overflow-y-auto  gap-6">
+      <div
+        className="pt-10   overflow-y-auto  gap-6"
+        style={{ height: "calc(100vh - 150px)" }}
+      >
         <h1 className="text-center text-2xl mb-5">
-          ADD YOUR MAINTENANCE HEADS
+          ADD YOUR MAINTENANCE HEADER
         </h1>
 
         <div className=" flex justify-end mr-10">

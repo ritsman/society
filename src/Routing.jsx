@@ -14,7 +14,7 @@ import Bills from "./Pages/Societies/Bills";
 import Payment from "./Pages/Transaction/Payment";
 import Receipt from "./Pages/Transaction/Receipt";
 import Purchase from "./Pages/Transaction/Purchase";
-import MaintenanceHeaders from "./Pages/Master/MaintenanceHeaders";
+import MaintainanceHead from "./Pages/Master/MaintainanceHead";
 
 const router = createBrowserRouter([
   {
@@ -59,8 +59,8 @@ const router = createBrowserRouter([
         element: <Group />,
       },
       {
-        path: "master/headers",
-        element: <MaintenanceHeaders />,
+        path: "master/maintenance-head",
+        element: <MaintainanceHead />,
       },
       {
         path: "society/bills",

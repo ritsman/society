@@ -56,13 +56,7 @@ const Profile = () => {
 
   return (
     <>
-      <div className="md:flex md:justify-end pt-24 pr-20">
-        <span>
-          <a href="/">Home</a> &gt; <a href="/member">Member</a> &gt;
-          <span className="font-semibold"> Profile</span>
-        </span>
-      </div>
-      <div className="pt-10 h-screen overflow-y-auto  gap-6">
+            <div className="pt-10 h-screen overflow-y-auto  gap-6">
         <h1 className="pb-5 text-center text-2xl mb-5">MEMBER PROFILE</h1>
         <form
           onSubmit={handleSubmit}

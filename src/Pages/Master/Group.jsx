@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
+import axios from "axios";
 
 const Group = () => {
   const options = [
@@ -42,19 +43,22 @@ const Group = () => {
     setSelectedValue(value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log({ groupName: groupName, under: selectedValue });
+    try {
+      let result = await axios.post(
+        "https://a2.arya-erp.in/api2/socapi/api/master/postGroup",
+        { groupName: groupName, under: selectedValue }
+      );
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <div>
-      <div className="pl-5 md:flex md:justify-end pt-24 md:pr-20">
-        <span>
-          <a href="/">Home</a> &gt; <a href="/master">Master</a> &gt;
-          <span className="font-semibold"> Group</span>
-        </span>
-      </div>
       <div className="pt-10  h-screen overflow-y-auto  gap-6">
         <h1 className="text-center text-2xl mb-5">ADD YOUR GROUP</h1>
 

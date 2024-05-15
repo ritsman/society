@@ -44,6 +44,5 @@ export const MenuItems = {
   master: [
     { key: 1, name: "Ledger", path: "/master/ledger" },
     { key: 2, name: "Groups", path: "/master/groups" },
-    { key: 3, name: "Maintenace Headers", path: "/master/headers" },
   ],
 };

@@ -173,13 +173,7 @@ const MemberList = () => {
 
   return (
     <>
-      <div className="md:flex md:justify-end pt-24 pr-20">
-        <span>
-          <a href="/">Home</a> &gt; <a href="/member">Member</a> &gt;
-          <span className="font-semibold"> Member List</span>
-        </span>
-      </div>
-      <div className="pt-10 h-screen overflow-y-auto  gap-6">
+      <div className="pt-4 h-screen overflow-y-auto  gap-6">
         <h1 className="text-2xl mb-5"></h1>
         <div className="flex justify-end mr-10">
           <button

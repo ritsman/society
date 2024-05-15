@@ -17,7 +17,7 @@ const AutoComplete = ({ options, onSelect }) => {
     setFilteredOptions(
       options.filter(
         (option) =>
-          option.toLowerCase().includes(value.toLowerCase()) &&
+          option?.toLowerCase().includes(value.toLowerCase()) &&
           !selectedValues.includes(option)
       )
     );

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
+import axios from "axios";
 
 const NewLedger = () => {
   const [formData, setFormData] = useState({
@@ -27,9 +28,19 @@ const NewLedger = () => {
     setSelectedValue(value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log({ ...formData, under: selectedValue });
+
+    try {
+      let result = await axios.post(
+        "https://a2.arya-erp.in/api2/socapi/api/master/postLedger",
+        { ...formData, under: selectedValue }
+      );
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const options = [
@@ -62,7 +73,7 @@ const NewLedger = () => {
   ];
 
   return (
-    <div className="md:py-24 h-screen overflow-y-auto  gap-6">
+    <div className="py-16 h-screen overflow-y-auto  gap-6">
       <h1 className="text-center text-2xl mb-5">New Ledger</h1>
 
       <form

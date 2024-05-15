@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 import AutoComplete from "../../components/Autocomplete";
 
 const Bills = () => {
@@ -109,12 +110,6 @@ const Bills = () => {
 
   return (
     <div>
-      <div className="md:flex md:justify-end pt-24 pr-20">
-        <span>
-          <a href="/">Home</a> &gt; <a href="/society">Society</a> &gt;
-          <span className="font-semibold"> Bills</span>
-        </span>
-      </div>
       <div className="pt-10 h-screen overflow-y-auto  gap-6">
         <h1 className="text-center text-2xl mb-5">
           Generate Maintenance Bills
