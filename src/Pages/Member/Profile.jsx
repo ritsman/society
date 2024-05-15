@@ -2,27 +2,29 @@ import axios from "axios";
 import React, { useState } from "react";
 
 const Profile = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    permanentAddress: "",
-    registeredMobileNo: "",
-    alternateMobileNo: "",
-    flatNo: "",
-    wingNo: "",
-    area: "",
-    societyNocStatus: "",
-    occupancy: "",
-    maintenance_amt: "",
-    noc: "",
-    arrears: "",
-    rate: "",
-    societyShareCertificate: "",
-    memberSince: "",
-    societyAddress: "",
-    systemId: "",
-    photo: null,
-  });
+  const [formData, setFormData] = useState([
+    {
+      firstName: "",
+      lastName: "",
+      permanentAddress: "",
+      registeredMobileNo: "",
+      alternateMobileNo: "",
+      flatNo: "",
+      wingNo: "",
+      area: "",
+      societyNocStatus: "",
+      occupancy: "",
+      maintenance_amt: "",
+      noc: "",
+      arrears: "",
+      rate: "",
+      societyShareCertificate: "",
+      memberSince: "",
+      societyAddress: "",
+      systemId: "",
+      photo: null,
+    },
+  ]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,13 +39,18 @@ const Profile = () => {
 
     // console.log(formData);
     try {
-      const response = await axios.post(
+      let result = await axios.post(
         "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
-      console.log("Response:", response.data);
+      console.log(result);
     } catch (error) {
-      console.error("Error:", error);
+      console.log(error);
     }
   };
 
