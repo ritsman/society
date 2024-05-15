@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect } from "react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
@@ -92,6 +93,17 @@ const MemberList = () => {
       const worksheet = workbook.Sheets[worksheetName];
       const data = XLSX.utils.sheet_to_json(worksheet);
       setExcelData(data);
+      e.preventDefault();
+      try {
+        let result = await axios.post(
+          "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
+
+          excelData
+        );
+        console.log(result);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
   console.log(excelData);
