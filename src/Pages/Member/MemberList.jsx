@@ -5,22 +5,38 @@ import UploadedData from "../../components/UploadedData";
 import "./memberlist.css";
 
 const template = [
-  "First Name",
-  "Last Name",
-  "Registered Mobile No.",
-  "Alternate Mobile No.",
-  "Permanent Address",
-  "Area",
+  "firstName",
+  "lastName",
+  "permanentAddress",
+  "registeredMobileNo",
+  "alternateMobileNo",
+  "flatNo",
+  "wingNo",
+  "area",
+  "societyNocStatus",
+  "occupancy",
+  "maintenance_amt",
+  "noc",
+  "arrears",
+  "rate",
+  "societyShareCertificate",
+  "memberSince",
+  "societyAddress",
+  "systemId",
+  "photo",
+];
+
+const tableHead = [
+  "Name",
+  "Mobile No.",
+  "Address",
   "Flat No.",
   "Wing No.",
   "Society NOC Status",
   "Occupancy",
   "Maintence Amount",
   "Society Arrears",
-  "Interest Rate",
   "Non Occupancy Charges",
-  "Society Certificate",
-  "Member Since",
 ];
 
 const MemberList = () => {
@@ -67,7 +83,6 @@ const MemberList = () => {
       console.log("Please select your file");
     }
   };
-  console.log(excelData);
 
   const handleFileImport = async (e) => {
     e.preventDefault();
@@ -81,22 +96,23 @@ const MemberList = () => {
   };
   console.log(excelData);
 
-  const [users, setUsers] = useState([]);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/users")
+    fetch("https://a2.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error("Error fetching data:", error));
+      .then((data) => setData(data))
+      .catch((error) => console.error(error));
   }, []);
+  console.log(data);
+
+  const exportData = data.map((item) => item.data);
 
   const handleExportData = () => {
-    console.log(users);
     let wb = XLSX.utils.book_new(),
-      ws = XLSX.utils.json_to_sheet(users);
+      ws = XLSX.utils.json_to_sheet(exportData);
     XLSX.utils.book_append_sheet(wb, ws, "Data");
-
-    XLSX.writeFile(wb, "MyExcel.xlsx");
+    XLSX.writeFile(wb, "MemberList.xlsx");
   };
 
   const downloadFormat = () => {
@@ -106,6 +122,41 @@ const MemberList = () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
     XLSX.writeFile(workbook, "memberList_template.xlsx");
+  };
+
+  const [chkstat2, setChkStat2] = useState({});
+
+  useEffect(() => {
+    const chkstat = {};
+    data?.forEach((val) => {
+      chkstat[val._id] = false;
+    });
+    setChkStat2(chkstat);
+  }, [data]);
+
+  // console.log("chk2");
+  // console.log(chkstat2);
+
+  const leadSet = (event) => {
+    let c = {};
+    Object.keys(chkstat2).forEach((key) => {
+      console.log(key);
+      c[key] = event.target.checked;
+    });
+    console.log(`c:`);
+    console.log(c);
+    setChkStat2(c);
+  };
+
+  const setTick = (contact, event) => {
+    chkstat2[contact._id] = event.target.checked;
+    console.log(contact);
+    console.log(chkstat2);
+    const c = {
+      ...chkstat2,
+    };
+    console.log(c);
+    setChkStat2(c);
   };
 
   return (
@@ -118,7 +169,7 @@ const MemberList = () => {
       </div>
       <div className="pt-10 h-screen overflow-y-auto  gap-6">
         <h1 className="text-2xl mb-5"></h1>
-        <div className=" flex justify-end mr-10">
+        <div className="flex justify-end mr-10">
           <button
             onClick={handleExportData}
             className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
@@ -143,7 +194,7 @@ const MemberList = () => {
             <form className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
               <div className="mb-4">
                 <label
-                  htmlFor="firstName"
+                  htmlFor="uploadType"
                   className="block font-bold mb-2 mt-4"
                 >
                   Upload Type
@@ -156,12 +207,7 @@ const MemberList = () => {
                 </select>
               </div>
               <div className="mb-4">
-                <label
-                  htmlFor="firstName"
-                  className="block font-bold mb-2 mt-4"
-                >
-                  Select File
-                </label>
+                <label className="block font-bold mb-2 mt-4">Select File</label>
                 <input
                   type="file"
                   onChange={handleFileUpload}
@@ -183,7 +229,68 @@ const MemberList = () => {
               )}
             </form>
           </div>
-        ) : null}
+        ) : (
+          <>
+            <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6 rounded-lg ">
+              <table className="rounded-md">
+                <thead className="bg-gray-700 text-slate-200">
+                  <tr>
+                    <th className="p-4 ">
+                      <input
+                        type="checkbox"
+                        onChange={(event) => leadSet(event)}
+                      />
+                    </th>
+                    {tableHead.map((item) => (
+                      <th className="p-4 " key={item}>
+                        {item}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-300">
+                  {data.map((item, index) => (
+                    <>
+                      <tr key={index} className="hover:bg-gray-200">
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            checked={chkstat2[item._id]}
+                            onChange={(event) => setTick(item, event)}
+                            name={item._id}
+                          />
+                        </td>
+                        <td className="p-4">
+                          {item.data.firstName}
+                          {item.data.lastName}
+                        </td>
+                        <td className="p-4 text-center">
+                          {item.data.registeredMobileNo}
+                        </td>
+                        <td className="p-4 text-center">
+                          {item.data.permanentAddress}
+                        </td>
+                        <td className="p-4 text-center">{item.data.flatNo}</td>
+                        <td className="p-4 text-center">{item.data.wingNo}</td>
+                        <td className="p-4 text-center">
+                          {item.data.societyNocStatus}
+                        </td>
+                        <td className="p-4 text-center">
+                          {item.data.occupancy}
+                        </td>
+                        <td className="p-4 text-center">
+                          {item.data.maintenance_amt}
+                        </td>
+                        <td className="p-4 text-center">{item.data.arrears}</td>
+                        <td className="p-4 text-center">{item.data.noc}</td>
+                      </tr>
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
         <div className="w-screen m-5">
           {excelData ? <UploadedData excelData={excelData} /> : null}
         </div>

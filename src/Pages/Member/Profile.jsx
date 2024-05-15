@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 
 const Profile = () => {
@@ -31,10 +32,19 @@ const Profile = () => {
     setFormData({ ...formData, photo: e.target.files[0] });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(formData);
+    // console.log(formData);
+    try {
+      const response = await axios.post(
+        "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
+        formData
+      );
+      console.log("Response:", response.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (

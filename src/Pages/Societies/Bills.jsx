@@ -1,45 +1,110 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import AutoComplete from "../../components/Autocomplete";
 
 const Bills = () => {
   const [row_id, setRow_id] = useState(1);
 
   const [rows, setRows] = useState([{ id: 0 }]);
   const handleAddRow = (e) => {
-    console.log("add clicked");
     setRow_id(row_id + 1);
-    console.log(`row_id:${row_id}`);
     setRows([...rows, { id: rows.length }]);
-    console.log(rows);
     e.preventDefault();
   };
 
   const handleDelRow = (e, ind) => {
-    console.log("cross clicked");
-    console.log(ind);
-
     const updated_rows = [...rows];
-    console.log(rows);
-    console.log(rows.length);
-    console.log(updated_rows);
-
     updated_rows.splice(ind, 1);
-    console.log(rows);
-    console.log(updated_rows);
     setRows(updated_rows);
     e.preventDefault();
   };
 
-  const handleInputChange = (e, data) => {
-    console.log(`e:`);
-    // console.log(e);
-    console.log(`data:`);
-    console.log(data);
-    // setModalOpen(true);
+  const [heads, setHeads] = useState();
 
-    // List
-    const value = e.target.value;
+  useEffect(() => {
+    fetch("https://a2.arya-erp.in/api2/socapi/api/master/getHead")
+      .then((response) => response.json())
+      .then((data) => setHeads(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  const options = heads;
+
+  const [selectedValue, setSelectedValue] = useState([]);
+
+  const handleSelect = (index, value) => {
+    setSelectedValue((prevValues) => ({
+      ...prevValues,
+      [index]: [...(prevValues[index] || []), value],
+    }));
+  };
+
+  const [amnt, setAmnt] = useState([]);
+  const handleAmntChange = (index, e) => {
+    const { value } = e.target;
+    setAmnt((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], value };
+      return newValues;
+    });
+  };
+
+  const [rate, setRate] = useState([]);
+  const handleRateChange = (index, e) => {
+    const { value } = e.target;
+    setRate((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], value };
+      return newValues;
+    });
+  };
+
+  const [dateFieldValues, setDateFieldValues] = useState([]);
+
+  const handleFromDateChange = (index, e) => {
+    const { value } = e.target;
+    setDateFieldValues((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], fromDate: value };
+      return newValues;
+    });
+  };
+
+  const handleToDateChange = (index, e) => {
+    const { value } = e.target;
+    setDateFieldValues((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], toDate: value };
+      return newValues;
+    });
+  };
+
+  const handleDueDateChange = (index, e) => {
+    const { value } = e.target;
+    setDateFieldValues((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], dueDate: value };
+      return newValues;
+    });
+  };
+
+  const combinedValues = dateFieldValues?.map((_, index) => ({
+    selectedValue: selectedValue[index],
+    rate: rate[index],
+    amnt: amnt[index],
+    dateFieldValues: dateFieldValues[index],
+  }));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(combinedValues);
+  };
+  const handleExportData = () => {
+    let wb = XLSX.utils.book_new(),
+      ws = XLSX.utils.json_to_sheet(exportData);
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+    XLSX.writeFile(wb, "MemberList.xlsx");
   };
 
   return (
@@ -55,8 +120,11 @@ const Bills = () => {
           Generate Maintenance Bills
         </h1>
 
-        <form className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
-          <div className=" grid w-[90%]  grid-cols-2 gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
+        <form
+          onSubmit={handleSubmit}
+          className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  "
+        >
+          <div className="  w-[90%]   gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
             <table className="shadow-lg mt-5 ">
               <tr>
                 <td className="p-4">
@@ -69,8 +137,8 @@ const Bills = () => {
                   </button>
                 </td>
                 <td className="p-4 pr-12 font-semibold">Particulars</td>
-                <td className="p-4 pr-12 font-semibold">Amount</td>
-                <td className="p-4 pr-12 font-semibold">Rate</td>
+                <td className="p-4 pr-20 font-semibold">Amount</td>
+                <td className="p-4 pr-24 font-semibold">Rate</td>
                 <td className="p-4 font-semibold">From</td>
                 <td className="p-4 font-semibold">To</td>
                 <td className="p-4 font-semibold">Due Date</td>
@@ -88,58 +156,64 @@ const Bills = () => {
                         />
                       </button>
                     </td>
-                    <td className="p-4">
-                      <input
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Particulars*"
-                        name="particulars"
-                        onChange={(e, data) => handleInputChange(e, data)}
+                    <td className="pt-4">
+                      <AutoComplete
+                        options={options}
+                        onSelect={(value) => handleSelect(index, value)}
                       />
                     </td>
                     <td className="p-4">
                       <input
                         type="text"
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Amount*"
-                        name="amt"
+                        name={`amt${index + 1}`}
+                        onChange={(e) => handleAmntChange(index, e)}
                       />
                     </td>
                     <td className="p-4">
                       <input
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Rate*"
-                        name="rate"
-                        // onChange={(e, data) => handleInputChange(e, data)}
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="From*"
-                        name="from"
+                        name={`rate${index + 1}`}
+                        onChange={(e) => handleRateChange(index, e)}
                       />
                     </td>
                     <td className="p-4">
                       <input
                         type="date"
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="To*"
-                        name="to"
+                        name={`from${index + 1}`}
+                        onChange={(e) => handleFromDateChange(index, e)}
                       />
                     </td>
                     <td className="p-4">
                       <input
                         type="date"
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Due Date*"
-                        name="due_date"
+                        name={`to${index + 1}`}
+                        onChange={(e) => handleToDateChange(index, e)}
+                      />
+                    </td>
+                    <td className="p-4">
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                        name={`due${index + 1}`}
+                        onChange={(e) => handleDueDateChange(index, e)}
                       />
                     </td>
                   </tr>
                 );
               })}
             </table>
+
+            <div className="mt-4">
+              <button
+                type="submit"
+                className="bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Submit
+              </button>
+            </div>
           </div>
         </form>
       </div>
