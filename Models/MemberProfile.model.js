@@ -8,6 +8,9 @@ const profileSchema = new mongoose.Schema(
     photo: {
       type: Buffer,
     },
+    societyShareCertificate: {
+      type: Buffer,
+    },
   },
   {
     timestams: true,

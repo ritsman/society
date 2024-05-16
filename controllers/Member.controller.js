@@ -2,10 +2,12 @@ import profile from "../Models/MemberProfile.model.js";
 import fs from "fs";
 
 export const Profile = async (req, res) => {
-  console.log("reached inside profile controller", req.body);
+  console.log("reached inside profile controller", req.files);
+
+  const { photo, societyShareCertificate } = req.files;
 
   try {
-    if (!req.file) {
+    if (!req.files) {
       req.body.map((item) => {
         let result = new profile({
           data: item,
@@ -14,10 +16,13 @@ export const Profile = async (req, res) => {
         result.save();
       });
     } else {
-      if (req.file) {
+      if (req.files) {
         let result = new profile({
           data: req.body,
-          photo: fs.readFileSync(req.file.path),
+          photo: fs.readFileSync(photo[0].path),
+          societyShareCertificate: fs.readFileSync(
+            societyShareCertificate[0].path
+          ),
         });
         result.save();
       }

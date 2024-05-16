@@ -13,7 +13,7 @@ app.use(json());
 
 app.use(router);
 
-app.listen(3001, (err) => {
+app.listen(8000, (err) => {
   if (err) {
     console.error("Error starting server:", err);
     return;
