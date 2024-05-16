@@ -29,7 +29,7 @@ const Bills = () => {
       .then((data) => setHeads(data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
-
+  console.log(heads);
   const options = heads;
 
   const [selectedValue, setSelectedValue] = useState([]);
@@ -65,47 +65,64 @@ const Bills = () => {
 
   const handleFromDateChange = (index, e) => {
     const { value } = e.target;
+    const parsedDate = new Date(value);
+    const formattedDate = `${parsedDate.getDate()}/${
+      parsedDate.getMonth() + 1
+    }/${parsedDate.getFullYear()}`;
+
     setDateFieldValues((prevValues) => {
       const newValues = [...prevValues];
-      newValues[index] = { ...newValues[index], fromDate: value };
+      newValues[index] = { ...newValues[index], fromDate: formattedDate };
       return newValues;
     });
   };
-
   const handleToDateChange = (index, e) => {
     const { value } = e.target;
+    const parsedDate = new Date(value);
+    const formattedDate = `${parsedDate.getDate()}/${
+      parsedDate.getMonth() + 1
+    }/${parsedDate.getFullYear()}`;
+
     setDateFieldValues((prevValues) => {
       const newValues = [...prevValues];
-      newValues[index] = { ...newValues[index], toDate: value };
+      newValues[index] = { ...newValues[index], toDate: formattedDate };
       return newValues;
     });
   };
 
   const handleDueDateChange = (index, e) => {
     const { value } = e.target;
+    const parsedDate = new Date(value);
+    const formattedDate = `${parsedDate.getDate()}/${
+      parsedDate.getMonth() + 1
+    }/${parsedDate.getFullYear()}`;
+
     setDateFieldValues((prevValues) => {
       const newValues = [...prevValues];
-      newValues[index] = { ...newValues[index], dueDate: value };
+      newValues[index] = { ...newValues[index], dueDate: formattedDate };
       return newValues;
     });
   };
 
   const combinedValues = dateFieldValues?.map((_, index) => ({
-    selectedValue: selectedValue[index],
+    particulars: selectedValue[index],
     rate: rate[index],
     amnt: amnt[index],
     dateFieldValues: dateFieldValues[index],
   }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(combinedValues);
-  };
-  const handleExportData = () => {
-    let wb = XLSX.utils.book_new(),
-      ws = XLSX.utils.json_to_sheet(exportData);
-    XLSX.utils.book_append_sheet(wb, ws, "Data");
-    XLSX.writeFile(wb, "MemberList.xlsx");
+    try {
+      let result = await axios.post(
+        "https://a2.arya-erp.in/api2/socapi/api/society/postBills",
+        combinedValues
+      );
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -131,7 +148,7 @@ const Bills = () => {
                     />
                   </button>
                 </td>
-                <td className="p-4 pr-12 font-semibold">Particulars</td>
+                <td className="p-4 pr-24 font-semibold">Particulars</td>
                 <td className="p-4 pr-20 font-semibold">Amount</td>
                 <td className="p-4 pr-24 font-semibold">Rate</td>
                 <td className="p-4 font-semibold">From</td>
@@ -163,6 +180,7 @@ const Bills = () => {
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                         name={`amt${index + 1}`}
                         onChange={(e) => handleAmntChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
@@ -170,6 +188,7 @@ const Bills = () => {
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                         name={`rate${index + 1}`}
                         onChange={(e) => handleRateChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
@@ -178,6 +197,7 @@ const Bills = () => {
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                         name={`from${index + 1}`}
                         onChange={(e) => handleFromDateChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
@@ -186,6 +206,7 @@ const Bills = () => {
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                         name={`to${index + 1}`}
                         onChange={(e) => handleToDateChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
@@ -194,6 +215,7 @@ const Bills = () => {
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                         name={`due${index + 1}`}
                         onChange={(e) => handleDueDateChange(index, e)}
+                        required
                       />
                     </td>
                   </tr>

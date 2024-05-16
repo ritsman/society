@@ -47,7 +47,7 @@ const MaintenanceHeaders = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ headers: headers, under: selectedValue });
+    // console.log({ headers: headers, under: selectedValue });
 
     try {
       let result = await axios.post(
@@ -55,8 +55,8 @@ const MaintenanceHeaders = () => {
         [{ Header: headers, Under: selectedValue }]
       );
       console.log(result);
-      setHeaders("");
-      setSelectedValue("");
+      // setHeaders("");
+      // setSelectedValue("");
     } catch (error) {
       console.log(error);
     }

@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import UploadedData from "../../components/UploadedData";
-import "./memberlist.css";
 
 const template = [
   "firstName",
@@ -20,9 +19,9 @@ const template = [
   "noc",
   "arrears",
   "rate",
-  "vehicleDetails",
   "societyShareCertificate",
   "memberSince",
+  "societyAddress",
   "systemId",
   "photo",
 ];
@@ -40,7 +39,7 @@ const tableHead = [
   "Non Occupancy Charges",
 ];
 
-const MemberList = () => {
+const ViewBills = () => {
   const [upload, setUpload] = useState(false);
   const [excelFile, setExcelFile] = useState(null);
   const [typeError, setTypeError] = useState(null);
@@ -305,4 +304,4 @@ const MemberList = () => {
   );
 };
 
-export default MemberList;
+export default ViewBills;

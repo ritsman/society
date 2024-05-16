@@ -15,6 +15,8 @@ import Payment from "./Pages/Transaction/Payment";
 import Receipt from "./Pages/Transaction/Receipt";
 import Purchase from "./Pages/Transaction/Purchase";
 import MaintainanceHead from "./Pages/Master/MaintainanceHead";
+import Report from "./Pages/Report/Report";
+import ViewBills from "./Pages/Report/BillsView";
 
 const router = createBrowserRouter([
   {
@@ -77,6 +79,18 @@ const router = createBrowserRouter([
       {
         path: "transaction/purchase",
         element: <Purchase />,
+      },
+      {
+        path: "report",
+        element: <Report />,
+      },
+      {
+        path: "report/bills",
+        element: <Report />,
+      },
+      {
+        path: "report/bills-view",
+        element: <ViewBills />,
       },
     ],
   },
