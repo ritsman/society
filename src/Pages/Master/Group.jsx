@@ -59,7 +59,10 @@ const Group = () => {
 
   return (
     <div>
-      <div className="pt-10  h-screen overflow-y-auto  gap-6">
+      <div
+        className="pt-10   overflow-y-auto  gap-6"
+        style={{ height: "calc(100vh - 150px)" }}
+      >
         <h1 className="text-center text-2xl mb-5">ADD YOUR GROUP</h1>
 
         <form

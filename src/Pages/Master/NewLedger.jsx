@@ -73,7 +73,10 @@ const NewLedger = () => {
   ];
 
   return (
-    <div className="py-16 h-screen overflow-y-auto  gap-6">
+    <div
+      className="py-10  overflow-y-auto  gap-6"
+      style={{ height: "calc(100vh - 150px)" }}
+    >
       <h1 className="text-center text-2xl mb-5">New Ledger</h1>
 
       <form
