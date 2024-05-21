@@ -11,6 +11,7 @@ export const generateBills = async (req, res) => {
         From: item.dateFieldValues.fromDate,
         To: item.dateFieldValues.toDate,
         DueDate: item.dateFieldValues.dueDate,
+        BillNo: item.BillNo,
       });
       result.save();
     });
@@ -27,4 +28,15 @@ export const getBill = async (req, res) => {
   } catch (error) {
     res.send("error in getting bills");
   }
+};
+
+export const getBillno = async (req, res) => {
+  try {
+    let result = await Bills.find({});
+    let arr = [];
+    result.map((item) => {
+      arr.push(item.BillNo);
+    });
+    res.send(arr);
+  } catch (error) {}
 };

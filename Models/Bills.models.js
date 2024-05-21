@@ -20,6 +20,9 @@ const billSchema = new mongoose.Schema(
     DueDate: {
       type: String,
     },
+    BillNo: {
+      type: String,
+    },
   },
   {
     timestams: true,
