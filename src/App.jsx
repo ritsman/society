@@ -37,7 +37,9 @@ function App() {
     { title: "Payment", link: "/transaction/payment" },
     { title: "Receipt", link: "/transaction/receipt" },
     { title: "Purchase", link: "/transaction/purchase" },
-
+    { title: "Purchase", link: "/transaction/purchase" },
+    { title: "Report", link: "/report" },
+    { title: "View Bills", link: "/report/bills-view" },
   ];
 
   return (
