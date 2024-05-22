@@ -4,152 +4,61 @@ import { useState } from "react";
 import * as XLSX from "xlsx";
 import UploadedData from "../../components/UploadedData";
 
-const template = [
-  "firstName",
-  "lastName",
-  "permanentAddress",
-  "registeredMobileNo",
-  "alternateMobileNo",
-  "flatNo",
-  "wingNo",
-  "area",
-  "societyNocStatus",
-  "occupancy",
-  "maintenance_amt",
-  "noc",
-  "arrears",
-  "rate",
-  "societyShareCertificate",
-  "memberSince",
-  "societyAddress",
-  "systemId",
-  "photo",
-];
-
-const tableHead = [
-  "Name",
-  "Particulars",
-  "Amount",
-  "From Data",
-  "To Date",
-  "Due Date",
-];
-
 const ViewBills = () => {
   const [upload, setUpload] = useState(false);
   const [excelFile, setExcelFile] = useState(null);
   const [typeError, setTypeError] = useState(null);
   const [excelData, setExcelData] = useState(null);
 
-  const handleUpload = () => {
-    setUpload(true);
-  };
-
-  const handleFileUpload = (event) => {
-    let fileTypes = [
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "text/csv",
-    ];
-    let selectedFile = event.target.files[0];
-    if (selectedFile) {
-      if (selectedFile && fileTypes.includes(selectedFile.type)) {
-        setTypeError(null);
-        let reader = new FileReader();
-        reader.readAsArrayBuffer(selectedFile);
-        reader.onload = (e) => {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const firstRow = XLSX.utils.sheet_to_json(sheet, { header: 1 })[0];
-
-          if (!template.every((header, index) => header === firstRow[index])) {
-            setTypeError("Invalid Excel file.");
-            return;
-          }
-
-          setExcelFile(e.target.result);
-        };
-      } else {
-        setTypeError("Please select only excel file types");
-        setExcelFile(null);
-      }
-    } else {
-      console.log("Please select your file");
-    }
-  };
-
-  const handleFileImport = async (e) => {
-    e.preventDefault();
-    if (excelFile !== null) {
-      const workbook = XLSX.read(excelFile, { type: "buffer" });
-      const worksheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[worksheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet);
-      setExcelData(data);
-      e.preventDefault();
-      try {
-        let result = await axios.post(
-          "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
-
-          excelData
-        );
-        console.log(result);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  };
-  console.log(excelData);
-
-  const [billData, setBillData] = useState([]);
-
-  useEffect(() => {
-    fetch("https://a2.arya-erp.in/api2/socapi/api/society/getBills")
-      .then((response) => response.json())
-      .then((data) => setBillData(data))
-      .catch((error) => console.error(error));
-  }, []);
-  console.log(billData);
-
-  const [memberData, setMemberData] = useState([]);
+  const [names, setNames] = useState([]);
+  const [charges, setCharges] = useState([]);
+  const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
     fetch("https://a2.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
-      .then((data) => setMemberData(data))
-      .catch((error) => console.error(error));
-  }, []);
-  console.log(memberData);
+      .then((data) => setNames(data));
 
-  const exportData = billData.map((item) => item.data);
+    fetch("https://a2.arya-erp.in/api2/socapi/api/society/getBills")
+      .then((response) => response.json())
+      .then((data) => setCharges(data));
+  }, []);
+
+  // const uniqueParticulars = [...new Set(charges.map(charge => charge.Particular))];
+
+  useEffect(() => {
+    if (names.length > 0 && charges.length > 0) {
+      const data = names.map((name) => ({
+        fullName: `${name.data.firstName} ${name.data.lastName}`,
+        ...charges.reduce((acc, charge) => {
+          acc[charge.Particular] = charge.Amount;
+          return acc;
+        }, {}),
+      }));
+      setTableData(data);
+    }
+  }, [names, charges]);
+  console.log(tableData);
+
+  // const exportData = charges.map((item) => item.data);
+  // console.log(exportData);
 
   const handleExportData = () => {
     let wb = XLSX.utils.book_new(),
-      ws = XLSX.utils.json_to_sheet(exportData);
+      ws = XLSX.utils.json_to_sheet(tableData);
     XLSX.utils.book_append_sheet(wb, ws, "Data");
-    XLSX.writeFile(wb, "MemberList.xlsx");
-  };
-
-  const downloadFormat = () => {
-    const worksheet = XLSX.utils.aoa_to_sheet([template]);
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
-    XLSX.writeFile(workbook, "memberList_template.xlsx");
+    XLSX.writeFile(wb, "Bill.xlsx");
   };
 
   const [chkstat2, setChkStat2] = useState({});
 
   useEffect(() => {
     const chkstat = {};
-    billData?.forEach((val) => {
+    charges?.forEach((val) => {
       chkstat[val._id] = false;
     });
     setChkStat2(chkstat);
-  }, [billData]);
+  }, [charges]);
 
   // console.log("chk2");
   // console.log(chkstat2);
@@ -157,22 +66,16 @@ const ViewBills = () => {
   const leadSet = (event) => {
     let c = {};
     Object.keys(chkstat2).forEach((key) => {
-      console.log(key);
       c[key] = event.target.checked;
     });
-    console.log(`c:`);
-    console.log(c);
     setChkStat2(c);
   };
 
   const setTick = (contact, event) => {
     chkstat2[contact._id] = event.target.checked;
-    console.log(contact);
-    console.log(chkstat2);
     const c = {
       ...chkstat2,
     };
-    console.log(c);
     setChkStat2(c);
   };
 
@@ -187,18 +90,6 @@ const ViewBills = () => {
           >
             Export
           </button>
-          {/* <button
-            onClick={downloadFormat}
-            className=" border border-slate-600 hover:bg-slate-600 hover:text-white  px-4 py-2 rounded-md m-2"
-          >
-            Download Format
-          </button>
-          <button
-            onClick={handleUpload}
-            className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
-          >
-            Upload
-          </button> */}
         </div>
         {upload ? (
           <div className=" border border-2 rounded-md m-10 overflow-y-auto">
@@ -252,22 +143,15 @@ const ViewBills = () => {
                         onChange={(event) => leadSet(event)}
                       />
                     </th>
-                    {tableHead.map((item) => (
-                      <th className="p-4 " key={item}>
-                        {item}
-                      </th>
-                    ))}
-                    {/* <th className="p-4 ">Name</th>
-                    {billData.map((item) => (
+                    <th className="p-4 ">Id</th>
+                    <th className="p-4 ">OwnerName</th>
+                    {charges.map((item) => (
                       <th className="p-4">{item.Particular}</th>
                     ))}
-                    <th className="p-4 ">From</th>
-                    <th className="p-4 ">To</th>
-                    <th className="p-4 ">Due Date</th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-300">
-                  {billData.map((item, index) => (
+                  {tableData.map((item, index) => (
                     <>
                       <tr key={index} className="hover:bg-gray-200">
                         <td className="p-4">
@@ -278,12 +162,18 @@ const ViewBills = () => {
                             name={item._id}
                           />
                         </td>
-                        <td className="p-4 text-center">Name</td>
-                        <td className="p-4">{item.Particular}</td>
+                        <td className="p-4 text-center"></td>
+                        <td className="p-4 text-center">{item.fullName}</td>
+                        {/* <td className="p-4">{item.Particular}</td>
                         <td className="p-4 text-center"> {item.Amount}</td>
                         <td className="p-4 text-center">{item.From}</td>
                         <td className="p-4 text-center">{item.To}</td>
-                        <td className="p-4 text-center">{item.DueDate}</td>
+                        <td className="p-4 text-center">{item.DueDate}</td> */}
+                        {charges.map((charge, index) => (
+                          <td key={index} className="p-4 text-center">
+                            {item[charge.Particular]}
+                          </td>
+                        ))}
                       </tr>
                     </>
                   ))}

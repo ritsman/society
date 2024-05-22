@@ -187,18 +187,6 @@ const ViewBills = () => {
           >
             Export
           </button>
-          <button
-            onClick={downloadFormat}
-            className=" border border-slate-600 hover:bg-slate-600 hover:text-white  px-4 py-2 rounded-md m-2"
-          >
-            Download Format
-          </button>
-          <button
-            onClick={handleUpload}
-            className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
-          >
-            Upload
-          </button>
         </div>
         {upload ? (
           <div className=" border border-2 rounded-md m-10 overflow-y-auto">
@@ -257,14 +245,14 @@ const ViewBills = () => {
                         {item}
                       </th>
                     ))} */}
-                    <th className="p-4 ">Name</th>
+                    <th className="p-4 ">Id</th>
+                    <th className="p-4 ">OwnerName</th>
                     {billData.map((item) => (
                       <th className="p-4">{item.Particular}</th>
                     ))}
-                    <th className="p-4 ">Amount</th>
-                    <th className="p-4 ">From</th>
+                    {/* <th className="p-4 ">From</th>
                     <th className="p-4 ">To</th>
-                    <th className="p-4 ">Due Date</th>
+                    <th className="p-4 ">Due Date</th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-300">
@@ -280,7 +268,7 @@ const ViewBills = () => {
                           />
                         </td>
                         <td className="p-4 text-center">Name</td>
-                        {/* <td className="p-4">{item.Particular}</td> */}
+                        <td className="p-4">{item.Particular}</td>
                         <td className="p-4 text-center"> {item.Amount}</td>
                         <td className="p-4 text-center">{item.From}</td>
                         <td className="p-4 text-center">{item.To}</td>
