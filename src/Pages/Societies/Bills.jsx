@@ -6,8 +6,10 @@ import AutoComplete from "../../components/Autocomplete";
 
 const Bills = () => {
   const [row_id, setRow_id] = useState(1);
-
+  let [counter, setCounter] = useState(1);
   const [rows, setRows] = useState([{ id: 0 }]);
+  const [BillNo, setBillNo] = useState([]);
+
   const handleAddRow = (e) => {
     setRow_id(row_id + 1);
     setRows([...rows, { id: rows.length }]);
@@ -23,12 +25,24 @@ const Bills = () => {
 
   const [heads, setHeads] = useState();
 
+  // useEffect(() => {
+  //   async function fetch() {
+  //     const response = await axios.get(
+  //       "https://a2.arya-erp.in/api2/socapi/api/society/getBillNo"
+  //     );
+  //     console.log(response.data);
+  //     setBillNo(response.data);
+  //   }
+  //   fetch();
+  // }, []);
+
   useEffect(() => {
     fetch("https://a2.arya-erp.in/api2/socapi/api/master/getHead")
       .then((response) => response.json())
       .then((data) => setHeads(data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
+
   console.log(heads);
   const options = heads;
 
@@ -39,6 +53,33 @@ const Bills = () => {
       ...prevValues,
       [index]: [...(prevValues[index] || []), value],
     }));
+  };
+
+  const generateWOUniqueID = () => {
+    let uniqueID;
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    let year1, year2;
+
+    if (currentMonth < 3) {
+      year1 = (currentYear - 1).toString().slice(-2);
+      year2 = currentYear.toString().slice(-2);
+    } else {
+      year1 = currentYear.toString().slice(-2);
+      year2 = (currentYear + 1).toString().slice(-2);
+    }
+
+    while (true) {
+      uniqueID = `${year1}${year2}BN${String(counter).padStart(4, "0")}`;
+      if (!BillNo.includes(uniqueID)) {
+        return uniqueID;
+      }
+      console.log("ID exists, generating new ID...");
+      counter++;
+      setCounter(counter);
+    }
   };
 
   const [amnt, setAmnt] = useState([]);
@@ -109,6 +150,7 @@ const Bills = () => {
     rate: rate[index],
     amnt: amnt[index],
     dateFieldValues: dateFieldValues[index],
+    BillNo: generateWOUniqueID(),
   }));
 
   const handleSubmit = async (e) => {
@@ -127,7 +169,10 @@ const Bills = () => {
 
   return (
     <div>
-      <div className="pt-10 h-screen overflow-y-auto  gap-6">
+      <div
+        className="pt-10  overflow-y-auto  gap-6"
+        style={{ height: "calc(100vh - 150px)" }}
+      >
         <h1 className="text-center text-2xl mb-5">
           Generate Maintenance Bills
         </h1>

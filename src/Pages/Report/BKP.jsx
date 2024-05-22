@@ -178,7 +178,10 @@ const ViewBills = () => {
 
   return (
     <>
-      <div className="pt-4 h-screen overflow-y-auto  gap-6">
+      <div
+        className="pt-4  overflow-y-auto  gap-6"
+        style={{ height: "calc(100vh - 150px)" }}
+      >
         <h1 className="text-2xl mb-5"></h1>
         <div className="flex justify-end mr-10">
           <button

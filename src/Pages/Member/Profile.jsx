@@ -59,7 +59,10 @@ const Profile = () => {
 
   return (
     <>
-      <div className="pt-10 h-screen overflow-y-auto  gap-6">
+      <div
+        className="pt-10  overflow-y-auto  gap-6"
+        style={{ height: "calc(100vh - 150px)" }}
+      >
         <h1 className="pb-5 text-center text-2xl mb-5">MEMBER PROFILE</h1>
         <form
           onSubmit={handleSubmit}

@@ -6,7 +6,10 @@ const Report = () => {
 
   return (
     <>
-      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-24 overflow-y-auto h-screen">
+      <div
+        className="max-w-7xl mx-auto sm:px-6 lg:px-8 md:py-24 overflow-y-auto "
+        style={{ height: "calc(100vh - 150px)" }}
+      >
         <h1 className="text-3xl font-bold mb-6">Report</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {cards.map((card) => (
