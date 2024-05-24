@@ -23,18 +23,18 @@ const Bills = () => {
     e.preventDefault();
   };
 
-  const [heads, setHeads] = useState();
+  useEffect(() => {
+    async function fetch() {
+      const response = await axios.get(
+        "https://a2.arya-erp.in/api2/socapi/api/society/getBillNo"
+      );
+      console.log(response.data);
+      setBillNo(response.data);
+    }
+    fetch();
+  }, []);
 
-  // useEffect(() => {
-  //   async function fetch() {
-  //     const response = await axios.get(
-  //       "https://a2.arya-erp.in/api2/socapi/api/society/getBillNo"
-  //     );
-  //     console.log(response.data);
-  //     setBillNo(response.data);
-  //   }
-  //   fetch();
-  // }, []);
+  const [heads, setHeads] = useState();
 
   useEffect(() => {
     fetch("https://a2.arya-erp.in/api2/socapi/api/master/getHead")
@@ -43,7 +43,7 @@ const Bills = () => {
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  console.log(heads);
+  // console.log(heads);
   const options = heads;
 
   const [selectedValue, setSelectedValue] = useState([]);
@@ -183,89 +183,92 @@ const Bills = () => {
         >
           <div className="  w-[90%]   gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
             <table className="shadow-lg mt-5 ">
-              <tr>
-                <td className="p-4">
-                  <button>
-                    <FontAwesomeIcon
-                      className="text-gray-700 text-2xl"
-                      icon={faCirclePlus}
-                      onClick={(e) => handleAddRow(e)}
-                    />
-                  </button>
-                </td>
-                <td className="p-4 pr-24 font-semibold">Particulars</td>
-                <td className="p-4 pr-20 font-semibold">Amount</td>
-                <td className="p-4 pr-24 font-semibold">Rate</td>
-                <td className="p-4 font-semibold">From</td>
-                <td className="p-4 font-semibold">To</td>
-                <td className="p-4 font-semibold">Due Date</td>
-              </tr>
-
-              {rows.map((row, index) => {
-                return (
-                  <tr key={`R${row.id}`}>
-                    <td className="p-4">
-                      <button>
-                        <FontAwesomeIcon
-                          className="text-gray-700 text-2xl"
-                          icon={faCircleXmark}
-                          onClick={(e) => handleDelRow(e, index)}
+              <thead>
+                <tr>
+                  <th className="p-4">
+                    <button>
+                      <FontAwesomeIcon
+                        className="text-gray-700 text-2xl"
+                        icon={faCirclePlus}
+                        onClick={(e) => handleAddRow(e)}
+                      />
+                    </button>
+                  </th>
+                  <th className="p-4 pr-24 ">Particulars</th>
+                  <th className="p-4 pr-20 ">Amount</th>
+                  <th className="p-4 pr-24 ">Rate</th>
+                  <th className="p-4 ">From</th>
+                  <th className="p-4 ">To</th>
+                  <th className="p-4 ">Due Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, index) => {
+                  return (
+                    <tr key={`R${row.id}`}>
+                      <td className="p-4">
+                        <button>
+                          <FontAwesomeIcon
+                            className="text-gray-700 text-2xl"
+                            icon={faCircleXmark}
+                            onClick={(e) => handleDelRow(e, index)}
+                          />
+                        </button>
+                      </td>
+                      <td className="pt-4">
+                        <AutoComplete
+                          options={options}
+                          onSelect={(value) => handleSelect(index, value)}
                         />
-                      </button>
-                    </td>
-                    <td className="pt-4">
-                      <AutoComplete
-                        options={options}
-                        onSelect={(value) => handleSelect(index, value)}
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        type="text"
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        name={`amt${index + 1}`}
-                        onChange={(e) => handleAmntChange(index, e)}
-                        required
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        name={`rate${index + 1}`}
-                        onChange={(e) => handleRateChange(index, e)}
-                        required
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        name={`from${index + 1}`}
-                        onChange={(e) => handleFromDateChange(index, e)}
-                        required
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        name={`to${index + 1}`}
-                        onChange={(e) => handleToDateChange(index, e)}
-                        required
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        name={`due${index + 1}`}
-                        onChange={(e) => handleDueDateChange(index, e)}
-                        required
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td className="p-4">
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                          name={`amt${index + 1}`}
+                          onChange={(e) => handleAmntChange(index, e)}
+                          required
+                        />
+                      </td>
+                      <td className="p-4">
+                        <input
+                          className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                          name={`rate${index + 1}`}
+                          onChange={(e) => handleRateChange(index, e)}
+                          required
+                        />
+                      </td>
+                      <td className="p-4">
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                          name={`from${index + 1}`}
+                          onChange={(e) => handleFromDateChange(index, e)}
+                          required
+                        />
+                      </td>
+                      <td className="p-4">
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                          name={`to${index + 1}`}
+                          onChange={(e) => handleToDateChange(index, e)}
+                          required
+                        />
+                      </td>
+                      <td className="p-4">
+                        <input
+                          type="date"
+                          className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                          name={`due${index + 1}`}
+                          onChange={(e) => handleDueDateChange(index, e)}
+                          required
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </table>
 
             <div className="mt-4">

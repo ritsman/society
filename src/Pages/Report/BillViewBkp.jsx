@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
 const ViewBills = () => {
   const [names, setNames] = useState([]);
@@ -53,11 +51,6 @@ const ViewBills = () => {
     } else {
       setFilteredData(charges); // Show all data if no date range is selected
     }
-  };
-  const [clickedButtonId, setClickedButtonId] = useState([]);
-
-  const handleClick = (id) => {
-    setClickedButtonId((prevIds) => [...prevIds, id]);
   };
 
   useEffect(() => {
@@ -150,51 +143,32 @@ const ViewBills = () => {
                   <input type="checkbox" onChange={(event) => leadSet(event)} />
                 </th>
                 <th className="p-4 ">Id</th>
-                <th className="p-4 ">Particulars</th>
-                <th className="p-4 ">Amount</th>
-                <th className="p-4 ">From</th>
-                <th className="p-4 ">To</th>
-                <th className="p-4 ">Due Date</th>
-                <th className="p-4 "></th>
+                <th className="p-4 ">OwnerName</th>
+                {charges.map((item) => (
+                  <th key={item._id} className="p-4">
+                    {item.Particular}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-300">
-              {charges.map((charge) => (
-                <tr key={charge._id} className="hover:bg-gray-200">
+              {tableData.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-200">
                   <td className="p-4">
                     <input
                       type="checkbox"
-                      checked={chkstat2[charge._id]}
-                      onChange={(event) => setTick(charge, event)}
-                      name={charge._id}
+                      checked={chkstat2[item._id]}
+                      onChange={(event) => setTick(item, event)}
+                      name={item._id}
                     />
                   </td>
-
-                  <td className="p-4 text-center">{charge.BillNo}</td>
-                  <td className="p-4 text-center">{charge.Particular}</td>
-                  <td className="p-4 text-center">{charge.Amount}</td>
-                  <td className="p-4 text-center">{charge.From}</td>
-                  <td className="p-4 text-center">{charge.To}</td>
-                  <td className="p-4 text-center">{charge.DueDate}</td>
-                  <td className="p-4 text-center">
-                    {/* <button className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2">
-                      Apply
-                    </button> */}
-                    <button
-                      key={charge._id}
-                      onClick={() => handleClick(charge._id)}
-                      className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
-                    >
-                      {clickedButtonId.includes(charge._id) ? (
-                        <FontAwesomeIcon
-                          icon={faCheck}
-                          style={{ color: "green" }}
-                        />
-                      ) : (
-                        "Click me"
-                      )}
-                    </button>
-                  </td>
+                  <td className="p-4 text-center"></td>
+                  <td className="p-4 text-center">{item.fullName}</td>
+                  {charges.map((charge) => (
+                    <td key={charge._id} className="p-4 text-center">
+                      {item[charge.Particular]}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
