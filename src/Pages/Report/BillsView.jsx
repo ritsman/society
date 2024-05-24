@@ -191,7 +191,7 @@ const ViewBills = () => {
                           style={{ color: "green" }}
                         />
                       ) : (
-                        "Click me"
+                        "Apply"
                       )}
                     </button>
                   </td>
