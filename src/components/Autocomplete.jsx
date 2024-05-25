@@ -17,7 +17,7 @@ const AutoComplete = ({ options, onSelect }) => {
     setFilteredOptions(
       options.filter(
         (option) =>
-          option.toLowerCase().includes(value.toLowerCase()) &&
+          option?.toLowerCase().includes(value.toLowerCase()) &&
           !selectedValues.includes(option)
       )
     );
@@ -51,6 +51,7 @@ const AutoComplete = ({ options, onSelect }) => {
     <div>
       <>
         <input
+          required
           className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
           type="text"
           value={inputValue}

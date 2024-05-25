@@ -16,7 +16,7 @@ function App() {
   function handleItemClick(name) {
     console.log(name);
     setActiveItem(name);
-    setVisible(true);
+    // setVisible(true);
   }
 
   let paths = [
@@ -30,9 +30,16 @@ function App() {
     { title: "Society", link: "/society" },
     { title: "Bills", link: "/society/bills" },
     { title: "Profile", link: "/member/profile" },
-    { title: "Transactions", link: "/member/transactions" },
+    // { title: "Transactions", link: "/member/transactions" },
     { title: "Member List", link: "/member/member-list" },
     { title: "Maintainance Head", link: "/master/maintainance-head" },
+    { title: "Transaction", link: "/transaction" },
+    { title: "Payment", link: "/transaction/payment" },
+    { title: "Receipt", link: "/transaction/receipt" },
+    { title: "Purchase", link: "/transaction/purchase" },
+    { title: "Purchase", link: "/transaction/purchase" },
+    { title: "Report", link: "/report" },
+    { title: "View Bills", link: "/report/bills-view" },
   ];
 
   return (

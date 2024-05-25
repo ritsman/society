@@ -10,8 +10,14 @@ import Master from "./Pages/Master/Master";
 import Ledger from "./Pages/Master/Ledger";
 import NewLedger from "./Pages/Master/NewLedger";
 import Group from "./Pages/Master/Group";
-import MaintainanceHead from "./Pages/Master/MaintainanceHead";
 import Bills from "./Pages/Societies/Bills";
+import Payment from "./Pages/Transaction/Payment";
+import Receipt from "./Pages/Transaction/Receipt";
+import Purchase from "./Pages/Transaction/Purchase";
+import MaintainanceHead from "./Pages/Master/MaintainanceHead";
+import Report from "./Pages/Report/Report";
+import ViewBills from "./Pages/Report/BillsView";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -55,12 +61,36 @@ const router = createBrowserRouter([
         element: <Group />,
       },
       {
-        path: "master/maintainance-head",
+        path: "master/maintenance-head",
         element: <MaintainanceHead />,
       },
       {
         path: "society/bills",
         element: <Bills />,
+      },
+      {
+        path: "transaction/payment",
+        element: <Payment />,
+      },
+      {
+        path: "transaction/receipt",
+        element: <Receipt />,
+      },
+      {
+        path: "transaction/purchase",
+        element: <Purchase />,
+      },
+      {
+        path: "report",
+        element: <Report />,
+      },
+      {
+        path: "report/bills",
+        element: <Report />,
+      },
+      {
+        path: "report/bills-view",
+        element: <ViewBills />,
       },
     ],
   },

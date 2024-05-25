@@ -34,7 +34,7 @@ const NewLedger = () => {
 
     try {
       let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/master/postLedger",
+        "https://a3.arya-erp.in/api2/socapi/api/master/postLedger",
         { ...formData, under: selectedValue }
       );
       console.log(result);
@@ -74,7 +74,7 @@ const NewLedger = () => {
 
   return (
     <div
-      className="md:pt-10  overflow-y-auto  gap-6"
+      className="py-10  overflow-y-auto  gap-6"
       style={{ height: "calc(100vh - 150px)" }}
     >
       <h1 className="text-center text-2xl mb-5">New Ledger</h1>

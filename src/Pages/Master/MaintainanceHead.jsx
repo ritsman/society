@@ -47,16 +47,16 @@ const MaintenanceHeaders = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ headers: headers, under: selectedValue });
+    // console.log({ headers: headers, under: selectedValue });
 
     try {
       let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/master/masterHead",
+        "https://a3.arya-erp.in/api2/socapi/api/master/masterHead",
         [{ Header: headers, Under: selectedValue }]
       );
       console.log(result);
-      setHeaders("");
-      setSelectedValue("");
+      // setHeaders("");
+      // setSelectedValue("");
     } catch (error) {
       console.log(error);
     }

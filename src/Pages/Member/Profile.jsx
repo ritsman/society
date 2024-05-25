@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import axios from "axios";
+import React, { useState } from "react";
 
 const Profile = () => {
   const [formData, setFormData] = useState([
@@ -18,9 +18,9 @@ const Profile = () => {
       noc: "",
       arrears: "",
       rate: "",
-      societyShareCertificate: "",
+      vehicleDetails: "",
+      societyShareCertificate: null,
       memberSince: "",
-      societyAddress: "",
       systemId: "",
       photo: null,
     },
@@ -30,15 +30,20 @@ const Profile = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e) => {
+  const handlePhotoChange = (e) => {
     setFormData({ ...formData, photo: e.target.files[0] });
+  };
+  const handleCertificateChange = (e) => {
+    setFormData({ ...formData, societyShareCertificate: e.target.files[0] });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // console.log(formData);
     try {
       let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
+        "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
         formData,
         {
           headers: {
@@ -47,7 +52,6 @@ const Profile = () => {
         }
       );
       console.log(result);
-      // https://a2.arya-erp.in/api2/socapi/api/member/postProfile
     } catch (error) {
       console.log(error);
     }
@@ -287,29 +291,21 @@ const Profile = () => {
                 required
               />
             </div>
-
-            <div className="col-span-2">
-              <h2 className="text-xl font-bold mb-4">Vehicle Details</h2>
-            </div>
-
-            <div className="col-span-2 mb-4">
-              <label
-                htmlFor="societyShareCertificate"
-                className="block font-bold mb-2"
-              >
-                Society Share Certificate
+            <div className="mb-4">
+              <label htmlFor="vehicleDetails" className="block font-bold mb-2">
+                Vehicle Details
               </label>
               <input
                 type="text"
-                id="societyShareCertificate"
-                name="societyShareCertificate"
-                value={formData.societyShareCertificate}
+                id="vehicleDetails"
+                name="vehicleDetails"
+                value={formData.vehicleDetails}
                 onChange={handleChange}
-                className="w-full px-3 py-2 focus:outline-none border border-gray-300 rounded"
+                className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                required
               />
             </div>
-
-            <div className="col-span-2 mb-4">
+            <div className="mb-4">
               <label htmlFor="memberSince" className="block font-bold mb-2">
                 Member Since
               </label>
@@ -323,17 +319,18 @@ const Profile = () => {
               />
             </div>
 
-            <div className="col-span-2 mb-4">
-              <label htmlFor="societyAddress" className="block font-bold mb-2">
-                Society Arrears
+            <div className="mb-4">
+              <label htmlFor="photo" className="block font-bold mb-2">
+                Society Share Certificate
               </label>
-              <textarea
-                id="societyAddress"
-                name="societyAddress"
-                value={formData.societyAddress}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-              ></textarea>
+              <input
+                type="file"
+                id="societyShareCertificate"
+                name="societyShareCertificate"
+                accept="image/*"
+                onChange={handleCertificateChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded"
+              />
             </div>
 
             <div className="col-span-2">
@@ -370,7 +367,7 @@ const Profile = () => {
                 id="photo"
                 name="photo"
                 accept="image/*"
-                onChange={handleFileChange}
+                onChange={handlePhotoChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded"
               />
             </div>

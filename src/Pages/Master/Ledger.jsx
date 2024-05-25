@@ -1,12 +1,11 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 
-const Ledger = ({ activeItem, setVisible, visible, handleItemClick }) => {
+const Ledger = () => {
   const navigate = useNavigate();
   const handleClick = () => {
     navigate("/master/ledger/newledger");
   };
-  const navItems = [{ name: "Add New", path: "/master/newledger" }];
   return (
     <div className="md:py-10 ml-36  overflow-y-auto  gap-6">
       <button

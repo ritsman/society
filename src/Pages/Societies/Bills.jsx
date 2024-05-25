@@ -6,72 +6,169 @@ import AutoComplete from "../../components/Autocomplete";
 
 const Bills = () => {
   const [row_id, setRow_id] = useState(1);
+  let [counter, setCounter] = useState(1);
   const [rows, setRows] = useState([{ id: 0 }]);
-  const [options, setOptions] = useState([]);
-  const [particulars, setParticulars] = useState([]);
-
-  useEffect(() => {
-    getHead();
-  }, []);
-
-  useEffect(() => {
-    console.log(options);
-  }, [options]);
-
-  useEffect(() => {
-    console.log(particulars);
-  }, [particulars]);
-
-  async function getHead() {
-    try {
-      let result = await axios.get(
-        "https://a2.arya-erp.in/api2/socapi/api/master/getHead"
-      );
-      setOptions([...result.data]);
-      console.log(result);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  const handleSelect = (value) => {
-    setParticulars([...particulars, value]);
-  };
+  const [BillNo, setBillNo] = useState([]);
 
   const handleAddRow = (e) => {
-    console.log("add clicked");
     setRow_id(row_id + 1);
-    console.log(`row_id:${row_id}`);
     setRows([...rows, { id: rows.length }]);
-    console.log(rows);
     e.preventDefault();
   };
 
   const handleDelRow = (e, ind) => {
-    console.log("cross clicked");
-    console.log(ind);
-
     const updated_rows = [...rows];
-    console.log(rows);
-    console.log(rows.length);
-    console.log(updated_rows);
-
     updated_rows.splice(ind, 1);
-    console.log(rows);
-    console.log(updated_rows);
     setRows(updated_rows);
     e.preventDefault();
   };
 
-  const handleInputChange = (e, data) => {
-    console.log(`e:`);
-    // console.log(e);
-    console.log(`data:`);
-    console.log(data);
-    // setModalOpen(true);
+  const [heads, setHeads] = useState();
 
-    // List
-    const value = e.target.value;
-    console.log(value);
+  useEffect(() => {
+    async function fetch() {
+      try {
+        const response = await axios.get(
+          "https://a3.arya-erp.in/api2/socapi/api/society/getBillNo"
+        );
+        console.log(response.data);
+        setBillNo(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetch();
+  }, []);
+
+  useEffect(() => {
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+      .then((response) => response.json())
+      .then((data) => setHeads(data))
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []);
+
+  console.log(heads);
+  const options = heads;
+
+  const [selectedValue, setSelectedValue] = useState([]);
+
+  const handleSelect = (index, value) => {
+    setSelectedValue((prevValues) => ({
+      ...prevValues,
+      [index]: [...(prevValues[index] || []), value],
+    }));
+  };
+
+  const generateWOUniqueID = () => {
+    let uniqueID;
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
+    let year1, year2;
+
+    if (currentMonth < 3) {
+      year1 = (currentYear - 1).toString().slice(-2);
+      year2 = currentYear.toString().slice(-2);
+    } else {
+      year1 = currentYear.toString().slice(-2);
+      year2 = (currentYear + 1).toString().slice(-2);
+    }
+
+    while (true) {
+      uniqueID = `${year1}${year2}BN${String(counter).padStart(4, "0")}`;
+      if (!BillNo.includes(uniqueID)) {
+        return uniqueID;
+      }
+      console.log("ID exists, generating new ID...");
+      counter++;
+      setCounter(counter);
+    }
+  };
+
+  const [amnt, setAmnt] = useState([]);
+  const handleAmntChange = (index, e) => {
+    const { value } = e.target;
+    setAmnt((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], value };
+      return newValues;
+    });
+  };
+
+  const [rate, setRate] = useState([]);
+  const handleRateChange = (index, e) => {
+    const { value } = e.target;
+    setRate((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], value };
+      return newValues;
+    });
+  };
+
+  const [dateFieldValues, setDateFieldValues] = useState([]);
+
+  const handleFromDateChange = (index, e) => {
+    const { value } = e.target;
+    const parsedDate = new Date(value);
+    const formattedDate = `${parsedDate.getDate()}/${
+      parsedDate.getMonth() + 1
+    }/${parsedDate.getFullYear()}`;
+
+    setDateFieldValues((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], fromDate: formattedDate };
+      return newValues;
+    });
+  };
+  const handleToDateChange = (index, e) => {
+    const { value } = e.target;
+    const parsedDate = new Date(value);
+    const formattedDate = `${parsedDate.getDate()}/${
+      parsedDate.getMonth() + 1
+    }/${parsedDate.getFullYear()}`;
+
+    setDateFieldValues((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], toDate: formattedDate };
+      return newValues;
+    });
+  };
+
+  const handleDueDateChange = (index, e) => {
+    const { value } = e.target;
+    const parsedDate = new Date(value);
+    const formattedDate = `${parsedDate.getDate()}/${
+      parsedDate.getMonth() + 1
+    }/${parsedDate.getFullYear()}`;
+
+    setDateFieldValues((prevValues) => {
+      const newValues = [...prevValues];
+      newValues[index] = { ...newValues[index], dueDate: formattedDate };
+      return newValues;
+    });
+  };
+
+  const combinedValues = dateFieldValues?.map((_, index) => ({
+    particulars: selectedValue[index],
+    rate: rate[index],
+    amnt: amnt[index],
+    dateFieldValues: dateFieldValues[index],
+    BillNo: generateWOUniqueID(),
+  }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(combinedValues);
+    try {
+      let result = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
+        combinedValues
+      );
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -84,8 +181,11 @@ const Bills = () => {
           Generate Maintenance Bills
         </h1>
 
-        <form className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
-          <div className=" grid w-[90%]  grid-cols-2 gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
+        <form
+          onSubmit={handleSubmit}
+          className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  "
+        >
+          <div className="  w-[90%]   gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
             <table className="shadow-lg mt-5 ">
               <tr>
                 <td className="p-4">
@@ -97,9 +197,9 @@ const Bills = () => {
                     />
                   </button>
                 </td>
-                <td className="p-4 pr-12 font-semibold">Particulars</td>
-                <td className="p-4 pr-12 font-semibold">Amount</td>
-                <td className="p-4 pr-12 font-semibold">Rate</td>
+                <td className="p-4 pr-24 font-semibold">Particulars</td>
+                <td className="p-4 pr-20 font-semibold">Amount</td>
+                <td className="p-4 pr-24 font-semibold">Rate</td>
                 <td className="p-4 font-semibold">From</td>
                 <td className="p-4 font-semibold">To</td>
                 <td className="p-4 font-semibold">Due Date</td>
@@ -117,56 +217,69 @@ const Bills = () => {
                         />
                       </button>
                     </td>
-                    <td className="p-4">
+                    <td className="pt-4">
                       <AutoComplete
                         options={options}
-                        onSelect={(value) => handleSelect(value)}
+                        onSelect={(value) => handleSelect(index, value)}
                       />
                     </td>
                     <td className="p-4">
                       <input
                         type="text"
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Amount*"
-                        name="amt"
+                        name={`amt${index + 1}`}
+                        onChange={(e) => handleAmntChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
                       <input
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Rate*"
-                        name="rate"
-                        // onChange={(e, data) => handleInputChange(e, data)}
-                      />
-                    </td>
-                    <td className="p-4">
-                      <input
-                        type="date"
-                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="From*"
-                        name="from"
+                        name={`rate${index + 1}`}
+                        onChange={(e) => handleRateChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
                       <input
                         type="date"
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="To*"
-                        name="to"
+                        name={`from${index + 1}`}
+                        onChange={(e) => handleFromDateChange(index, e)}
+                        required
                       />
                     </td>
                     <td className="p-4">
                       <input
                         type="date"
                         className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                        placeholder="Due Date*"
-                        name="due_date"
+                        name={`to${index + 1}`}
+                        onChange={(e) => handleToDateChange(index, e)}
+                        required
+                      />
+                    </td>
+                    <td className="p-4">
+                      <input
+                        type="date"
+                        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+                        name={`due${index + 1}`}
+                        onChange={(e) => handleDueDateChange(index, e)}
+                        required
                       />
                     </td>
                   </tr>
                 );
               })}
             </table>
+
+            <div className="mt-4">
+              <button
+                type="submit"
+                className="bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Submit
+              </button>
+            </div>
           </div>
         </form>
       </div>

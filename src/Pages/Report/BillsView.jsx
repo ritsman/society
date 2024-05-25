@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import UploadedData from "../../components/UploadedData";
-import "./memberlist.css";
 
 const template = [
   "firstName",
@@ -20,27 +19,23 @@ const template = [
   "noc",
   "arrears",
   "rate",
-  "vehicleDetails",
   "societyShareCertificate",
   "memberSince",
+  "societyAddress",
   "systemId",
   "photo",
 ];
 
 const tableHead = [
   "Name",
-  "Mobile No.",
-  "Address",
-  "Flat No.",
-  "Wing No.",
-  "Society NOC Status",
-  "Occupancy",
-  "Maintence Amount",
-  "Society Arrears",
-  "Non Occupancy Charges",
+  "Particulars",
+  "Amount",
+  "From Data",
+  "To Date",
+  "Due Date",
 ];
 
-const MemberList = () => {
+const ViewBills = () => {
   const [upload, setUpload] = useState(false);
   const [excelFile, setExcelFile] = useState(null);
   const [typeError, setTypeError] = useState(null);
@@ -108,17 +103,27 @@ const MemberList = () => {
   };
   console.log(excelData);
 
-  const [data, setData] = useState([]);
+  const [billData, setBillData] = useState([]);
+
+  useEffect(() => {
+    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
+      .then((response) => response.json())
+      .then((data) => setBillData(data))
+      .catch((error) => console.error(error));
+  }, []);
+  console.log(billData);
+
+  const [memberData, setMemberData] = useState([]);
 
   useEffect(() => {
     fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
-      .then((data) => setData(data))
+      .then((data) => setMemberData(data))
       .catch((error) => console.error(error));
   }, []);
-  console.log(data);
+  console.log(memberData);
 
-  const exportData = data.map((item) => item.data);
+  const exportData = billData.map((item) => item.data);
 
   const handleExportData = () => {
     let wb = XLSX.utils.book_new(),
@@ -140,11 +145,11 @@ const MemberList = () => {
 
   useEffect(() => {
     const chkstat = {};
-    data?.forEach((val) => {
+    billData?.forEach((val) => {
       chkstat[val._id] = false;
     });
     setChkStat2(chkstat);
-  }, [data]);
+  }, [billData]);
 
   // console.log("chk2");
   // console.log(chkstat2);
@@ -185,7 +190,7 @@ const MemberList = () => {
           >
             Export
           </button>
-          <button
+          {/* <button
             onClick={downloadFormat}
             className=" border border-slate-600 hover:bg-slate-600 hover:text-white  px-4 py-2 rounded-md m-2"
           >
@@ -196,7 +201,7 @@ const MemberList = () => {
             className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
           >
             Upload
-          </button>
+          </button> */}
         </div>
         {upload ? (
           <div className=" border border-2 rounded-md m-10 overflow-y-auto">
@@ -240,7 +245,7 @@ const MemberList = () => {
           </div>
         ) : (
           <>
-            <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6 rounded-lg ">
+            <div className="max-w-max overflow-x-auto shadow-lg ml-4 mt-6 rounded-lg ">
               <table className="rounded-md">
                 <thead className="bg-gray-700 text-slate-200">
                   <tr>
@@ -255,10 +260,17 @@ const MemberList = () => {
                         {item}
                       </th>
                     ))}
+                    {/* <th className="p-4 ">Name</th>
+                    {billData.map((item) => (
+                      <th className="p-4">{item.Particular}</th>
+                    ))}
+                    <th className="p-4 ">From</th>
+                    <th className="p-4 ">To</th>
+                    <th className="p-4 ">Due Date</th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-300">
-                  {data.map((item, index) => (
+                  {billData.map((item, index) => (
                     <>
                       <tr key={index} className="hover:bg-gray-200">
                         <td className="p-4">
@@ -269,29 +281,12 @@ const MemberList = () => {
                             name={item._id}
                           />
                         </td>
-                        <td className="p-4">
-                          {item.data.firstName}
-                          {item.data.lastName}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.registeredMobileNo}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.permanentAddress}
-                        </td>
-                        <td className="p-4 text-center">{item.data.flatNo}</td>
-                        <td className="p-4 text-center">{item.data.wingNo}</td>
-                        <td className="p-4 text-center">
-                          {item.data.societyNocStatus}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.occupancy}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.maintenance_amt}
-                        </td>
-                        <td className="p-4 text-center">{item.data.arrears}</td>
-                        <td className="p-4 text-center">{item.data.noc}</td>
+                        <td className="p-4 text-center">Name</td>
+                        <td className="p-4">{item.Particular}</td>
+                        <td className="p-4 text-center"> {item.Amount}</td>
+                        <td className="p-4 text-center">{item.From}</td>
+                        <td className="p-4 text-center">{item.To}</td>
+                        <td className="p-4 text-center">{item.DueDate}</td>
                       </tr>
                     </>
                   ))}
@@ -308,4 +303,4 @@ const MemberList = () => {
   );
 };
 
-export default MemberList;
+export default ViewBills;

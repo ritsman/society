@@ -48,7 +48,7 @@ const Group = () => {
     console.log({ groupName: groupName, under: selectedValue });
     try {
       let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/master/postGroup",
+        "https://a3.arya-erp.in/api2/socapi/api/master/postGroup",
         { groupName: groupName, under: selectedValue }
       );
       console.log(result);
@@ -60,7 +60,7 @@ const Group = () => {
   return (
     <div>
       <div
-        className="md:py-10  overflow-y-auto  gap-6"
+        className="pt-10   overflow-y-auto  gap-6"
         style={{ height: "calc(100vh - 150px)" }}
       >
         <h1 className="text-center text-2xl mb-5">ADD YOUR GROUP</h1>
