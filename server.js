@@ -13,10 +13,10 @@ app.use(json());
 
 app.use(router);
 
-app.listen(3001, (err) => {
+app.listen(3000, (err) => {
   if (err) {
     console.error("Error starting server:", err);
     return;
   }
-  console.log("Express server is running on port 3001");
+  console.log("Express server is running on port 3000");
 });
