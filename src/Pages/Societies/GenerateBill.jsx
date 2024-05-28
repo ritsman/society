@@ -106,15 +106,46 @@ const GenerateBill = () => {
   };
   const [head, setHead] = useState([]); // State to store heads
   const [isClicked, setIsClicked] = useState(false);
+  const [rates, setRates] = useState({});
+  const [appliedRows, setAppliedRows] = useState([]);
+  const [amounts, setAmounts] = useState({});
+  const handleAmountChange = (index, value) => {
+    setAmounts((prevAmounts) => ({
+      ...prevAmounts,
+      [index]: value,
+    }));
+  };
 
+  const handleRateChange = (index, value) => {
+    setRates((prevRates) => ({
+      ...prevRates,
+      [index]: value,
+    }));
+  };
   const handleClick = (index) => {
     setIsClicked(true);
-    const selectedHead = selectedValue[index];
-    if (selectedHead) {
-      setHead([...head, selectedHead]);
-      setIsClicked({ ...isClicked, [index]: true });
-    }
+    const selectedHead = selectedValue[index]?.[0] || "";
+    const amount = amounts[index] || "";
+    const rate = rates[index] || "";
+
+    setAppliedRows((prevRows) => [
+      ...prevRows,
+      { head: selectedHead, amount, rate },
+    ]);
+
+    setIsClicked({ ...isClicked, [index]: true });
   };
+  console.log(appliedRows);
+  // const handleClick = (index) => {
+  //   setIsClicked(true);
+  //   const selectedHead = selectedValue[index];
+  //   const selectedamount = amt[index];
+  //   console.log(selectedamount);
+  //   if (selectedHead) {
+  //     setHead([...head, selectedHead]);
+  //     setIsClicked({ ...isClicked, [index]: true });
+  //   }
+  // };
   // console.log(head);
   return (
     <>
@@ -203,6 +234,9 @@ const GenerateBill = () => {
                           type="date"
                           className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                           name={`to${index + 1}`}
+                          onChange={(e) =>
+                            handleRateChange(index, e.target.value)
+                          }
                           required
                         />
                       </td>
@@ -211,6 +245,9 @@ const GenerateBill = () => {
                           type="text"
                           className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                           name={`amt${index + 1}`}
+                          onChange={(e) =>
+                            handleAmountChange(index, e.target.value)
+                          }
                           required
                         />
                       </td>
@@ -250,8 +287,8 @@ const GenerateBill = () => {
                     />
                   </th>
                   <th>OwnerName</th>
-                  {head.map((head, index) => (
-                    <th>{head}</th>
+                  {appliedRows.map((head, index) => (
+                    <th>{head.head}</th>
                   ))}
                   {headers.map((head, index) => (
                     <th className="p-4 " key={index}>
@@ -276,10 +313,10 @@ const GenerateBill = () => {
                       {row.data.firstName}
                       {row.data.lastName}
                     </td>
-                    <td className="text-center p-4">
-                      {/* {row.data.maintenance_amt} */}
-                    </td>
-                    {/* <td className="p-4 text-center">{row.data.arrears}</td> */}
+                    {appliedRows.map((head, index) => (
+                      <td className="p-4 text-center">{head.amount}</td>
+                    ))}
+                    <td className="p-4 text-center">{row.data.arrears}</td>
                     <td className="p-4 text-center">
                       {/* {row.data.arrears * dayDifference * rate} */}
                     </td>
