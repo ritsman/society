@@ -1,109 +1,99 @@
-import React, { useState } from "react";
-import AutoComplete from "../../components/Autocomplete";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 
+const header = ["Group", "Under"];
 const Group = () => {
-  const options = [
-    "Bank Accounts",
-    "Current Assets",
-    "Bank OD A/c",
-    "Loans (Liability)",
-    "Cash-in-hand",
-    "Current Assets",
-    "Deposits (Asset)",
-    "Current Assets",
-    "Duties & Taxes",
-    "Current Liabilities",
-    "Loans & Advances (Asset)",
-    "Current Assets",
-    "Provisions",
-    "Current Liabilities",
-    " Reserves & Surplus",
-    "Capital Account",
-    "Secured Loans",
-    "Loans (Liability)",
-    "Stock-in-hand",
-    "Current Assets",
-    "Sundry Creditors",
-    "Current Liabilities",
-    "Sundry Debtors",
-    "Current Assets",
-    "Unsecured Loans",
-    "Loans (Liability)",
-  ];
+  const navigate = useNavigate();
 
-  const [groupName, setGroupName] = useState("");
-
-  const handleChange = (e) => {
-    setGroupName(e.target.value);
+  const handleClick = () => {
+    navigate("/master/groups/newgroup");
   };
 
-  const [selectedValue, setSelectedValue] = useState("");
-  const handleSelect = (value) => {
-    setSelectedValue(value);
+  const [groupData, setGroupData] = useState([]);
+  useEffect(() => {
+    fetch(" https://a2.arya-erp.in/api2/socapi/api/master/getGroupsList")
+      .then((response) => response.json())
+      .then((data) => setGroupData(data));
+  }, []);
+  console.log(groupData);
+  const [chkstat2, setChkStat2] = useState({});
+
+  useEffect(() => {
+    const chkstat = {};
+    groupData?.forEach((val) => {
+      chkstat[val._id] = false;
+    });
+    setChkStat2(chkstat);
+  }, [groupData]);
+
+  const leadSet = (event) => {
+    let c = {};
+    Object.keys(chkstat2).forEach((key) => {
+      c[key] = event.target.checked;
+    });
+    setChkStat2(c);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log({ groupName: groupName, under: selectedValue });
-    try {
-      let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/master/postGroup",
-        { groupName: groupName, under: selectedValue }
-      );
-      console.log(result);
-    } catch (error) {
-      console.log(error);
-    }
+  const setTick = (contact, event) => {
+    chkstat2[contact._id] = event.target.checked;
+    const c = {
+      ...chkstat2,
+    };
+    setChkStat2(c);
+  };
+
+  const show_record = (id) => {
+    console.log(`id:${id}`);
+
+    navigate(`${id}`);
   };
 
   return (
-    <div>
-      <div
-        className="pt-10   overflow-y-auto  gap-6"
-        style={{ height: "calc(100vh - 150px)" }}
+    <div
+      className="md:py-10 ml-36 overflow-y-auto gap-6"
+      style={{ height: "calc(100vh - 150px)" }}
+    >
+      <button
+        onClick={handleClick}
+        className=" bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
       >
-        <h1 className="text-center text-2xl mb-5">ADD YOUR GROUP</h1>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  "
-        >
-          <div className=" grid w-[90%]  grid-cols-2 gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
-            <div className="mb-4">
-              <label htmlFor="groupName" className="block font-bold mb-2">
-                Group Name
-              </label>
-              <input
-                type="text"
-                id="groupName"
-                name="groupName"
-                value={groupName}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="under" className="block font-bold mb-2">
-                Under
-              </label>
-              <AutoComplete
-                options={options}
-                onSelect={(value) => handleSelect(value)}
-              />
-            </div>
-            <div className="col-span-2">
-              <button
-                type="submit"
-                className="bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+        Add New
+      </button>
+      <div className="max-w-max overflow-x-auto shadow-lg  mt-6 rounded-lg ">
+        <table className="rounded-md">
+          <thead className="bg-gray-700 text-slate-200">
+            <tr>
+              <th className="p-4 ">
+                <input type="checkbox" onChange={(event) => leadSet(event)} />
+              </th>
+              {header.map((head, index) => (
+                <th className="p-4" key={index}>
+                  {head}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-300">
+            {groupData.map((row, index) => (
+              <tr
+                key={index}
+                onClick={() => show_record(row._id)}
+                className="hover:bg-gray-200"
               >
-                Submit
-              </button>
-            </div>
-          </div>
-        </form>
+                <td className="p-4">
+                  <input
+                    type="checkbox"
+                    checked={chkstat2[row._id]}
+                    onChange={(event) => setTick(row, event)}
+                    name={row._id}
+                  />
+                </td>
+                <td className="p-4">{row.group}</td>
+                <td className="p-4">{row.under}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

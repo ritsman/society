@@ -35,9 +35,6 @@ const tableHead = [
   "Wing No.",
   "Society NOC Status",
   "Occupancy",
-  "Maintence Amount",
-  "Society Arrears",
-  "Non Occupancy Charges",
 ];
 
 const MemberList = () => {
@@ -259,41 +256,32 @@ const MemberList = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-300">
                   {data.map((item, index) => (
-                    <>
-                      <tr key={index} className="hover:bg-gray-200">
-                        <td className="p-4">
-                          <input
-                            type="checkbox"
-                            checked={chkstat2[item._id]}
-                            onChange={(event) => setTick(item, event)}
-                            name={item._id}
-                          />
-                        </td>
-                        <td className="p-4">
-                          {item.data.firstName}
-                          {item.data.lastName}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.registeredMobileNo}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.permanentAddress}
-                        </td>
-                        <td className="p-4 text-center">{item.data.flatNo}</td>
-                        <td className="p-4 text-center">{item.data.wingNo}</td>
-                        <td className="p-4 text-center">
-                          {item.data.societyNocStatus}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.occupancy}
-                        </td>
-                        <td className="p-4 text-center">
-                          {item.data.maintenance_amt}
-                        </td>
-                        <td className="p-4 text-center">{item.data.arrears}</td>
-                        <td className="p-4 text-center">{item.data.noc}</td>
-                      </tr>
-                    </>
+                    <tr key={index} className="hover:bg-gray-200">
+                      <td className="p-4">
+                        <input
+                          type="checkbox"
+                          checked={chkstat2[item._id]}
+                          onChange={(event) => setTick(item, event)}
+                          name={item._id}
+                        />
+                      </td>
+                      <td className="p-4">
+                        {item.data.firstName}
+                        {item.data.lastName}
+                      </td>
+                      <td className="p-4 text-center">
+                        {item.data.registeredMobileNo}
+                      </td>
+                      <td className="p-4 text-center">
+                        {item.data.permanentAddress}
+                      </td>
+                      <td className="p-4 text-center">{item.data.flatNo}</td>
+                      <td className="p-4 text-center">{item.data.wingNo}</td>
+                      <td className="p-4 text-center">
+                        {item.data.societyNocStatus}
+                      </td>
+                      <td className="p-4 text-center">{item.data.occupancy}</td>
+                    </tr>
                   ))}
                 </tbody>
               </table>

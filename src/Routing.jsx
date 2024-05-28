@@ -17,6 +17,11 @@ import Purchase from "./Pages/Transaction/Purchase";
 import MaintainanceHead from "./Pages/Master/MaintainanceHead";
 import Report from "./Pages/Report/Report";
 import ViewBills from "./Pages/Report/BillsView";
+import AllChargeMemberView from "./Pages/Report/AllChargeMemberView";
+import LedgerView from "./Pages/Master/LedgerView";
+import GroupView from "./Pages/Master/GroupView";
+import NewGroup from "./Pages/Master/NewGroup";
+import GenerateBill from "./Pages/Societies/GenerateBill";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +54,10 @@ const router = createBrowserRouter([
         element: <Master />,
       },
       {
+        path: "master/ledger/:ledgerId",
+        element: <LedgerView />,
+      },
+      {
         path: "/master/ledger",
         element: <Ledger />,
       },
@@ -61,12 +70,20 @@ const router = createBrowserRouter([
         element: <Group />,
       },
       {
+        path: "master/groups/:groupId",
+        element: <GroupView />,
+      },
+      {
+        path: "master/groups/newgroup",
+        element: <NewGroup />,
+      },
+      {
         path: "master/maintenance-head",
         element: <MaintainanceHead />,
       },
       {
         path: "society/bills",
-        element: <Bills />,
+        element: <GenerateBill />,
       },
       {
         path: "transaction/payment",
@@ -91,6 +108,10 @@ const router = createBrowserRouter([
       {
         path: "report/bills-view",
         element: <ViewBills />,
+      },
+      {
+        path: "report/charge-view",
+        element: <AllChargeMemberView />,
       },
     ],
   },

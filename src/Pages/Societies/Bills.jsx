@@ -3,6 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import AutoComplete from "../../components/Autocomplete";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import { redirect, useNavigate } from "react-router-dom";
 
 const Bills = () => {
   const [row_id, setRow_id] = useState(1);
@@ -145,26 +148,71 @@ const Bills = () => {
     });
   };
 
-  const combinedValues = dateFieldValues?.map((_, index) => ({
-    particulars: selectedValue[index],
-    rate: rate[index],
-    amnt: amnt[index],
-    dateFieldValues: dateFieldValues[index],
-    BillNo: generateWOUniqueID(),
-  }));
+  // const combinedValues = dateFieldValues?.map((_, index) => ({
+  // BillNo: generateWOUniqueID(),
+  // [selectedValue[index]]: amnt[index],
+  //}));
+
+  const billNo = generateWOUniqueID();
+
+  // const combinedValues = {
+  //   BillNo: billNo,
+  //   dateFieldValues: dateFieldValues,
+  //   particulars: dateFieldValues.reduce((acc, _, index) => {
+  //     acc[selectedValue[index]] = amnt[index];
+  //     return acc;
+  //   }, {}),
+  // };
+  const combinedValues = {
+    BillNo: billNo,
+    fromDate: dateFieldValues.map((item) => item.fromDate),
+    toDate: dateFieldValues.map((item) => item.toDate),
+    dueDate: dateFieldValues.map((item) => item.dueDate),
+    rate: rate,
+    particulars: dateFieldValues.reduce((acc, _, index) => {
+      acc[selectedValue[index]] = amnt[index];
+      return acc;
+    }, {}),
+  };
+  // const combinedValues = {
+  //   BillNo: billNo,
+  //   fromDate: dateFieldValues[0]?.fromDate,
+  //   toDate: dateFieldValues[0]?.toDate,
+  //   dueDate: dateFieldValues[0]?.dueDate,
+  //   particulars: dateFieldValues.reduce((acc, _, index) => {
+  //     acc[selectedValue[index]] = amnt[index];
+  //     return acc;
+  //   }, {}),
+  // };
+  // // const combinedValues = dateFieldValues?.map((_, index) => ({
+  //   particulars: selectedValue[index],
+  //   rate: rate[index],
+  //   amnt: amnt[index],
+  //   dateFieldValues: dateFieldValues[index],
+  //   BillNo: generateWOUniqueID(),
+  // }));
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(combinedValues);
-    try {
-      let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/society/postBills",
-        combinedValues
-      );
-      console.log(result);
-    } catch (error) {
-      console.log(error);
-    }
+    // try {
+    //   let result = await axios.post(
+    //     "https://a2.arya-erp.in/api2/socapi/api/society/postBills",
+    //     combinedValues
+    //   );
+    //   console.log(result);
+    //   if (result.status == 200) {
+    //     toast.success("Added Successfully");
+    //     navigate("/report/bills-view");
+    //   } else {
+    //     toast.error("Error");
+    //     return null;
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   return (
@@ -181,7 +229,7 @@ const Bills = () => {
           onSubmit={handleSubmit}
           className="flex gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  "
         >
-          <div className="  w-[90%]   gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
+          <div className="w-[90%] gap-6 gap-y-2 max-w-7xl mx-auto sm:px-6 lg:px-8  ">
             <table className="shadow-lg mt-5 ">
               <thead>
                 <tr>

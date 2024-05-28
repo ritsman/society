@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import NavBar from "./Pages/Navbar/Navbar.jsx";
 import { useNavigate } from "react-router-dom";
-
+import { ToastContainer } from "react-toastify";
 import "./App.css";
 import Sidebar from "./Pages/SideBar/SideBar.jsx";
 import Breadcrumbs from "./components/BreadCrumps.jsx";
@@ -44,6 +44,7 @@ function App() {
 
   return (
     <div className="w-screen">
+      <ToastContainer />
       <NavBar
         activeItem={activeItem}
         setVisible={setVisible}

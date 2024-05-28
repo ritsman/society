@@ -2,31 +2,27 @@ import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
 
-const ViewBills = () => {
+const AllChargeMemberView = () => {
   const [names, setNames] = useState([]);
   const [charges, setCharges] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  // const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState([]);
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
-  // useEffect(() => {
-  //   fetch("http://103.235.106.18:3001/api/member/getMemberList")
-  //     .then((response) => response.json())
-  //     .then((data) => setNames(data));
+  useEffect(() => {
+    fetch("http://103.235.106.18:3001/api/member/getMemberList")
+      .then((response) => response.json())
+      .then((data) => setNames(data));
 
-  //   fetch("http://103.235.106.18:3001/api/society/getBills")
-  //     .then((response) => response.json())
-  //     .then((data) => {
-  //       setCharges(data);
-  //       setFilteredData(data);
-  //     });
-  // }, []);
-  // console.log(charges);
+    fetch("http://103.235.106.18:3001/api/society/getBills")
+      .then((response) => response.json())
+      .then((data) => {
+        setCharges(data);
+        setFilteredData(data);
+      });
+  }, []);
 
   const parseDate = (dateString) => {
     const date = new Date(dateString);
@@ -55,11 +51,6 @@ const ViewBills = () => {
     } else {
       setFilteredData(charges); // Show all data if no date range is selected
     }
-  };
-  const [clickedButtonId, setClickedButtonId] = useState([]);
-
-  const handleClick = (id) => {
-    setClickedButtonId((prevIds) => [...prevIds, id]);
   };
 
   useEffect(() => {
@@ -116,35 +107,7 @@ const ViewBills = () => {
     setChkStat2(c);
   };
 
-  const [data, setData] = useState([]);
-  const [tableData, setTableData] = useState([]);
-  const [headers, setHeaders] = useState([]);
-
-  useEffect(() => {
-    fetch("https://a2.arya-erp.in/api2/socapi/api/society/getBills")
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data);
-        processTableData(data);
-      });
-  }, []);
-  console.log(data);
-
-  const processTableData = (data) => {
-    const uniqueHeads = [...new Set(data.map((item) => item.Particular))];
-    setHeaders(uniqueHeads);
-
-    const billMap = data.reduce((acc, { BillNo, Particular, Amount }) => {
-      if (!acc[BillNo]) {
-        acc[BillNo] = { BillNo };
-      }
-      acc[BillNo][Particular] = Amount;
-      return acc;
-    }, {});
-
-    const formattedData = Object.values(billMap);
-    setTableData(formattedData);
-  };
+  console.log(charges);
   return (
     <>
       <div
@@ -154,18 +117,12 @@ const ViewBills = () => {
         <h1 className="text-2xl mb-5"></h1>
 
         <div className="flex justify-end mr-10">
-          {/* <button  onClick={handleNavigate}>Done</button > */}
-          <DatePicker
-            className="border border-gray-700 rounded-md py-2 px-2 mt-2"
-            placeholderText="Select Date Range"
-            selected={startDate}
-            onChange={handleDateChange}
-            startDate={startDate}
-            endDate={endDate}
-            selectsRange
-            dateFormat="MM/yyyy"
-            showMonthYearPicker
-          />
+          <button
+            onClick={handleExportData}
+            className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
+          >
+            Export
+          </button>
         </div>
         <div className="max-w-max overflow-x-auto shadow-lg ml-4 mt-6 rounded-lg ">
           <table className="rounded-md">
@@ -174,38 +131,33 @@ const ViewBills = () => {
                 <th className="p-4 ">
                   <input type="checkbox" onChange={(event) => leadSet(event)} />
                 </th>
-                <th className="p-4 ">Bill No</th>
-                {headers.map((head, index) => (
-                  <th className="p-4 " key={index}>
-                    {head}
+                <th className="p-4 ">Id</th>
+                <th className="p-4 ">OwnerName</th>
+                {charges.map((item) => (
+                  <th key={item._id} className="p-4">
+                    {item.Particular}
                   </th>
                 ))}
-                <th></th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-300">
-              {tableData.map((row, index) => (
+              {tableData.map((item, index) => (
                 <tr key={index} className="hover:bg-gray-200">
                   <td className="p-4">
                     <input
                       type="checkbox"
-                      checked={chkstat2[row._id]}
-                      onChange={(event) => setTick(row, event)}
-                      name={row._id}
+                      checked={chkstat2[item._id]}
+                      onChange={(event) => setTick(item, event)}
+                      name={item._id}
                     />
                   </td>
-
-                  <td className="p-4">{row.BillNo}</td>
-                  {headers.map((head, index) => (
-                    <td className="p-4 text-center" key={index}>
-                      {row[head] || 0}
+                  <td className="p-4 text-center"></td>
+                  <td className="p-4 text-center">{item.fullName}</td>
+                  {charges.map((charge) => (
+                    <td key={charge._id} className="p-4 text-center">
+                      {item[charge.Particular]}
                     </td>
                   ))}
-                  <td>
-                    <button className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2">
-                      Apply
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -216,4 +168,4 @@ const ViewBills = () => {
   );
 };
 
-export default ViewBills;
+export default AllChargeMemberView;
