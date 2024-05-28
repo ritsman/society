@@ -3,7 +3,12 @@ import multer from "multer";
 import path from "path";
 
 const router = express.Router();
-import { Profile, getMemberList } from "../controllers/Member.controller.js";
+import {
+  Profile,
+  deleteProfile,
+  getMemberList,
+  updateProfile,
+} from "../controllers/Member.controller.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -60,4 +65,30 @@ router.post(
   Profile
 );
 router.get("/getMemberList", getMemberList);
+router.delete("/deleteProfile/:id", deleteProfile);
+router.put(
+  "/updateProfile/:id",
+  (req, res, next) => {
+    upload.fields([
+      { name: "societyShareCertificate", maxCount: 1 },
+      { name: "photo", maxCount: 1 },
+
+      // Add more objects for additional files if needed
+    ])(req, res, function (err) {
+      if (err instanceof multer.MulterError) {
+        // A Multer error occurred (e.g., file size limit exceeded)
+        return res.status(400).json({ message: "Upload failed", error: err });
+      } else if (err) {
+        // An unknown error occurred
+        console.log(err);
+        return res
+          .status(500)
+          .json({ message: "Internal Server Errors", error: err });
+      }
+      // Files uploaded successfully
+      next();
+    });
+  },
+  updateProfile
+);
 export default router;
