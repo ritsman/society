@@ -52,7 +52,7 @@ const LoginPage = () => {
       password,
     });
     try {
-      let response = await axios.post("http://localhost:3001/api/auth/login", {
+      let response = await axios.post("https://a3.arya-erp.in/api2/socapi/api/auth/login", {
         user: email,
         password,
       });
