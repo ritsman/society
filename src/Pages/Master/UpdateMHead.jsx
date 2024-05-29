@@ -61,13 +61,13 @@ const UpdateMHead = () => {
 
     try {
       let result = await axios.put(
-        `http://localhost:3001/api/master/updateHead/6655e0654b80ded7298e0070`,
-        [{ Header: headers, Under: selectedValue }]
+        `https://a3.arya-erp.in/api2/socapi/api/master/updateHead/${row._id}`,
+        { Header: headers, Under: selectedValue }
       );
       console.log(result);
 
       if (result.status == 200) {
-        toast.success("Added Successfully");
+        toast.success("Updated Successfully");
       } else {
         toast.error("Error");
         return null;
