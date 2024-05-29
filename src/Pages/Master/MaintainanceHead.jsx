@@ -11,7 +11,7 @@ const MaintenanceHead = () => {
 
   const [mmData, setMMData] = useState([]);
   useEffect(() => {
-    fetch("http://localhost:3001/api/master/getHead")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
       .then((response) => response.json())
       .then((data) => setMMData(data));
   }, []);
