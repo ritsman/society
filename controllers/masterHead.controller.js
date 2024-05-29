@@ -35,10 +35,9 @@ export const getHead = async (req, res) => {
 };
 
 export const updateHead = async (req, res) => {
-  console.log("reached inside updateHead controller", req.body);
-
   try {
-    const groupId = req.params.id;
+    const groupId = req.params.groupId;
+    console.log("reached inside updateHead controllerssss", req.body, groupId);
     const updateData = {
       Header: req.body.Header,
       Under: req.body.Under,
@@ -67,7 +66,7 @@ export const deleteHead = async (req, res) => {
   console.log("reached inside deleteHead controller", req.params);
 
   try {
-    const groupId = req.params.id; // Get the group ID from the request parameters
+    const groupId = req.params.groupId; // Get the group ID from the request parameters
 
     // Check if the provided ID is a valid MongoDB ObjectId
     if (!groupId) {

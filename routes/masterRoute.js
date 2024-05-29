@@ -19,8 +19,8 @@ import {
 
 router.post("/masterHead", postMHead);
 router.get("/getHead", getHead);
-router.put("/updateHead/:id", updateHead);
-router.delete("/deleteHead/:id", deleteHead);
+router.put("/updateHead/:groupId", updateHead);
+router.delete("/deleteHead/:groupId", deleteHead);
 
 router.post("/postLedger", postLedger);
 router.get("/getLedger", getLedger);

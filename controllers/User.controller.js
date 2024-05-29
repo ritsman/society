@@ -16,7 +16,7 @@ export const login = async (req, res) => {
   try {
     const { user, password } = req.body;
     let role = "";
-    if (user == "karan@gmail.com") {
+    if (user == "admin@gmail.com") {
       role = "admin";
     } else {
       role = "user";
