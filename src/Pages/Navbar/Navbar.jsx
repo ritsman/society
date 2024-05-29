@@ -1,7 +1,42 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
+  const [user, setUser] = useState("");
+  const { userDetails, setUserDetails, setIsAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let tkn = localStorage.getItem("SocToken");
+    let token = parseJwt(tkn);
+    console.log(token);
+    let userName = localStorage.getItem("SocUser");
+    setUser(userName);
+    setUserDetails(token);
+  }, [user]);
+
+  const parseJwt = (token) => {
+    try {
+      return JSON.parse(atob(token.split(".")[1]));
+    } catch (error) {
+      return {};
+    }
+  };
+
+  function handleLogout(e) {
+    e.preventDefault();
+    console.log("logout button clicked");
+    setUserDetails({});
+    setIsAuthenticated(false);
+    localStorage.removeItem("SocToken");
+    localStorage.removeItem("SocToken");
+    // toast.success("User Logged Out");
+    navigate("/");
+  }
+
   const navItems = [
     { name: "Dashboard", path: "/" },
     { name: "Society", path: "/society" },
@@ -41,6 +76,15 @@ const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
                   </p>
                 </NavLink>
               ))}
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-white text-xl">{user}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-md text-white text-md"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>

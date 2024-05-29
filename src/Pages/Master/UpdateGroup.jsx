@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const NewGroup = () => {
+const UpdateGroup = () => {
   const options = [
     "Bank Accounts",
     "Current Assets",
@@ -32,7 +33,15 @@ const NewGroup = () => {
     "Loans (Liability)",
   ];
 
-  const [groupName, setGroupName] = useState("");
+  const location = useLocation();
+  const { row } = location.state || {};
+  const navigate = useNavigate();
+
+  const [groupName, setGroupName] = useState(row.GroupName);
+
+  useEffect(() => {
+    console.log(row);
+  }, [row]);
 
   const handleChange = (e) => {
     setGroupName(e.target.value);
@@ -47,11 +56,12 @@ const NewGroup = () => {
     e.preventDefault();
     console.log({ groupName: groupName, under: selectedValue });
     try {
-      let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postGroup",
+      let result = await axios.put(
+        `https://a3.arya-erp.in/api2/socapi/api/master/updateGroup/${row._id}`,
         { groupName: groupName, under: selectedValue }
       );
       console.log(result);
+      navigate("/master/groups");
     } catch (error) {
       console.log(error);
     }
@@ -63,7 +73,7 @@ const NewGroup = () => {
         className="pt-10   overflow-y-auto  gap-6"
         style={{ height: "calc(100vh - 150px)" }}
       >
-        <h1 className="text-center text-2xl mb-5">ADD GROUP</h1>
+        <h1 className="text-center text-2xl mb-5">UPDATE GROUP</h1>
 
         <form
           onSubmit={handleSubmit}
@@ -109,4 +119,4 @@ const NewGroup = () => {
   );
 };
 
-export default NewGroup;
+export default UpdateGroup;

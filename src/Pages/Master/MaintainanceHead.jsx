@@ -6,7 +6,7 @@ const MaintenanceHead = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/master/groups/newgroup");
+    navigate("/master/maintenance-head/new-maintenanceHead");
   };
 
   const [mmData, setMMData] = useState([]);
@@ -42,10 +42,11 @@ const MaintenanceHead = () => {
     setChkStat2(c);
   };
 
-  const show_record = (id) => {
-    console.log(`id:${id}`);
+  const show_record = (row) => {
+    const { _id } = row;
+    console.log(`id:${_id}`);
 
-    navigate(`${id}`);
+    navigate(`${_id}`, { state: { row } });
   };
 
   return (
@@ -77,8 +78,8 @@ const MaintenanceHead = () => {
             {mmData.map((row, index) => (
               <tr
                 key={index}
-                onClick={() => show_record(row._id)}
-                className="hover:bg-gray-200"
+                onClick={() => show_record(row)}
+                className="hover:bg-gray-200 cursor-pointer"
               >
                 <td className="p-4">
                   <input

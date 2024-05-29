@@ -6,6 +6,8 @@ import { ToastContainer } from "react-toastify";
 import "./App.css";
 import Sidebar from "./Pages/SideBar/SideBar.jsx";
 import Breadcrumbs from "./components/BreadCrumps.jsx";
+import { useAuth } from "./hooks/useAuth.js";
+import LoginPage, { getCurrentUser } from "./Pages/Authentication/Login/Login";
 
 function App() {
   const [activeItem, setActiveItem] = useState("dashboard");
@@ -22,11 +24,16 @@ function App() {
   let paths = [
     { title: "Home", link: "/" },
     { title: "Master", link: "/master" },
+    { title: "Maintenance Head", link: "/master/maintenance-head" },
+
     { title: "Ledger", link: "/master/ledger" },
     { title: "Groups", link: "/master/groups" },
+    { title: "New Group", link: "/master/groups/newgroup" },
+    { title: "Update Group", link: "/master/groups/updateGroup" },
     { title: "Master", link: "/master" },
     { title: "Member", link: "/member" },
     { title: "newLedger", link: "/master/ledger/newledger" },
+    { title: "Update Ledger", link: "/master/ledger/updateLedger" },
     { title: "Society", link: "/society" },
     { title: "Bills", link: "/society/bills" },
     { title: "Profile", link: "/member/profile" },
@@ -71,3 +78,10 @@ function App() {
 }
 
 export default App;
+
+export const Logged = () => {
+  const { isAuthenticated } = useAuth();
+  let logged = getCurrentUser();
+
+  return <>{logged ? <App /> : <LoginPage />}</>;
+};

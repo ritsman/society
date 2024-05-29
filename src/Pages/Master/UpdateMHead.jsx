@@ -5,8 +5,9 @@ import UploadedData from "../../components/UploadedData";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import { useLocation } from "react-router-dom";
 
-const NewMaintenanceHead = () => {
+const UpdateMHead = () => {
   const options = [
     "Bank Accounts",
     "Current Assets",
@@ -36,7 +37,14 @@ const NewMaintenanceHead = () => {
     "Loans (Liability)",
   ];
 
-  const [headers, setHeaders] = useState("");
+  const location = useLocation();
+  const { row } = location.state || {};
+
+  const [headers, setHeaders] = useState(row.Header);
+
+  useEffect(() => {
+    console.log(row);
+  }, [row]);
 
   const handleChange = (e) => {
     setHeaders(e.target.value);
@@ -52,11 +60,12 @@ const NewMaintenanceHead = () => {
     // console.log({ headers: headers, under: selectedValue });
 
     try {
-      let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/masterHead",
+      let result = await axios.put(
+        `http://localhost:3001/api/master/updateHead/6655e0654b80ded7298e0070`,
         [{ Header: headers, Under: selectedValue }]
       );
       console.log(result);
+
       if (result.status == 200) {
         toast.success("Added Successfully");
       } else {
@@ -182,7 +191,7 @@ const NewMaintenanceHead = () => {
         className="pt-10   overflow-y-auto  gap-6"
         style={{ height: "calc(100vh - 150px)" }}
       >
-        <h1 className="text-center text-2xl mb-5">ADD MAINTENANCE HEAD</h1>
+        <h1 className="text-center text-2xl mb-5">Update MAINTENANCE HEAD</h1>
 
         <div className=" flex justify-end mr-10">
           <button
@@ -279,4 +288,4 @@ const NewMaintenanceHead = () => {
   );
 };
 
-export default NewMaintenanceHead;
+export default UpdateMHead;

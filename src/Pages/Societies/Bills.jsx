@@ -29,7 +29,7 @@ const Bills = () => {
   useEffect(() => {
     async function fetch() {
       const response = await axios.get(
-        "https://a2.arya-erp.in/api2/socapi/api/society/getBillNo"
+        "https://a3.arya-erp.in/api2/socapi/api/society/getBillNo"
       );
       console.log(response.data);
       setBillNo(response.data);
@@ -40,7 +40,7 @@ const Bills = () => {
   const [heads, setHeads] = useState();
 
   useEffect(() => {
-    fetch("https://a2.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
       .then((response) => response.json())
       .then((data) => setHeads(data))
       .catch((error) => console.error("Error fetching data:", error));

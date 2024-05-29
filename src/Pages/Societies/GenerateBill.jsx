@@ -49,23 +49,30 @@ const GenerateBill = () => {
   };
 
   useEffect(() => {
-    fetch("http://103.235.106.18:3001/api/member/getMemberList")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
       .then((data) => setMembers(data));
   }, []);
-  // console.log(members);
+  console.log(members);
 
-  const [heads, setHeads] = useState();
+  const [heads, setHeads] = useState([]);
 
   useEffect(() => {
-    fetch("https://a2.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
       .then((response) => response.json())
       .then((data) => setHeads(data))
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  // console.log(heads);
-  const options = heads;
+  console.log(heads);
+  const [options, setOptions] = useState([]);
+  useEffect(() => {
+    setOptions(heads.map((item) => item.Header));
+  }, [heads]);
+
+  useEffect(() => {
+    console.log(options);
+  }, [options]);
 
   const [selectedValue, setSelectedValue] = useState([]);
 
@@ -310,13 +317,13 @@ const GenerateBill = () => {
                     </td>
 
                     <td className="p-4 text-center">
-                      {row.data.firstName}
-                      {row.data.lastName}
+                      {row.firstName}
+                      {row.lastName}
                     </td>
                     {appliedRows.map((head, index) => (
                       <td className="p-4 text-center">{head.amount}</td>
                     ))}
-                    <td className="p-4 text-center">{row.data.arrears}</td>
+                    <td className="p-4 text-center">{row.arrears}</td>
                     <td className="p-4 text-center">
                       {/* {row.data.arrears * dayDifference * rate} */}
                     </td>

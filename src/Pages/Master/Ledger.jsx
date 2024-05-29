@@ -51,15 +51,16 @@ const Ledger = () => {
     setChkStat2(c);
   };
 
-  const show_record = (id) => {
-    console.log(`id:${id}`);
+  const show_record = (row) => {
+    const { _id } = row;
+    console.log(`id:${_id}`);
 
-    navigate(`${id}`);
+    navigate(`${_id}`, { state: { row } });
   };
 
   return (
     <div
-      className="md:py-10 ml-36 overflow-y-auto gap-6"
+      className="md:py-10 px-10 overflow-y-auto gap-6"
       style={{ height: "calc(100vh - 150px)" }}
     >
       <button
@@ -68,7 +69,7 @@ const Ledger = () => {
       >
         Add New
       </button>
-      <div className="max-w-max overflow-x-auto shadow-lg ml-4 mt-6 rounded-lg ">
+      <div className="w-screen overflow-x-auto shadow-lg  mt-6 rounded-lg  ">
         <table className="rounded-md">
           <thead className="bg-gray-700 text-slate-200">
             <tr>
@@ -86,8 +87,8 @@ const Ledger = () => {
             {ledgerData.map((row, index) => (
               <tr
                 key={index}
-                onClick={() => show_record(row._id)}
-                className="hover:bg-gray-200"
+                onClick={() => show_record(row)}
+                className="hover:bg-gray-200 cursor-pointer"
               >
                 <td className="p-4">
                   <input

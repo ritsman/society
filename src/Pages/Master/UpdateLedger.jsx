@@ -1,23 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const NewLedger = () => {
+const UpdateLedger = () => {
+  const location = useLocation();
+  const { row } = location.state || {};
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    companyName: "",
-    name: "",
-    email: "",
-    address: "",
-    city: "",
-    mobile: "",
-    acc_no: "",
-    ifsc: "",
-    state: "",
-    pan: "",
-    pin: "",
-    bank: "",
-    role: "",
+    companyName: row.data.companyName,
+    name: row.data.name,
+    email: row.data.email,
+    address: row.data.address,
+    city: row.data.city,
+    mobile: row.data.mobile,
+    acc_no: row.data.acc_no,
+    ifsc: row.data.ifsc,
+    state: row.data.state,
+    pan: row.data.pan,
+    pin: row.data.pin,
+    bank: row.data.bank,
+    role: row.data.role,
+    gst: row.data.gst,
   });
+
+  useEffect(() => {
+    console.log("row", row);
+  }, [row]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,11 +42,12 @@ const NewLedger = () => {
     console.log({ ...formData, under: selectedValue });
 
     try {
-      let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postLedger",
+      let result = await axios.put(
+        `https://a3.arya-erp.in/api2/socapi/api/master/updateLedger/${row._id}`,
         { ...formData, under: selectedValue }
       );
       console.log(result);
+      navigate("/master/ledger");
     } catch (error) {
       console.log(error);
     }
@@ -77,7 +87,7 @@ const NewLedger = () => {
       className="py-10  overflow-y-auto  gap-6"
       style={{ height: "calc(100vh - 150px)" }}
     >
-      <h1 className="text-center text-2xl mb-5">New Ledger</h1>
+      <h1 className="text-center text-2xl mb-5">update Ledger</h1>
 
       <form
         onSubmit={handleSubmit}
@@ -312,4 +322,4 @@ const NewLedger = () => {
   );
 };
 
-export default NewLedger;
+export default UpdateLedger;

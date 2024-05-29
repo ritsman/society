@@ -22,11 +22,33 @@ import LedgerView from "./Pages/Master/LedgerView";
 import GroupView from "./Pages/Master/GroupView";
 import NewGroup from "./Pages/Master/NewGroup";
 import GenerateBill from "./Pages/Societies/GenerateBill";
+import UpdateLedger from "./Pages/Master/UpdateLedger";
+import UpdateGroup from "./Pages/Master/UpdateGroup";
+import NewMaintenanceHead from "./Pages/Master/NewMaitenanceHead";
+import ViewMaintenanceHead from "./Pages/Master/ViewMaintenanceHead";
+import UpdateMHead from "./Pages/Master/UpdateMHead";
+import SignUp from "./Pages/Authentication/SignUp/SignUp";
+import ForgotPassword from "./Pages/Authentication/ForgotPassword";
+import ResetPassword from "./Pages/Authentication/ResetPassword";
+import { Logged } from "./App";
+import MasterOutlet from "./Pages/Master/MasterOutlet";
 
 const router = createBrowserRouter([
   {
+    path: "/signup",
+    element: <SignUp />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
+  },
+  {
     path: "/",
-    element: <App />,
+    element: <Logged />,
     children: [
       {
         path: "society",
@@ -51,36 +73,63 @@ const router = createBrowserRouter([
 
       {
         path: "/master",
-        element: <Master />,
+        element: <MasterOutlet />,
+        children: [
+          {
+            index: true,
+            element: <Master />,
+          },
+          {
+            path: "ledger/:ledgerId",
+            element: <LedgerView />,
+          },
+          {
+            path: "ledger",
+            element: <Ledger />,
+          },
+          {
+            path: "ledger/newledger",
+            element: <NewLedger />,
+          },
+          {
+            path: "ledger/updateLedger",
+            element: <UpdateLedger />,
+          },
+          {
+            path: "groups",
+            element: <Group />,
+          },
+          {
+            path: "groups/:groupId",
+            element: <GroupView />,
+          },
+          {
+            path: "groups/newgroup",
+            element: <NewGroup />,
+          },
+          {
+            path: "groups/updateGroup",
+            element: <UpdateGroup />,
+          },
+          {
+            path: "maintenance-head",
+            element: <MaintainanceHead />,
+          },
+          {
+            path: "maintenance-head/:headId",
+            element: <ViewMaintenanceHead />,
+          },
+          {
+            path: "maintenance-head/updateMHead",
+            element: <UpdateMHead />,
+          },
+          {
+            path: "maintenance-head/new-maintenanceHead",
+            element: <NewMaintenanceHead />,
+          },
+        ],
       },
-      {
-        path: "master/ledger/:ledgerId",
-        element: <LedgerView />,
-      },
-      {
-        path: "/master/ledger",
-        element: <Ledger />,
-      },
-      {
-        path: "master/ledger/newledger",
-        element: <NewLedger />,
-      },
-      {
-        path: "master/groups",
-        element: <Group />,
-      },
-      {
-        path: "master/groups/:groupId",
-        element: <GroupView />,
-      },
-      {
-        path: "master/groups/newgroup",
-        element: <NewGroup />,
-      },
-      {
-        path: "master/maintenance-head",
-        element: <MaintainanceHead />,
-      },
+
       {
         path: "society/bills",
         element: <GenerateBill />,

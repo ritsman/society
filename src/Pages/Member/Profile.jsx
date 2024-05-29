@@ -43,7 +43,7 @@ const Profile = () => {
     // console.log(formData);
     try {
       let result = await axios.post(
-        "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
+        "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
         formData,
         {
           headers: {

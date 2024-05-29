@@ -3,6 +3,34 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 const header = ["Group", "Under"];
 const Group = () => {
+  const options = [
+    "Bank Accounts",
+    "Current Assets",
+    "Bank OD A/c",
+    "Loans (Liability)",
+    "Cash-in-hand",
+    "Current Assets",
+    "Deposits (Asset)",
+    "Current Assets",
+    "Duties & Taxes",
+    "Current Liabilities",
+    "Loans & Advances (Asset)",
+    "Current Assets",
+    "Provisions",
+    "Current Liabilities",
+    " Reserves & Surplus",
+    "Capital Account",
+    "Secured Loans",
+    "Loans (Liability)",
+    "Stock-in-hand",
+    "Current Assets",
+    "Sundry Creditors",
+    "Current Liabilities",
+    "Sundry Debtors",
+    "Current Assets",
+    "Unsecured Loans",
+    "Loans (Liability)",
+  ];
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -11,7 +39,7 @@ const Group = () => {
 
   const [groupData, setGroupData] = useState([]);
   useEffect(() => {
-    fetch(" https://a2.arya-erp.in/api2/socapi/api/master/getGroupsList")
+    fetch(" https://a3.arya-erp.in/api2/socapi/api/master/getgroup")
       .then((response) => response.json())
       .then((data) => setGroupData(data));
   }, []);
@@ -42,15 +70,16 @@ const Group = () => {
     setChkStat2(c);
   };
 
-  const show_record = (id) => {
-    console.log(`id:${id}`);
+  const show_record = (row) => {
+    const { _id } = row;
+    console.log(`id:${_id}`);
 
-    navigate(`${id}`);
+    navigate(`${_id}`, { state: { row } });
   };
 
   return (
     <div
-      className="md:py-10 ml-36 overflow-y-auto gap-6"
+      className="md:py-10 px-24 overflow-y-auto gap-6"
       style={{ height: "calc(100vh - 150px)" }}
     >
       <button
@@ -74,11 +103,25 @@ const Group = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-300">
+            {options.map((row, index) => (
+              <tr key={index} className="hover:bg-gray-200">
+                <td className="p-4">
+                  <input
+                    type="checkbox"
+                    checked={chkstat2[row._id]}
+                    onChange={(event) => setTick(row, event)}
+                    name={row._id}
+                  />
+                </td>
+                <td className="p-4">{row}</td>
+                <td className="p-4">Primary</td>
+              </tr>
+            ))}
             {groupData.map((row, index) => (
               <tr
                 key={index}
-                onClick={() => show_record(row._id)}
-                className="hover:bg-gray-200"
+                onClick={() => show_record(row)}
+                className="hover:bg-gray-200 cursor-pointer"
               >
                 <td className="p-4">
                   <input
@@ -88,8 +131,8 @@ const Group = () => {
                     name={row._id}
                   />
                 </td>
-                <td className="p-4">{row.group}</td>
-                <td className="p-4">{row.under}</td>
+                <td className="p-4">{row.GroupName}</td>
+                <td className="p-4">{row.Under}</td>
               </tr>
             ))}
           </tbody>

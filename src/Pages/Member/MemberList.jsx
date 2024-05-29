@@ -93,7 +93,7 @@ const MemberList = () => {
       e.preventDefault();
       try {
         let result = await axios.post(
-          "https://a2.arya-erp.in/api2/socapi/api/member/postProfile",
+          "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
 
           excelData
         );
@@ -108,7 +108,7 @@ const MemberList = () => {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch("https://a2.arya-erp.in/api2/socapi/api/member/getMemberList")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error(error));
@@ -266,21 +266,21 @@ const MemberList = () => {
                         />
                       </td>
                       <td className="p-4">
-                        {item.data.firstName}
-                        {item.data.lastName}
+                        {item.firstName}
+                        {item.lastName}
                       </td>
                       <td className="p-4 text-center">
-                        {item.data.registeredMobileNo}
+                        {item.registeredMobileNo}
                       </td>
                       <td className="p-4 text-center">
-                        {item.data.permanentAddress}
+                        {item.permanentAddress}
                       </td>
-                      <td className="p-4 text-center">{item.data.flatNo}</td>
-                      <td className="p-4 text-center">{item.data.wingNo}</td>
+                      <td className="p-4 text-center">{item.flatNo}</td>
+                      <td className="p-4 text-center">{item.wingNo}</td>
                       <td className="p-4 text-center">
-                        {item.data.societyNocStatus}
+                        {item.societyNocStatus}
                       </td>
-                      <td className="p-4 text-center">{item.data.occupancy}</td>
+                      <td className="p-4 text-center">{item.occupancy}</td>
                     </tr>
                   ))}
                 </tbody>

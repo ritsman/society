@@ -121,7 +121,7 @@ const ViewBills = () => {
   const [headers, setHeaders] = useState([]);
 
   useEffect(() => {
-    fetch("https://a2.arya-erp.in/api2/socapi/api/society/getBills")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
       .then((response) => response.json())
       .then((data) => {
         setData(data);
