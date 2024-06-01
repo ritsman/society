@@ -6,6 +6,8 @@ import {
   faCheck,
 } from "@fortawesome/free-solid-svg-icons";
 import AutoComplete from "../../components/Autocomplete";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const headers = [
   { key: "wing No", name: "Wing No" },
@@ -20,6 +22,7 @@ const GenerateBill = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(gridRow);
   const [heads, setHeads] = useState([]);
+  const [billData, setBillData] = useState([]);
 
   useEffect(() => {
     setFilteredData(gridRow);
@@ -30,13 +33,16 @@ const GenerateBill = () => {
   }, [filteredData, searchTerm]);
 
   const handleSearch = (event) => {
-    const trimmedSearchTerm = event.target.value.trim();
+    const trimmedSearchTerm = event.target.value.trim().toLowerCase();
     setSearchTerm(trimmedSearchTerm);
 
     if (trimmedSearchTerm) {
       setFilteredData(
-        gridRow.filter((row) =>
-          row.ownerName.toLowerCase().includes(trimmedSearchTerm.toLowerCase())
+        gridRow.filter(
+          (row) =>
+            row.ownerName.toLowerCase().includes(trimmedSearchTerm) ||
+            row.flatNo.toString().includes(trimmedSearchTerm) ||
+            row.wingNo.toLowerCase().includes(trimmedSearchTerm)
         )
       );
     } else {
@@ -90,20 +96,29 @@ const GenerateBill = () => {
         setMembers(data);
         let arr = [];
         data.forEach((item, index) => {
+          let billObj = [];
+          console.log("billData", billData);
+
+          billObj = billData.filter(
+            (row) =>
+              row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
+          );
+
+          console.log(billObj, "billObj");
           let obj = {
             id: index,
             wingNo: item.wingNo,
             flatNo: item.flatNo,
             ownerName: `${item.firstName} ${item.lastName}`,
-            head: heads,
-            total: "0",
+            head: billObj.length > 0 ? billObj[0].data.head : heads,
+            total: billObj.length > 0 ? billObj[0].data.total : 0,
           };
           arr.push(obj);
         });
         setGridRow([...arr]);
         setFilteredData([...arr]);
       });
-  }, [heads]);
+  }, [heads, billData]);
 
   useEffect(() => {
     fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
@@ -119,6 +134,16 @@ const GenerateBill = () => {
           arr.push(obj);
         });
         setHeads(arr);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+
+    // fetch bills table data
+
+    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        setBillData(data);
       })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
@@ -199,30 +224,61 @@ const GenerateBill = () => {
     setIsClicked({ ...isClicked, [index]: true });
   };
 
-  const handleChange = (id, field, value) => {
-    setFilteredData(
-      filteredData.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
-    );
-  };
   const handleChange2 = (id, headIndex, field, value) => {
     setFilteredData(
-      filteredData.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              head: item.head.map((headItem, index) =>
-                index === headIndex ? { ...headItem, value: value } : headItem
-              ),
+      filteredData.map((item) => {
+        if (item.id === id) {
+          const updatedHead = item.head.map((headItem, index) => {
+            if (index === headIndex) {
+              return { ...headItem, value: value };
+            } else {
+              return headItem;
             }
-          : item
-      )
+          });
+          const total = calculateTotal({ ...item, head: updatedHead });
+          return { ...item, head: updatedHead, total: total };
+        } else {
+          return item;
+        }
+      })
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log(filteredData);
+    try {
+      let res = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
+        filteredData
+      );
+      console.log(res);
+      toast.success("Data Successfully Saved");
+    } catch (error) {
+      console.log(error);
+      toast.error("error in saving data");
+    }
+  };
+
+  // useEffect(() => {
+  //   setFilteredData(
+  //     filteredData.map((item) => {
+  //       return {
+  //         ...item,
+  //         total: calculateTotal(item),
+  //       };
+  //     })
+  //   );
+  // }, [filteredData]);
+
+  const calculateTotal = (row) => {
+    console.log(row);
+    if (row && row.head && Array.isArray(row.head)) {
+      let total = row.head.reduce(
+        (acc, curr) => acc + parseInt(curr.value || 0),
+        0
+      );
+      return total;
+    }
   };
 
   return (
@@ -404,7 +460,7 @@ const GenerateBill = () => {
                     {filteredData.length > 0 ? (
                       filteredData.map((item) => (
                         <tr key={item.id} className="text-center">
-                          <td className="p-4 sticky z-10 left-0 bg-white">
+                          <td className="p-4 sticky border-2 z-10 left-0 bg-white">
                             <input
                               type="checkbox"
                               checked={chkstat2[item.id]}
@@ -413,45 +469,37 @@ const GenerateBill = () => {
                               className="text-center"
                             />
                           </td>
-                          <td className="px-4 py-2  sticky z-10 left-10 bg-white">
+                          <td className="px-4 py-2 border-2 sticky z-10 left-10 bg-white">
                             {item.wingNo}
                           </td>
-                          <td className="px-4 py-2  sticky z-10 left-10 bg-white">
+                          <td className="px-4 py-2 border-2  sticky z-10 left-10 bg-white">
                             {item.flatNo}
                           </td>
-                          <td className="px-4 py-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
+                          <td className="px-4 py-2 border-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
                             {item.ownerName}
                           </td>
-                          {item.head.map((item2, index) => (
-                            <td
-                              key={index}
-                              className="w-48 whitespace-nowrap overflow-hidden text-ellipsis"
-                            >
-                              <input
-                                type="text"
-                                value={item2.value}
-                                onChange={(e) =>
-                                  handleChange2(
-                                    item.id,
-                                    index,
-                                    item2.head,
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-4 py-2 text-center"
-                              />
-                            </td>
-                          ))}
-                          <td className="px-4 py-2 ">
-                            <input
-                              type="text"
-                              value={item.total}
-                              onChange={(e) =>
-                                handleChange(item.id, "total", e.target.value)
-                              }
-                              className="w-full px-2 py-1 text-center"
-                            />
-                          </td>
+                          {item.head &&
+                            item.head.map((item2, index) => (
+                              <td
+                                key={index}
+                                className="w-48 whitespace-nowrap border-2 overflow-hidden text-ellipsis"
+                              >
+                                <input
+                                  type="text"
+                                  value={item2.value}
+                                  onChange={(e) =>
+                                    handleChange2(
+                                      item.id,
+                                      index,
+                                      item2.head,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full px-4 py-2 text-center"
+                                />
+                              </td>
+                            ))}
+                          <td className="px-4 py-2 border-2">{item.total}</td>
                         </tr>
                       ))
                     ) : (

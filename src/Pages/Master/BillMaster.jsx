@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const BillMaster = () => {
   const [formData, setFormData] = useState({
@@ -30,12 +31,14 @@ const BillMaster = () => {
     console.log(formData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/master/postBillMaster",
+        "https://a3.arya-erp.in/api2/socapi/api/master/postBillMaster",
         formData
       );
+      toast.success("successfully data saved");
       console.log(res);
     } catch (error) {
       console.log(error);
+      toast.error("error in storing data ");
     }
   };
 

@@ -1,5 +1,7 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const header = [
   "GL Code",
@@ -30,6 +32,7 @@ const MaintenanceHead = () => {
             billHead: item.Header,
             under: item.Under,
             sequenceNo: index + 1,
+            interestApplied: false,
             cgst: "0",
             sgst: "0",
             igst: "0",
@@ -72,8 +75,19 @@ const MaintenanceHead = () => {
     setMMData(updatedData);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log(mmData);
+    try {
+      let res = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/master/postBillHeads",
+        mmData
+      );
+      console.log(res);
+      toast.success("successfully data saved");
+    } catch (error) {
+      console.log(error);
+      toast.error("error in storing data");
+    }
   };
 
   return (
@@ -142,7 +156,20 @@ const MaintenanceHead = () => {
                   />
                 </td>
                 <td className="px-4 text-center px-2 border">
-                  <input type="checkbox" name={row._id} className="mx-10" />
+                  <input
+                    type="checkbox"
+                    id="isFlatInterest"
+                    name="isFlatInterest"
+                    checked={row.interestApplied}
+                    className="mr-2"
+                    onChange={(e) =>
+                      handleInputChange(
+                        index,
+                        "interestApplied",
+                        e.target.checked
+                      )
+                    }
+                  />
                 </td>
                 <td className="px-4 text-center border">
                   <input
