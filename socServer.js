@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { json, urlencoded } from "express"; // Import json and urlencoded directly
 import router from "./routes/index.js";
+import { pool } from "./mysql/mysql.js";
 
 import db from "./mongodb/config.js";
 

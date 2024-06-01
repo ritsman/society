@@ -36,10 +36,7 @@ export const login = async (req, res) => {
             name: users.name,
             user: users.user,
           },
-          jwtSecret,
-          {
-            expiresIn: "1h",
-          }
+          jwtSecret
         );
         res.send(token);
       }

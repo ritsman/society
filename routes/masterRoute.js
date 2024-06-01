@@ -16,6 +16,13 @@ import {
   updateHead,
   deleteHead,
 } from "../controllers/masterHead.controller.js";
+import {
+  getBillMaster,
+  postBillMaster,
+} from "../controllers/billsMaster.controller.js";
+import { postBillHeads } from "../controllers/BillHeads.controller.js";
+
+router.post("/postBillHeads", postBillHeads);
 
 router.post("/masterHead", postMHead);
 router.get("/getHead", getHead);
@@ -32,5 +39,8 @@ router.get("/getGroupsList", getGroupsList);
 router.get("/getgroup", getGroups);
 router.put("/updateGroup/:id", updateGroup);
 router.delete("/deleteGroup/:id", deleteGroup);
+
+router.post("/postBillMaster", postBillMaster);
+router.get("/getBillMaster", getBillMaster);
 
 export default router;

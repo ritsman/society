@@ -9,12 +9,27 @@ export const postMHead = async (req, res) => {
   console.log("reached inside master head", req.body);
 
   try {
-    req.body.map((item) => {
-      const result = new MasterHead({
+    req.body.map(async (item) => {
+      const { Header } = item;
+
+      const update = {
         Header: item.Header,
         Under: item.Under,
-      });
-      result.save();
+      };
+
+      try {
+        await MasterHead.findOneAndUpdate({ Header }, update, {
+          upsert: true,
+          new: true,
+        });
+      } catch (error) {
+        console.error("Error updating or creating Maintenance Head:", error);
+      }
+      // const result = new MasterHead({
+      //   Header: item.Header,
+      //   Under: item.Under,
+      // });
+      // result.save();
     });
 
     res.send("successfully sent to database");
@@ -167,18 +182,32 @@ export const postGroup = async (req, res) => {
   console.log("reached inside postGroup controller", req.body);
 
   try {
-    let result = new groups({
-      GroupName: req.body.groupName,
-      Under: req.body.under,
-    });
-    result.save();
-    let result2 = new groupList({
-      group: req.body.groupName,
-    });
-    result2.save();
-    res.send("data sent successfully");
+    let existing = await groups.findOne({ GroupName: req.body.groupName });
+
+    if (!existing) {
+      console.log("not found");
+      let result = new groups({
+        GroupName: req.body.groupName,
+        Under: req.body.under,
+      });
+      await result.save();
+    } else {
+      console.log(" found");
+
+      existing.Under = req.body.under;
+      await existing.save(); // Save the changes to the existing document
+    }
+
+    // Ensuring groupList is updated or created
+    // await groupList.findOneAndUpdate(
+    //   { group: req.body.groupName },
+    //   { group: req.body.groupName },
+    //   { new: true, upsert: true }
+    // );
+
+    res.send("Data sent successfully");
   } catch (error) {
-    res.send(error);
+    res.status(500).send(error); // Return appropriate error status
     console.log(error);
   }
 };
