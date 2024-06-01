@@ -1,20 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCirclePlus,
+  faCircleXmark,
+  faCheck,
+} from "@fortawesome/free-solid-svg-icons";
 import AutoComplete from "../../components/Autocomplete";
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
 
-const headers = ["Arrears", "Interest", "Total"];
+const headers = [
+  { key: "wing No", name: "Wing No" },
+  { key: "ownerName", name: "OwnerName" },
+];
+
 const GenerateBill = () => {
   const [row_id, setRow_id] = useState(1);
   const [rows, setRows] = useState([{ id: 0 }]);
   const [members, setMembers] = useState([]);
+  const [gridRow, setGridRow] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredData, setFilteredData] = useState(gridRow);
+  const [heads, setHeads] = useState([]);
+
+  useEffect(() => {
+    setFilteredData(gridRow);
+  }, []);
+
+  useEffect(() => {
+    console.log(filteredData);
+  }, [filteredData, searchTerm]);
+
+  const handleSearch = (event) => {
+    const trimmedSearchTerm = event.target.value.trim();
+    setSearchTerm(trimmedSearchTerm);
+
+    if (trimmedSearchTerm) {
+      setFilteredData(
+        gridRow.filter((row) =>
+          row.ownerName.toLowerCase().includes(trimmedSearchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredData(gridRow);
+    }
+  };
+
   const handleAddRow = (e) => {
     setRow_id(row_id + 1);
     setRows([...rows, { id: rows.length }]);
     e.preventDefault();
   };
-  const [interestRates, setInterestRates] = useState({});
 
   const handleDelRow = (e, ind) => {
     const updated_rows = [...rows];
@@ -22,12 +56,13 @@ const GenerateBill = () => {
     setRows(updated_rows);
     e.preventDefault();
   };
+
   const [chkstat2, setChkStat2] = useState({});
 
   useEffect(() => {
     const chkstat = {};
-    members?.forEach((val) => {
-      chkstat[val._id] = false;
+    filteredData?.forEach((val) => {
+      chkstat[val.id] = false;
     });
     setChkStat2(chkstat);
   }, [members]);
@@ -41,7 +76,7 @@ const GenerateBill = () => {
   };
 
   const setTick = (contact, event) => {
-    chkstat2[contact._id] = event.target.checked;
+    chkstat2[contact.id] = event.target.checked;
     const c = {
       ...chkstat2,
     };
@@ -51,28 +86,47 @@ const GenerateBill = () => {
   useEffect(() => {
     fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
-      .then((data) => setMembers(data));
-  }, []);
-  console.log(members);
-
-  const [heads, setHeads] = useState([]);
+      .then((data) => {
+        setMembers(data);
+        let arr = [];
+        data.forEach((item, index) => {
+          let obj = {
+            id: index,
+            wingNo: item.wingNo,
+            flatNo: item.flatNo,
+            ownerName: `${item.firstName} ${item.lastName}`,
+            head: heads,
+            total: "0",
+          };
+          arr.push(obj);
+        });
+        setGridRow([...arr]);
+        setFilteredData([...arr]);
+      });
+  }, [heads]);
 
   useEffect(() => {
     fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
       .then((response) => response.json())
-      .then((data) => setHeads(data))
+      .then((data) => {
+        let arr = [];
+        data.forEach((item, index) => {
+          let obj = {
+            id: index,
+            head: item.Header,
+            value: "0",
+          };
+          arr.push(obj);
+        });
+        setHeads(arr);
+      })
       .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
-  console.log(heads);
   const [options, setOptions] = useState([]);
   useEffect(() => {
     setOptions(heads.map((item) => item.Header));
   }, [heads]);
-
-  useEffect(() => {
-    console.log(options);
-  }, [options]);
 
   const [selectedValue, setSelectedValue] = useState([]);
 
@@ -111,11 +165,12 @@ const GenerateBill = () => {
       setDayDifference("");
     }
   };
-  const [head, setHead] = useState([]); // State to store heads
+
   const [isClicked, setIsClicked] = useState(false);
   const [rates, setRates] = useState({});
   const [appliedRows, setAppliedRows] = useState([]);
   const [amounts, setAmounts] = useState({});
+
   const handleAmountChange = (index, value) => {
     setAmounts((prevAmounts) => ({
       ...prevAmounts,
@@ -129,6 +184,7 @@ const GenerateBill = () => {
       [index]: value,
     }));
   };
+
   const handleClick = (index) => {
     setIsClicked(true);
     const selectedHead = selectedValue[index]?.[0] || "";
@@ -142,18 +198,33 @@ const GenerateBill = () => {
 
     setIsClicked({ ...isClicked, [index]: true });
   };
-  console.log(appliedRows);
-  // const handleClick = (index) => {
-  //   setIsClicked(true);
-  //   const selectedHead = selectedValue[index];
-  //   const selectedamount = amt[index];
-  //   console.log(selectedamount);
-  //   if (selectedHead) {
-  //     setHead([...head, selectedHead]);
-  //     setIsClicked({ ...isClicked, [index]: true });
-  //   }
-  // };
-  // console.log(head);
+
+  const handleChange = (id, field, value) => {
+    setFilteredData(
+      filteredData.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    );
+  };
+  const handleChange2 = (id, headIndex, field, value) => {
+    setFilteredData(
+      filteredData.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              head: item.head.map((headItem, index) =>
+                index === headIndex ? { ...headItem, value: value } : headItem
+              ),
+            }
+          : item
+      )
+    );
+  };
+
+  const handleSave = () => {
+    console.log(filteredData);
+  };
+
   return (
     <>
       <div
@@ -164,7 +235,7 @@ const GenerateBill = () => {
           Generate Maintenance Bills
         </h1>
         <div className="gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8">
-          <div className="mt-10 w-[90%] flex gap-6 gap-y-2 max-w-7xl mx-auto sm:px-6 lg:px-8">
+          {/* <div className="mt-10 w-[90%] flex gap-6 gap-y-2 max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div className="mb-4">
               <label className="block font-bold mb-2">
                 Bill Generation Date
@@ -186,9 +257,9 @@ const GenerateBill = () => {
                 className="px-3 py-2 border focus:outline-none border-gray-300 rounded"
               />
             </div>
-          </div>
-          <div className="md:ml-20 my-10 max-h-[200px] overflow-y-auto ">
-            <table>
+          </div> */}
+          <div className="md:ml-20  max-h-[200px] overflow-y-auto ">
+            {/* <table>
               <thead>
                 <tr>
                   <th className="">
@@ -205,7 +276,6 @@ const GenerateBill = () => {
                   <th className="text-left p-2">To</th>
                   <th className="text-left p-2">Amount</th>
                   <th className="text-left p-2">Rate</th>
-                  {/* <th className="text-left p-2 pl-8">Apply</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -281,56 +351,123 @@ const GenerateBill = () => {
                   );
                 })}
               </tbody>
-            </table>
+            </table> */}
           </div>
-          <div className="shadow-xl ml-20 my-6">
-            <table className="rounded-xl w-full">
-              <thead className="bg-gray-700 text-slate-200">
-                <tr>
-                  <th className="p-4">
-                    <input
-                      type="checkbox"
-                      onChange={(event) => leadSet(event)}
-                    />
-                  </th>
-                  <th>OwnerName</th>
-                  {appliedRows.map((head, index) => (
-                    <th>{head.head}</th>
-                  ))}
-                  {headers.map((head, index) => (
-                    <th className="p-4 " key={index}>
-                      {head}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-300">
-                {members.map((row, index) => (
-                  <tr key={index} className="hover:bg-gray-200">
-                    <td className="p-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={chkstat2[row._id]}
-                        onChange={(event) => setTick(row, event)}
-                        name={row._id}
-                      />
-                    </td>
-
-                    <td className="p-4 text-center">
-                      {row.firstName}
-                      {row.lastName}
-                    </td>
-                    {appliedRows.map((head, index) => (
-                      <td className="p-4 text-center">{head.amount}</td>
-                    ))}
-                    <td className="p-4 text-center">{row.arrears}</td>
-                    <td className="p-4 text-center">
-                      {/* {row.data.arrears * dayDifference * rate} */}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div>
+            <div className="container mx-auto p-4">
+              <div className="mb-4 flex gap-20">
+                <input
+                  type="text"
+                  placeholder="Search by Owner Name"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="w-[40%] px-4 py-1 border rounded"
+                />
+                <button
+                  onClick={handleSave}
+                  className=" px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-600"
+                >
+                  Save
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="table-auto w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-700 text-white w-screen">
+                      <th className="p-4 sticky left-0 bg-gray-700 z-10">
+                        <input
+                          type="checkbox"
+                          onChange={(event) => leadSet(event)}
+                        />
+                      </th>
+                      <th className="px-10 py-2 sticky z-12 bg-gray-700 w-40 left-10 text-start whitespace-nowrap overflow-hidden text-ellipsis ">
+                        Wing No
+                      </th>
+                      <th className="px-10 py-2 sticky z-12 bg-gray-700 w-40 left-10 text-start whitespace-nowrap overflow-hidden text-ellipsis">
+                        Flat No
+                      </th>
+                      <th className="px-10 py-2  sticky z-10 bg-gray-700 left-40 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis ">
+                        Owner Name
+                      </th>
+                      {heads.map((item, index) => (
+                        <th
+                          key={index}
+                          className="px-10 py-2 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
+                          {item.head}
+                        </th>
+                      ))}
+                      <th className="px-4 py-2 text-start ">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredData.length > 0 ? (
+                      filteredData.map((item) => (
+                        <tr key={item.id} className="text-center">
+                          <td className="p-4 sticky z-10 left-0 bg-white">
+                            <input
+                              type="checkbox"
+                              checked={chkstat2[item.id]}
+                              onChange={(event) => setTick(item, event)}
+                              name={item.id}
+                              className="text-center"
+                            />
+                          </td>
+                          <td className="px-4 py-2  sticky z-10 left-10 bg-white">
+                            {item.wingNo}
+                          </td>
+                          <td className="px-4 py-2  sticky z-10 left-10 bg-white">
+                            {item.flatNo}
+                          </td>
+                          <td className="px-4 py-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
+                            {item.ownerName}
+                          </td>
+                          {item.head.map((item2, index) => (
+                            <td
+                              key={index}
+                              className="w-48 whitespace-nowrap overflow-hidden text-ellipsis"
+                            >
+                              <input
+                                type="text"
+                                value={item2.value}
+                                onChange={(e) =>
+                                  handleChange2(
+                                    item.id,
+                                    index,
+                                    item2.head,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full px-4 py-2 text-center"
+                              />
+                            </td>
+                          ))}
+                          <td className="px-4 py-2 ">
+                            <input
+                              type="text"
+                              value={item.total}
+                              onChange={(e) =>
+                                handleChange(item.id, "total", e.target.value)
+                              }
+                              className="w-full px-2 py-1 text-center"
+                            />
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={heads.length + 4}
+                          className="px-5 text-xl font-bold text-center"
+                        >
+                          Data not found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       </div>

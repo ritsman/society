@@ -32,6 +32,8 @@ import ForgotPassword from "./Pages/Authentication/ForgotPassword";
 import ResetPassword from "./Pages/Authentication/ResetPassword";
 import { Logged } from "./App";
 import MasterOutlet from "./Pages/Master/MasterOutlet";
+import BillMaster from "./Pages/Master/BillMaster";
+import MHeadList from "./Pages/Master/MHeadList";
 
 const router = createBrowserRouter([
   {
@@ -116,16 +118,24 @@ const router = createBrowserRouter([
             element: <MaintainanceHead />,
           },
           {
-            path: "maintenance-head/:headId",
+            path: "maintenance-head/M-headList",
+            element: <MHeadList />,
+          },
+          {
+            path: "maintenance-head/M-headList/:headId",
             element: <ViewMaintenanceHead />,
           },
           {
-            path: "maintenance-head/updateMHead",
+            path: "maintenance-head/M-headList/updateMHead",
             element: <UpdateMHead />,
           },
           {
             path: "maintenance-head/new-maintenanceHead",
             element: <NewMaintenanceHead />,
+          },
+          {
+            path: "bill-master",
+            element: <BillMaster />,
           },
         ],
       },

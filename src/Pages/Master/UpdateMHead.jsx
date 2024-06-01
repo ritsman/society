@@ -5,7 +5,7 @@ import UploadedData from "../../components/UploadedData";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const UpdateMHead = () => {
   const options = [
@@ -42,6 +42,8 @@ const UpdateMHead = () => {
 
   const [headers, setHeaders] = useState(row.Header);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     console.log(row);
   }, [row]);
@@ -72,6 +74,7 @@ const UpdateMHead = () => {
         toast.error("Error");
         return null;
       }
+      navigate("/master/maintenance-head/M-headList");
       // setHeaders("");
       // setSelectedValue("");
     } catch (error) {
@@ -191,22 +194,7 @@ const UpdateMHead = () => {
         className="pt-10   overflow-y-auto  gap-6"
         style={{ height: "calc(100vh - 150px)" }}
       >
-        <h1 className="text-center text-2xl mb-5">Update MAINTENANCE HEAD</h1>
-
-        <div className=" flex justify-end mr-10">
-          <button
-            onClick={downloadFormat}
-            className=" border border-slate-600 hover:bg-slate-600 hover:text-white  px-4 py-2 rounded-md m-2"
-          >
-            Download Format
-          </button>
-          <button
-            onClick={handleUpload}
-            className="border border-slate-600 hover:bg-slate-600 hover:text-white px-4 py-2 rounded-md m-2"
-          >
-            Upload
-          </button>
-        </div>
+        <h1 className="text-center text-2xl mb-5">Update Maintenance Head</h1>
 
         <form
           onSubmit={handleSubmit}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const UpdateGroup = () => {
   const options = [
@@ -61,6 +62,7 @@ const UpdateGroup = () => {
         { groupName: groupName, under: selectedValue }
       );
       console.log(result);
+      toast.success("group updated successfully");
       navigate("/master/groups");
     } catch (error) {
       console.log(error);

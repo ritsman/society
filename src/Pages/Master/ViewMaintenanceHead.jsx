@@ -13,7 +13,9 @@ const ViewMaintenanceHead = () => {
   }, [row]);
 
   const handleClick = (row) => {
-    navigate("/master/maintenance-head/updateMhead", { state: { row } });
+    navigate("/master/maintenance-head/M-headList/updateMHead", {
+      state: { row },
+    });
   };
 
   const [mmData, setMMData] = useState([]);
@@ -32,7 +34,7 @@ const ViewMaintenanceHead = () => {
       );
       console.log(res);
       close();
-      navigate("/master/maintenance-head");
+      navigate("/master/maintenance-head/M-headList");
     } catch (error) {}
   };
 
@@ -95,9 +97,7 @@ const ViewMaintenanceHead = () => {
       </div>
       <div className="w-1/2 mt-10 border border-4 border-gray-600 shadow-xl rounded-md">
         <div className="bg-gray-600 shadow-xl p-4 text-gray-200">
-          <h2 className="font-semibold text-2xl">
-            Maintenance Head : {row.Header}
-          </h2>
+          <h2 className="font-semibold text-xl">{row.Header}</h2>
         </div>
         <div className="p-4 shadow-lg grid grid-cols-2">
           <h5 className="font-semibold">Under : {row.Under}</h5>

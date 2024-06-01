@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const NewLedger = () => {
   const [formData, setFormData] = useState({
@@ -38,8 +39,10 @@ const NewLedger = () => {
         { ...formData, under: selectedValue }
       );
       console.log(result);
+      toast.success("New Ledger Added Successfully");
     } catch (error) {
       console.log(error);
+      toast.error("error in Adding New Ledger");
     }
   };
 

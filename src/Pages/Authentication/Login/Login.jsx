@@ -52,10 +52,13 @@ const LoginPage = () => {
       password,
     });
     try {
-      let response = await axios.post("http://localhost:3001/api/auth/login", {
-        user: email,
-        password,
-      });
+      let response = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/auth/login",
+        {
+          user: email,
+          password,
+        }
+      );
       console.log(response.data);
       const authToken = response.data;
       const decodedToken = parseJwt(authToken);

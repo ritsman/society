@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const NewGroup = () => {
   const options = [
@@ -52,8 +53,10 @@ const NewGroup = () => {
         { groupName: groupName, under: selectedValue }
       );
       console.log(result);
+      toast.success("New Group Added Successfully");
     } catch (error) {
       console.log(error);
+      toast.error("something wrong");
     }
   };
 

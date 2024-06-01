@@ -115,7 +115,7 @@ const MemberList = () => {
   }, []);
   console.log(data);
 
-  const exportData = data.map((item) => item.data);
+  const exportData = data.map((item) => item);
 
   const handleExportData = () => {
     let wb = XLSX.utils.book_new(),

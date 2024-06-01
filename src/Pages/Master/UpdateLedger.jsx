@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const UpdateLedger = () => {
   const location = useLocation();
@@ -47,8 +48,10 @@ const UpdateLedger = () => {
         { ...formData, under: selectedValue }
       );
       console.log(result);
+      toast.success("Ledger Updated Successfully");
       navigate("/master/ledger");
     } catch (error) {
+      toast.error("error in updating Ledger");
       console.log(error);
     }
   };

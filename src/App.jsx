@@ -24,8 +24,12 @@ function App() {
   let paths = [
     { title: "Home", link: "/" },
     { title: "Master", link: "/master" },
-    { title: "Maintenance Head", link: "/master/maintenance-head" },
+    { title: "Bills Head", link: "/master/maintenance-head" },
+    { title: "New head", link: "master/maintenance-head/new-maintenanceHead" },
 
+    { title: "M Head List", link: "/master/maintenance-head/M-headList" },
+    { title: "Bills Head", link: "/master/maintenance-head" },
+    { title: "Bill Master", link: "/master/bill-master" },
     { title: "Ledger", link: "/master/ledger" },
     { title: "Groups", link: "/master/groups" },
     { title: "New Group", link: "/master/groups/newgroup" },
@@ -39,7 +43,6 @@ function App() {
     { title: "Profile", link: "/member/profile" },
     // { title: "Transactions", link: "/member/transactions" },
     { title: "Member List", link: "/member/member-list" },
-    { title: "Maintainance Head", link: "/master/maintainance-head" },
     { title: "Transaction", link: "/transaction" },
     { title: "Payment", link: "/transaction/payment" },
     { title: "Receipt", link: "/transaction/receipt" },
@@ -51,7 +54,6 @@ function App() {
 
   return (
     <div className="w-screen">
-      <ToastContainer />
       <NavBar
         activeItem={activeItem}
         setVisible={setVisible}
