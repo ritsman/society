@@ -34,6 +34,10 @@ import { Logged } from "./App";
 import MasterOutlet from "./Pages/Master/MasterOutlet";
 import BillMaster from "./Pages/Master/BillMaster";
 import MHeadList from "./Pages/Master/MHeadList";
+import MultipleReceipt from "./Pages/Transaction/MultipleReceipt";
+import MultiplePayment from "./Pages/Transaction/MultiplePayment";
+import UnitHead from "./Pages/Master/UnitHead";
+import OpeningBalance from "./Pages/Transaction/OpeningBalance";
 
 const router = createBrowserRouter([
   {
@@ -80,6 +84,10 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Master />,
+          },
+          {
+            path: "unit-head",
+            element: <UnitHead />,
           },
           {
             path: "ledger/:ledgerId",
@@ -146,11 +154,15 @@ const router = createBrowserRouter([
       },
       {
         path: "transaction/payment",
-        element: <Payment />,
+        element: <MultiplePayment />,
+      },
+      {
+        path: "transaction/opening-balance",
+        element: <OpeningBalance />,
       },
       {
         path: "transaction/receipt",
-        element: <Receipt />,
+        element: <MultipleReceipt />,
       },
       {
         path: "transaction/purchase",

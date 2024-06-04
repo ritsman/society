@@ -7,6 +7,7 @@ const Master = () => {
     { name: "Groups", path: "/master/groups" },
     { name: "Bills Heads", path: "/master/maintenance-head" },
     { name: "Bill Master", path: "/master/bill-master" },
+    { name: "Unit Heads", path: "/master/unit-head" },
   ];
 
   return (

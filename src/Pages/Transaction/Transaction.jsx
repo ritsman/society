@@ -4,6 +4,7 @@ const Transaction = () => {
   const cards = [
     { name: "Payment", path: "/transaction/payment" },
     { name: "Receipt", path: "/transaction/receipt" },
+    { name: "Opening Balance", path: "/transaction/opening-balance" },
     { name: "Journal", path: "/transaction/journal" },
     { name: "Contra", path: "/transaction/contra" },
     { name: "Sales", path: "/transaction/sales" },
