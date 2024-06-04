@@ -2,6 +2,7 @@ import MasterHead from "../Models/MasterHead.models.js";
 import Ledger from "../Models/Ledger.models.js";
 import groups from "../Models/Group.models.js";
 import groupList from "../Models/GroupList.models.js";
+import { UnitHead } from "../Models/MasterHead.models.js";
 
 // maintenance head crud operation
 
@@ -278,6 +279,36 @@ export const deleteGroup = async (req, res) => {
     res.send("Group deleted successfully");
   } catch (error) {
     res.status(500).send(error);
+    console.log(error);
+  }
+};
+
+export const postUnitHead = async (req, res) => {
+  console.log("inside postUnit Head");
+  const { unitHead, code } = req.body;
+
+  const update = {
+    unitHead,
+    code,
+  };
+
+  try {
+    await UnitHead.findOneAndUpdate({ unitHead }, update, {
+      upsert: true,
+      new: true,
+    });
+    res.send("successfully created Unit Head");
+  } catch (error) {
+    console.error("Error updating or creating Unit Head:", error);
+  }
+};
+
+export const getUnitHead = async (req, res) => {
+  try {
+    let result = await UnitHead.find({});
+    res.send(result);
+  } catch (error) {
+    res.send(error);
     console.log(error);
   }
 };

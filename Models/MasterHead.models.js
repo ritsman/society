@@ -16,4 +16,14 @@ const HeadSchema = new mongoose.Schema(
 
 const MasterHead = mongoose.model("masterHead", HeadSchema);
 
+const unitHeadSchema = new mongoose.Schema(
+  {
+    unitHead: { type: String, required: true },
+    code: { type: String, required: true },
+  },
+  { strict: false }
+);
+
+export const UnitHead = mongoose.model("UnitHead", unitHeadSchema);
+
 export default MasterHead;
