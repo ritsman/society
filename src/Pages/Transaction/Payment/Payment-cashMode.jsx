@@ -16,7 +16,7 @@ const PaymentCashMode = ({
     console.log(paymentData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/transaction/postCashpayment",
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashpayment",
         paymentData
       );
       console.log(res);

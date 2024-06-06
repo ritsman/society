@@ -39,7 +39,7 @@ const MultiplePayment = () => {
     async function fetch() {
       try {
         let result = await axios.get(
-          "http://localhost:3001/api/master/getUnitHead"
+          "https://a3.arya-erp.in/api2/socapi/api/master/getUnitHead"
         );
         let obj = {};
         console.log(result.data);

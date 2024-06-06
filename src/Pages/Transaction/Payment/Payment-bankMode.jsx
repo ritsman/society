@@ -16,7 +16,7 @@ const PaymentBankMode = ({
     console.log(paymentData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/transaction/postBankpayment",
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/postBankpayment",
         paymentData
       );
       console.log(res);
