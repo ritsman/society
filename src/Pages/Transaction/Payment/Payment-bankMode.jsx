@@ -1,46 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import format from "date-fns/format";
+import { toast } from "react-toastify";
 import axios from "axios";
 
-const MultiplePayment = () => {
-  const [paymentData, setPaymentData] = useState([
-    {
-      date: format(new Date(), "dd/MM/yyyy"),
-      code: "",
-      name: "",
-      balance: "",
-      amount: "",
-      checkNo: "",
-      checkDate: format(new Date(), "dd/MM/yyyy"),
-      micr: "",
-      bank: "",
-      branch: "",
-      narration: "",
-    },
-  ]);
-  const [data, setData] = useState([]);
+const PaymentBankMode = ({
+  paymentData,
+  setPaymentData,
+  codeNameMap,
+  setFilteredCodes,
+  filteredCodes,
+}) => {
   const [showCodeSuggestions, setShowCodeSuggestions] = useState(false);
-  const [filteredCodes, setFilteredCodes] = useState([]);
-  const [codeNameMap, setCodeNameMap] = useState({});
 
-  useEffect(() => {
-    async function fetch() {
-      try {
-        let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getUnitHead"
-        );
-        let obj = {};
-        console.log(result.data);
-        result.data.map((item) => {
-          obj[item.code] = item.unitHead;
-        });
-        setCodeNameMap(obj);
-      } catch (error) {
-        console.log(error);
-      }
+  const handleSave = async () => {
+    console.log(paymentData);
+    try {
+      let res = await axios.post(
+        "http://localhost:3001/api/transaction/postBankpayment",
+        paymentData
+      );
+      console.log(res);
+      toast.success("successfully saved data");
+    } catch (error) {
+      console.log(error);
+      toast.error("error in storing data");
     }
-    fetch();
-  }, []);
+  };
+
+  const handleCodeSelection = (e, index, code) => {
+    e.preventDefault();
+    console.log(index, code, "index and code");
+    const updatedData = [...paymentData];
+    updatedData[index].code = code;
+    updatedData[index].unitNo = codeNameMap[code] || "";
+    setPaymentData(updatedData);
+    setShowCodeSuggestions(false);
+  };
 
   const handleCodeChange = (index, value) => {
     const updatedData = [...paymentData];
@@ -55,22 +50,13 @@ const MultiplePayment = () => {
     setShowCodeSuggestions(true);
   };
 
-  const handleCodeSelection = (e, index, code) => {
-    e.preventDefault();
-    console.log(index, code, "index and code");
+  const handleCellChange = (index, field, value) => {
     const updatedData = [...paymentData];
-    updatedData[index].code = code;
-    updatedData[index].name = codeNameMap[code] || "";
+    updatedData[index][field] = value;
     setPaymentData(updatedData);
-    setShowCodeSuggestions(false);
-  };
-
-  const handleSave = async () => {
-    console.log(paymentData);
   };
   return (
-    <div className="py-5 px-10">
-      <p className="text-center text-2xl font-bold">Multiple Payment</p>
+    <div>
       <div className="overflow-x-auto pt-5">
         <button
           onClick={handleSave}
@@ -83,7 +69,7 @@ const MultiplePayment = () => {
             <tr className="bg-gray-800 text-white">
               <th className="px-4 py-2">Date</th>
               <th className="px-4 py-2">Code</th>
-              <th className="px-4 py-2">Name</th>
+              <th className="px-4 py-2">UnitNo</th>
               <th className="px-4 py-2">Balance</th>
               <th className="px-4 py-2">Amount</th>
               <th className="px-4 py-2">ChequeNo</th>
@@ -97,8 +83,14 @@ const MultiplePayment = () => {
           <tbody>
             {paymentData.map((item, index) => (
               <tr key={index} className="bg-white">
-                <td className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis">
-                  {item.date}
+                <td className="border px-4 py-2">
+                  <input
+                    type="date"
+                    value={item.date || format(new Date(), "yyyy-MM-dd")}
+                    onChange={(e) =>
+                      handleCellChange(index, "date", e.target.value)
+                    }
+                  />
                 </td>
                 <td className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis">
                   <input
@@ -124,9 +116,9 @@ const MultiplePayment = () => {
                 <td
                   className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis"
                   contentEditable
-                  onKeyDown={(e) => handleKeyDown(e, index, "name")}
+                  onKeyDown={(e) => handleKeyDown(e, index, "unitNo")}
                 >
-                  {item.name}
+                  {item.unitNo}
                 </td>
                 <td
                   className="border px-4 py-2"
@@ -152,33 +144,28 @@ const MultiplePayment = () => {
                   className="border px-4 py-2"
                   contentEditable
                   onBlur={(e) =>
-                    handleCellChange(index, "principle", e.target.innerText)
+                    handleCellChange(index, "chequeNo", e.target.innerText)
                   }
-                  onKeyDown={(e) => handleKeyDown(e, index, "principle")}
+                  onKeyDown={(e) => handleKeyDown(e, index, "chequeNo")}
                 >
                   {item.principle}
                 </td>
-                <td
-                  className="border px-4 py-2"
-                  contentEditable
-                  onBlur={(e) =>
-                    handleCellChange(index, "checkDate", e.target.innerText)
-                  }
-                  onKeyDown={(e) => handleKeyDown(e, index, "checkDate")}
-                >
-                  {item.checkDate}
+                <td className="border px-4 py-2">
+                  <input
+                    type="date"
+                    value={item.chequeDate || format(new Date(), "yyyy-MM-dd")}
+                    onChange={(e) =>
+                      handleCellChange(index, "chequeDate", e.target.value)
+                    }
+                  />
                 </td>
                 <td
                   className="border px-4 py-2"
                   contentEditable
                   onBlur={(e) =>
-                    handleCellChange(
-                      index,
-                      "principleBalance",
-                      e.target.innerText
-                    )
+                    handleCellChange(index, "micr", e.target.innerText)
                   }
-                  onKeyDown={(e) => handleKeyDown(e, index, "principleBalance")}
+                  onKeyDown={(e) => handleKeyDown(e, index, "micr")}
                 >
                   {item.principleBalance}
                 </td>
@@ -186,13 +173,9 @@ const MultiplePayment = () => {
                   className="border px-4 py-2"
                   contentEditable
                   onBlur={(e) =>
-                    handleCellChange(
-                      index,
-                      "interestBalance",
-                      e.target.innerText
-                    )
+                    handleCellChange(index, "bank", e.target.innerText)
                   }
-                  onKeyDown={(e) => handleKeyDown(e, index, "interestBalance")}
+                  onKeyDown={(e) => handleKeyDown(e, index, "bank")}
                 >
                   {item.interestBalance}
                 </td>
@@ -200,9 +183,9 @@ const MultiplePayment = () => {
                   className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis"
                   contentEditable
                   onBlur={(e) =>
-                    handleCellChange(index, "narration", e.target.innerText)
+                    handleCellChange(index, "branch", e.target.innerText)
                   }
-                  onKeyDown={(e) => handleKeyDown(e, index, "narration")}
+                  onKeyDown={(e) => handleKeyDown(e, index, "branch")}
                 >
                   {item.narration}
                 </td>
@@ -225,4 +208,4 @@ const MultiplePayment = () => {
   );
 };
 
-export default MultiplePayment;
+export default PaymentBankMode;

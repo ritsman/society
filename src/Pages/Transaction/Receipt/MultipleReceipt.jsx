@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
-import format from "date-fns/format";
+
 import ReceiptBankMode from "./Receipt-BankMode";
 import ReceiptCashMode from "./Receipt-CashMode";
 
@@ -12,7 +11,7 @@ const MultipleReceipt = () => {
   const [data2, setData2] = useState([]);
   const [account, setAccount] = useState("");
 
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
   useEffect(() => {
     async function fetch() {
@@ -124,8 +123,12 @@ const MultipleReceipt = () => {
     setPaymentMethod(selectedPaymentMethod);
   };
 
-  useEffect(() => {}, [paymentMethod]);
-  useEffect(() => {}, [account]);
+  useEffect(() => {
+    console.log(paymentMethod);
+  }, [paymentMethod]);
+  useEffect(() => {
+    console.log(account);
+  }, [account]);
 
   const handleAccountChange = (event) => {
     const accounts = event.target.value;

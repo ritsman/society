@@ -34,8 +34,8 @@ import { Logged } from "./App";
 import MasterOutlet from "./Pages/Master/MasterOutlet";
 import BillMaster from "./Pages/Master/BillMaster";
 import MHeadList from "./Pages/Master/MHeadList";
-import MultipleReceipt from "./Pages/Transaction/MultipleReceipt";
-import MultiplePayment from "./Pages/Transaction/MultiplePayment";
+import MultipleReceipt from "./Pages/Transaction/Receipt/MultipleReceipt";
+import MultiplePayment from "./Pages/Transaction/Payment/MultiplePayment";
 import UnitHead from "./Pages/Master/UnitHead";
 import OpeningBalance from "./Pages/Transaction/OpeningBalance";
 
