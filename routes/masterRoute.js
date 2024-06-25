@@ -17,6 +17,14 @@ import {
   deleteHead,
   postUnitHead,
   getUnitHead,
+  postAccLedger,
+  getAccLedger,
+  postCashAccLedger,
+  getCashAccLedgers,
+  postBankAccLedger,
+  getBankAccLedger,
+  deleteAccLedger,
+  updateAccLedger,
 } from "../controllers/masterHead.controller.js";
 import {
   getBillMaster,
@@ -30,6 +38,17 @@ router.post("/masterHead", postMHead);
 router.get("/getHead", getHead);
 router.put("/updateHead/:groupId", updateHead);
 router.delete("/deleteHead/:groupId", deleteHead);
+
+router.post("/postAccLedger", postAccLedger);
+router.get("/getAccLedger", getAccLedger);
+router.delete("/deleteAccLedger", deleteAccLedger);
+router.put("/updateAccLedger/:id", updateAccLedger);
+
+router.post("/postCashAccLedger", postCashAccLedger);
+router.get("/getCashAccLedger", getCashAccLedgers);
+
+router.post("/postBankAccLedger", postBankAccLedger);
+router.get("/getBankAccLedger", getBankAccLedger);
 
 router.post("/postLedger", postLedger);
 router.get("/getLedger", getLedger);

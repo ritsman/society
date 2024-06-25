@@ -37,7 +37,7 @@ export const login = async (req, res) => {
             user: users.user,
           },
           jwtSecret,
-           {
+          {
             expiresIn: "2d",
           }
         );

@@ -1,8 +1,11 @@
 import MasterHead from "../Models/MasterHead.models.js";
-import Ledger from "../Models/Ledger.models.js";
+import PartyLedger from "../Models/Ledger.models.js";
 import groups from "../Models/Group.models.js";
 import groupList from "../Models/GroupList.models.js";
 import { UnitHead } from "../Models/MasterHead.models.js";
+import { AccLedger } from "../Models/Ledger.models.js";
+import { CashAccLedger } from "../Models/Ledger.models.js";
+import { BankAccLedger } from "../Models/Ledger.models.js";
 
 // maintenance head crud operation
 
@@ -102,13 +105,110 @@ export const deleteHead = async (req, res) => {
   }
 };
 
+// Starting of Account Ledgers controller
+
+export const postAccLedger = async (req, res) => {
+  console.log("post Account ledger controller", req.body);
+
+  const { name, ...rest } = req.body; // Extract the name and the rest of the fields
+
+  try {
+    // Find if a document with the given name exists
+    let accountLedger = await AccLedger.findOne({ name });
+
+    if (accountLedger) {
+      // If it exists, update the existing document with the new data
+      accountLedger = await AccLedger.findOneAndUpdate({ name }, rest, {
+        new: true,
+      });
+    } else {
+      // If it doesn't exist, create a new document
+      accountLedger = new AccLedger({ name, ...rest });
+      accountLedger = await accountLedger.save();
+    }
+
+    res.status(200).json(accountLedger);
+  } catch (error) {
+    console.error("Error posting account ledger:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while processing your request." });
+  }
+};
+
+export const getAccLedger = async (req, res) => {
+  try {
+    const accountLedgers = await AccLedger.find();
+    res.status(200).json(accountLedgers);
+  } catch (error) {
+    console.error("Error fetching account ledgers:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching the account ledgers." });
+  }
+};
+
+export const deleteAccLedger = async (req, res) => {
+  const { ids } = req.body;
+  console.log("inside Delete Account Ledger ", ids);
+  try {
+    ids.map(async (item) => {
+      let result = await AccLedger.findByIdAndDelete(item);
+      if (!result) {
+        console.log("account not found", result);
+      } else {
+        console.log("account deleted successfully");
+      }
+    });
+
+    res.send("Successfully deleted account from database");
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+import mongoose from "mongoose";
+export const updateAccLedger = async (req, res) => {
+  console.log("inside update account ledger");
+  try {
+    const { id } = req.params;
+    const { shortName, accountType, narration } = req.body;
+
+    // Validate the ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid account ledger ID" });
+    }
+
+    // Find the account ledger by ID and update it
+    const updatedLedger = await AccLedger.findByIdAndUpdate(
+      id,
+      {
+        shortName,
+        accountType,
+        narration,
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedLedger) {
+      return res.status(404).json({ message: "Account ledger not found" });
+    }
+
+    res.json(updatedLedger);
+  } catch (error) {
+    console.error("Error updating account ledger:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+//Ending of  Account Ledgers controller
+
 // Ledger crud operations
 
 export const postLedger = async (req, res) => {
   console.log("postLedger controller reached", req.body);
 
   try {
-    let result = new Ledger({
+    let result = new PartyLedger({
       data: req.body,
     });
     result.save();
@@ -122,7 +222,7 @@ export const getLedger = async (req, res) => {
   console.log("reached inside getLedger controller");
 
   try {
-    let result = await Ledger.find({});
+    let result = await PartyLedger.find({});
     res.send(result);
   } catch (error) {
     res.send(error);
@@ -139,7 +239,7 @@ export const updateLedger = async (req, res) => {
       return res.status(400).send("Missing _id in request body");
     }
 
-    const result = await Ledger.findByIdAndUpdate(id, {
+    const result = await PartyLedger.findByIdAndUpdate(id, {
       $set: { data: req.body },
     });
 
@@ -164,7 +264,7 @@ export const deleteLedger = async (req, res) => {
       return res.status(400).send("Missing _id in request parameters");
     }
 
-    const result = await Ledger.findByIdAndDelete(id);
+    const result = await PartyLedger.findByIdAndDelete(id);
 
     if (!result) {
       return res.status(404).send("Ledger not found");
@@ -188,6 +288,7 @@ export const postGroup = async (req, res) => {
     if (!existing) {
       console.log("not found");
       let result = new groups({
+        Code: req.body.code,
         GroupName: req.body.groupName,
         Under: req.body.under,
       });
@@ -240,6 +341,7 @@ export const updateGroup = async (req, res) => {
   try {
     const groupId = req.params.id;
     const updateData = {
+      Code: req.body.code,
       GroupName: req.body.groupName,
       Under: req.body.under,
     };
@@ -312,3 +414,52 @@ export const getUnitHead = async (req, res) => {
     console.log(error);
   }
 };
+
+// starting of Cash Account Ledger
+export const postCashAccLedger = async (req, res) => {
+  try {
+    const newLedger = new CashAccLedger(req.body);
+    const savedLedger = await newLedger.save();
+    res.status(201).json(savedLedger);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// GET controller
+export const getCashAccLedgers = async (req, res) => {
+  try {
+    // Fetch ledgers and sort by date in ascending order
+    const ledgers = await CashAccLedger.find().sort({ date: 1 });
+
+    res.status(200).json(ledgers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ending of Cash Account Ledger
+
+//starting of Bank Account Ledger
+export const postBankAccLedger = async (req, res) => {
+  try {
+    const newLedger = new BankAccLedger(req.body);
+    const savedLedger = await newLedger.save();
+    res.status(201).json(savedLedger);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// GET controller
+export const getBankAccLedger = async (req, res) => {
+  try {
+    // Fetch ledgers and sort by date in ascending order
+    const ledgers = await BankAccLedger.find().sort({ date: 1 });
+
+    res.status(200).json(ledgers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// ending of Bank Account Ledger

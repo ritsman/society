@@ -51,33 +51,103 @@ export const getBankReceipt = async (req, res) => {
 
 // cash controller
 
+// export const postCashReceipt = async (req, res) => {
+//   console.log("inside postReceipt controller");
+//   try {
+//     req.body.map(async (item) => {
+//       const { code, name } = item;
+//       const update = {
+//         amount: item.amount,
+//         balance: item.balance,
+//         code: item.code,
+//         date: item.date,
+//         interest: item.interest,
+
+//         interestBalance: item.interestBalance,
+//         name: item.name,
+//         narration: item.narration,
+//         principle: item.principle,
+//         principleBalance: item.principleBalance,
+//       };
+//       await CashReceipt.findOneAndUpdate({ code, name }, update, {
+//         upsert: true,
+//         new: true,
+//       });
+//     });
+
+//     res.send("successfully saved data");
+//   } catch (error) {
+//     res.send(error);
+//   }
+// };
 export const postCashReceipt = async (req, res) => {
   console.log("inside postReceipt controller");
-  try {
-    req.body.map(async (item) => {
-      const { code, name } = item;
-      const update = {
-        amount: item.amount,
-        balance: item.balance,
-        code: item.code,
-        date: item.date,
-        interest: item.interest,
 
-        interestBalance: item.interestBalance,
-        name: item.name,
-        narration: item.narration,
-        principle: item.principle,
-        principleBalance: item.principleBalance,
+  // Log the entire request body
+  console.log("Request Body:", req.body);
+
+  try {
+    for (const item of req.body) {
+      const {
+        code,
+        name,
+        date,
+        amount,
+        balance,
+        interest,
+        mode,
+        narration,
+        principle,
+        chequeNo,
+        chequeDate,
+        bank,
+        branch,
+      } = item;
+
+      // Convert amount to a number and log it
+      const amountNumber = Number(amount);
+      console.log("Amount:", amountNumber);
+
+      // Check if amount is zero
+      if (amountNumber === 0) {
+        console.log("Skipping item with zero amount");
+        continue;
+      }
+
+      const obj = {
+        date: date || new Date(), // Assuming you want to set the current date if date is null
+        amount: amountNumber, // Use the numeric amount
+        mode: mode,
+        chequeNo: chequeNo,
+        chequeDate: chequeDate,
+        bank: bank,
+        branch: branch,
       };
+
+      const update = {
+        $set: {
+          code: code,
+          name: name,
+          balance: Number(balance) - amountNumber,
+          interest: interest,
+
+          narration: narration,
+          principle: principle,
+        },
+        $push: {
+          paid: obj,
+        },
+      };
+
       await CashReceipt.findOneAndUpdate({ code, name }, update, {
         upsert: true,
         new: true,
       });
-    });
+    }
 
-    res.send("successfully saved data");
+    res.send("Successfully saved data");
   } catch (error) {
-    res.send(error);
+    res.status(500).send(error);
   }
 };
 

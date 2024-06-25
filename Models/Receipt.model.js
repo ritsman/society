@@ -51,10 +51,26 @@ const bankSchema = new mongoose.Schema({
 export const BankReceipt = mongoose.model("BankReceipt", bankSchema);
 
 const cashSchema = new mongoose.Schema({
-  amount: {
+  paid: {
+    type: Array,
+  },
+
+  balance: {
     type: String,
   },
-  balance: {
+  mode: {
+    type: String,
+  },
+  bank: {
+    type: String,
+  },
+  branch: {
+    type: String,
+  },
+  chequeNo: {
+    type: String,
+  },
+  chequeDate: {
     type: String,
   },
   code: {
@@ -66,10 +82,20 @@ const cashSchema = new mongoose.Schema({
   interest: {
     type: String,
   },
-  interestBalance: {
+
+  name: {
     type: String,
   },
-  name: {
+  bank: {
+    type: String,
+  },
+  branch: {
+    type: String,
+  },
+  chequeNo: {
+    type: String,
+  },
+  chequeDate: {
     type: String,
   },
 
@@ -77,9 +103,6 @@ const cashSchema = new mongoose.Schema({
     type: String,
   },
   principle: {
-    type: String,
-  },
-  principleBalance: {
     type: String,
   },
 });

@@ -6,9 +6,14 @@ const router = express.Router();
 import {
   Profile,
   deleteProfile,
+  getLedger,
   getMemberList,
+  getOpeningMember,
+  postLedger,
+  postOpeningMember,
   updateProfile,
 } from "../controllers/Member.controller.js";
+import { getOpeningBalance } from "../controllers/Transaction.controller.js";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -91,4 +96,9 @@ router.put(
   },
   updateProfile
 );
+router.post("/postOpeningMember", postOpeningMember);
+router.get("/getOpeningMember", getOpeningMember);
+
+router.post("/Ledger/:memberId", postLedger);
+router.get("/Ledger/:memberId", getLedger);
 export default router;
