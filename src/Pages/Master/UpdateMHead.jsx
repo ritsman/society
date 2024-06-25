@@ -9,32 +9,34 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const UpdateMHead = () => {
   const options = [
-    "Bank Accounts",
-    "Current Assets",
-    "Bank OD A/c",
-    "Loans (Liability)",
-    "Cash-in-hand",
-    "Current Assets",
-    "Deposits (Asset)",
-    "Current Assets",
-    "Duties & Taxes",
-    "Current Liabilities",
-    "Loans & Advances (Asset)",
-    "Current Assets",
-    "Provisions",
-    "Current Liabilities",
-    " Reserves & Surplus",
+    "Branch/Divisions",
     "Capital Account",
-    "Secured Loans",
-    "Loans (Liability)",
-    "Stock-in-hand",
     "Current Assets",
-    "Sundry Creditors",
     "Current Liabilities",
-    "Sundry Debtors",
-    "Current Assets",
-    "Unsecured Loans",
+    "Direct Expenses",
+    "Direct Incomes",
+    "Fixed Assets",
+    "Indirect Expenses",
+    "Indirect Incomes",
+    "Investments",
     "Loans (Liability)",
+    "Misc. Expenses(ASSET)",
+    "Purchase Accounts",
+    "Sales Accounts",
+    "Suspense A/C",
+    "Bank Account",
+    "Bank OD A/C ",
+    "Cash-in-hand",
+    "Deposits(Asset)",
+    "Duties & Taxes",
+    "Loans & Advancess (Assets)",
+    "provisions",
+    "Reserves & Surplus",
+    "Secured Loans",
+    "Stock-in-hand",
+    "Sundry Creditors",
+    "Sundry Debtors",
+    "Unsecured Loans",
   ];
 
   const location = useLocation();
@@ -47,6 +49,28 @@ const UpdateMHead = () => {
   useEffect(() => {
     console.log(row);
   }, [row]);
+
+  const [unders, setUnders] = useState([]);
+
+  useEffect(() => {
+    async function fetch() {
+      try {
+        let res = await axios.get(
+          "https://a3.arya-erp.in/api2/socapi/api/master/getgroup"
+        );
+        let a = res.data.map((item) => item.GroupName);
+
+        setUnders([...options, ...a]);
+        console.log(a);
+        setgroups(res.data);
+
+        console.log(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetch();
+  }, []);
 
   const handleChange = (e) => {
     setHeaders(e.target.value);
@@ -255,7 +279,7 @@ const UpdateMHead = () => {
                     Under
                   </label>
                   <AutoComplete
-                    options={options}
+                    options={unders}
                     onSelect={(value) => handleSelect(value)}
                   />
                 </div>

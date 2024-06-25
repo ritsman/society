@@ -10,96 +10,135 @@ const OpeningBalance = () => {
   const [billSeriesName, setBillSeriesName] = useState("Maintenance Bill");
   const [netBalance, setNetBalance] = useState(0);
   const [members, setMembers] = useState([]);
-  const [data, setData] = useState([]);
 
   const opBalanceTypes = ["Members", "Creditors", "General Ledger"];
+  const [tableRow, setTableRow] = useState([]);
+  const [data, setData] = useState([]);
+  const [head, setHead] = useState([]);
+  const [list, setList] = useState([]);
+
+  const [chkstat2, setChkStat2] = useState({});
 
   useEffect(() => {
-    async function fetch() {
-      try {
-        let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/member/getMemberList"
-        );
-        console.log(result.data);
-        let arr = result.data.map((item, index) => {
-          let filteredBal = [];
-          filteredBal = data.filter((row) => row.unitNo == item.flatNo);
-          console.log(filteredBal);
-          return {
-            seqNo: index + 1,
-            ownerName: `${item.firstName} ${item.lastName}`,
-            unitNo: item.flatNo,
-            principle: filteredBal.length > 0 ? filteredBal[0].principle : 0,
-            interest: filteredBal.length > 0 ? filteredBal[0].interest : 0,
-            total:
-              filteredBal.length > 0
-                ? filteredBal[0].principle * (1 + filteredBal[0].interest / 100)
-                : 0,
-          };
-        });
-        setMembers(arr);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetch();
+    const chkstat = {};
+    data?.forEach((val) => {
+      chkstat[val._id] = false;
+    });
+    setChkStat2(chkstat);
   }, [data]);
 
+  // console.log("chk2");
+  // console.log(chkstat2);
+
+  const leadSet = (event) => {
+    let c = {};
+    Object.keys(chkstat2).forEach((key) => {
+      console.log(key);
+      c[key] = event.target.checked;
+    });
+    console.log(`c:`);
+    console.log(c);
+    setChkStat2(c);
+  };
+
+  const setTick = (contact, event) => {
+    chkstat2[contact._id] = event.target.checked;
+    console.log(contact);
+    console.log(chkstat2);
+    const c = {
+      ...chkstat2,
+    };
+    console.log(c);
+    setChkStat2(c);
+  };
+
+  //asdflkadsf
+  let tableHeads = [
+    "Name",
+    "Mobile No.",
+    "Email",
+    "Address",
+    "Flat No.",
+    "Wing No.",
+  ];
+  let tableHead = [];
+
   useEffect(() => {
-    async function fetch() {
-      try {
-        let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/transaction/getOpeningBalance"
-        );
-        console.log(res.data);
-        setData(res.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetch();
+    try {
+      fetch("https://a3.arya-erp.in/api2/socapi/api/member/getOpeningMember")
+        .then((response) => response.json())
+        .then((data) => setList(data))
+        .catch((error) => console.error(error));
+    } catch (error) {}
+
+    let arr = data.map((item) => {
+      return {
+        name: item.name,
+        mobileNo: item.registeredMobileNo,
+        email: item.email,
+        address: item.permanentAddress,
+        flatNo: item.flatNo,
+        wingNo: item.wingNo,
+        head: head.map((row, index) => ({
+          heads: row,
+          value: item.head?.[index]?.value || 0,
+        })),
+      };
+    });
+
+    setTableRow(arr);
+  }, [head, data]);
+
+  useEffect(() => {
+    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+      .then((response) => response.json())
+      .then((data) => setData(data))
+      .catch((error) => console.error(error));
+
+    // fetch maintenance head
+
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+      .then((response) => response.json())
+      .then((data) => {
+        tableHead = [];
+
+        data.map((item) => {
+          tableHead.push(item.Header);
+        });
+        setHead(tableHead);
+      })
+      .catch((error) => console.error(error));
   }, []);
 
+  const handleRowValueChange = (item, rowIndex, event) => {
+    const newHead = [...item.head];
+    newHead[rowIndex].value = event.target.value;
+    setTableRow((prevTableRow) =>
+      prevTableRow.map((row) =>
+        row === item ? { ...row, head: newHead } : row
+      )
+    );
+  };
+
   const handleSave = async () => {
-    console.log(members);
+    console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/postOpeningBalance",
-        members
+        "https://a3.arya-erp.in/api2/socapi/api/member/postOpeningMember",
+        tableRow
       );
       console.log(res);
       toast.success("successfully saved data");
     } catch (error) {
+      console.log(error);
       toast.error("error in storing data");
     }
   };
 
-  const handleKeyDown = (e, index, field) => {
-    console.log("invoked");
-
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleCellChange(index, field, e.target.innerText);
-      e.target.blur();
-    }
-  };
-
-  const handleCellChange = (index, field, value) => {
-    console.log("invoked", index, field, value);
-    const updatedData = [...members];
-    updatedData[index][field] = value;
-    if (field == "interest") {
-      updatedData[index]["total"] = (
-        updatedData[index]["principle"] *
-        (1 + updatedData[index]["interest"] / 100)
-      ).toFixed(2);
-    }
-    console.log(updatedData);
-    setMembers(updatedData);
-  };
-
   return (
     <div>
+      <h1 className="text-center text-2xl ">Opening Balance</h1>
+
       <div className="flex items-center space-x-4 pt-10 px-10">
         <div className="flex flex-col gap-3">
           <label>Op. Balance type</label>
@@ -170,60 +209,64 @@ const OpeningBalance = () => {
         >
           Save
         </button>
-        <table className="border-collapse w-full">
-          <thead>
-            <tr className="bg-gray-800 text-white">
-              <th className="px-4 py-2">seq no</th>
-              <th className="px-4 py-2">owner name</th>
-              <th className="px-4 py-2">unit no</th>
-              <th className="px-4 py-2">principle</th>
-              <th className="px-4 py-2">interest</th>
-              <th className="px-4 py-2">total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((item, index) => (
-              <tr key={index} className="bg-white">
-                <td className="border px-4 py-2">{item.seqNo}</td>
-
-                <td className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis">
-                  {item.ownerName}
-                </td>
-                <td className="border px-4 py-2">{item.unitNo}</td>
-                <td
-                  className="border px-4 py-2"
-                  contentEditable
-                  onBlur={(e) =>
-                    handleCellChange(index, "principle", e.target.innerText)
-                  }
-                  onKeyDown={(e) => handleKeyDown(e, index, "principle")}
-                >
-                  {item.principle}
-                </td>
-                <td
-                  className="border px-4 py-2"
-                  contentEditable
-                  onBlur={(e) =>
-                    handleCellChange(index, "interest", e.target.innerText)
-                  }
-                  onKeyDown={(e) => handleKeyDown(e, index, "interest")}
-                >
-                  {item.interest}
-                </td>
-                <td
-                  className="border px-4 py-2"
-                  contentEditable
-                  onBlur={(e) =>
-                    handleCellChange(index, "total", e.target.innerText)
-                  }
-                  onKeyDown={(e) => handleKeyDown(e, index, "total")}
-                >
-                  {item.total}
-                </td>
+        <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6  rounded-lg ">
+          <table className="rounded-md">
+            <thead className="bg-gray-700 text-slate-200">
+              <tr>
+                {tableHeads.map((item) => (
+                  <th
+                    className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
+                    key={item}
+                  >
+                    {item}
+                  </th>
+                ))}
+                {head.map((item) => (
+                  <th
+                    className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
+                    key={item}
+                  >
+                    {item}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-300">
+              {tableRow.map((item, index) => (
+                <tr key={index} className="">
+                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis">
+                    {item.name}
+                  </td>
+                  <td className="p-4 text-center whitespace-nowrap overflow-hidden text-ellipsis">
+                    {item.mobileNo}
+                  </td>
+                  <td>{item.email}</td>
+                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                    {item.address}
+                  </td>
+                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                    {item.flatNo}
+                  </td>
+                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                    {item.wingNo}
+                  </td>
+                  {item.head.map((row, rowIndex) => (
+                    <td className=" text-center" key={rowIndex}>
+                      <input
+                        type="text"
+                        value={row.value}
+                        onChange={(event) =>
+                          handleRowValueChange(item, rowIndex, event)
+                        }
+                        className="text-center"
+                      />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

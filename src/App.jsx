@@ -31,19 +31,23 @@ function App() {
     { title: "Bills Head", link: "/master/maintenance-head" },
     { title: "Bill Master", link: "/master/bill-master" },
     { title: "Ledger", link: "/master/ledger" },
+    { title: "Party Ledger", link: "/master/ledger/partyLedger" },
     { title: "Groups", link: "/master/groups" },
     { title: "New Group", link: "/master/groups/newgroup" },
     { title: "Update Group", link: "/master/groups/updateGroup" },
     { title: "Master", link: "/master" },
     { title: "Member", link: "/member" },
+    { title: "Member transaction", link: "/member/memTransactions" },
+    { title: "Ind Ledger", link: "/member/memTransactions/individualLedger" },
     { title: "newLedger", link: "/master/ledger/newledger" },
+    { title: "Account Ledger", link: "/master/ledger/accLedger" },
     { title: "Update Ledger", link: "/master/ledger/updateLedger" },
     { title: "Society", link: "/society" },
     { title: "Bills", link: "/society/bills" },
     { title: "Profile", link: "/member/profile" },
     // { title: "Transactions", link: "/member/transactions" },
     { title: "Member List", link: "/member/member-list" },
-    { title: "Transaction", link: "/transaction" },
+    { title: "Transactions", link: "/transaction" },
     { title: "Payment", link: "/transaction/payment" },
     { title: "Receipt", link: "/transaction/receipt" },
     { title: "Purchase", link: "/transaction/purchase" },
@@ -71,6 +75,7 @@ function App() {
         <div className="w-screen flex justify-end ">
           <div className={`${visible ? "w-[80%]" : "w-screen"}  `}>
             <Breadcrumbs paths={paths} />
+
             <Outlet />
           </div>
         </div>

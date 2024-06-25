@@ -15,7 +15,7 @@ const Ledger = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/master/ledger/newledger");
+    navigate("/master/ledger/partyLedger/newledger");
   };
 
   const [ledgerData, setLedgerData] = useState([]);

@@ -16,9 +16,7 @@ const MultipleReceipt = () => {
   useEffect(() => {
     async function fetch() {
       try {
-        let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-        );
+        let res = await axios.get("http://localhost:3001/api/society/getBills");
         console.log(res.data);
         const updatedReceiptData = res.data.map((item) => {
           let filteredRec = [];
@@ -55,9 +53,7 @@ const MultipleReceipt = () => {
   useEffect(() => {
     async function fetch() {
       try {
-        let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-        );
+        let res = await axios.get("http://localhost:3001/api/society/getBills");
         console.log(res.data);
         const updatedReceiptData = res.data.map((item) => {
           let filteredRec = [];

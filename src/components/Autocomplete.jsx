@@ -48,33 +48,29 @@ const AutoComplete = ({ options, onSelect }) => {
   };
 
   return (
-    <div>
-      <>
-        <input
-          required
-          className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          ref={inputRef}
-          onKeyDown={handleKeyDown}
-        />
-        <ul className="mt-5">
-          {filteredOptions.map((option, i) => (
-            <li
-              key={i}
-              onClick={() => handleSelectOption(option)}
-              className={
-                selectedIndex === i
-                  ? "selected bg-gray-800 text-white py-1 rounded pl-2"
-                  : ""
-              }
-            >
-              {option}
-            </li>
-          ))}
-        </ul>
-      </>
+    <div className="relative">
+      <input
+        required
+        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        ref={inputRef}
+        onKeyDown={handleKeyDown}
+      />
+      <ul className="absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 max-h-60 overflow-y-auto">
+        {filteredOptions.map((option, i) => (
+          <li
+            key={i}
+            onClick={() => handleSelectOption(option)}
+            className={`cursor-pointer hover:bg-gray-100 py-1 px-2 ${
+              selectedIndex === i ? "bg-gray-800 text-white" : ""
+            }`}
+          >
+            {option}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

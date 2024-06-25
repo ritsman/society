@@ -1,14 +1,15 @@
 import axios from "axios";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const [formData, setFormData] = useState([
     {
-      firstName: "",
-      lastName: "",
+      name: "",
       permanentAddress: "",
       registeredMobileNo: "",
       alternateMobileNo: "",
+      email: "",
       flatNo: "",
       wingNo: "",
       area: "",
@@ -23,6 +24,7 @@ const Profile = () => {
       memberSince: "",
       systemId: "",
       photo: null,
+      head: "",
     },
   ]);
 
@@ -52,8 +54,10 @@ const Profile = () => {
         }
       );
       console.log(result);
+      toast.success("successfully saved data");
     } catch (error) {
       console.log(error);
+      toast.error("error in storing data");
     }
   };
 
@@ -71,28 +75,13 @@ const Profile = () => {
           <div className=" grid w-[90%]  grid-cols-2 gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8  ">
             <div className="mb-4">
               <label htmlFor="firstName" className="block font-bold mb-2">
-                First Name
+                Full Name
               </label>
               <input
                 type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label htmlFor="lastName" className="block font-bold mb-2">
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
+                id="name"
+                name="name"
+                value={formData.name}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
                 required
@@ -129,6 +118,22 @@ const Profile = () => {
                 id="alternateMobileNo"
                 name="alternateMobileNo"
                 value={formData.alternateMobileNo}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="alternateMobileNo"
+                className="block font-bold mb-2"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
               />
@@ -327,6 +332,7 @@ const Profile = () => {
                 type="file"
                 id="societyShareCertificate"
                 name="societyShareCertificate"
+                required
                 accept="image/*"
                 onChange={handleCertificateChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded"
@@ -366,6 +372,7 @@ const Profile = () => {
                 type="file"
                 id="photo"
                 name="photo"
+                required
                 accept="image/*"
                 onChange={handlePhotoChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded"

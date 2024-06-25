@@ -46,9 +46,9 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
             <th className="px-4 py-2">Name</th>
             <th className="px-4 py-2">Balance</th>
             <th className="px-4 py-2">Amount</th>
-            <th className="px-4 py-2">Principle</th>
+            <th className="px-4 py-2">Principal</th>
             <th className="px-4 py-2">Interest</th>
-            <th className="px-4 py-2">PrincipleBalance</th>
+            <th className="px-4 py-2">PrincipalBalance</th>
             <th className="px-4 py-2">InterestBalance</th>
             <th className="px-4 py-2">Narration</th>
           </tr>

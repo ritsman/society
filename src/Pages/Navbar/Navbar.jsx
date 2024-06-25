@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import YearButton from "../../components/YearButton";
 
 const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
   const [user, setUser] = useState("");
@@ -50,13 +51,16 @@ const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
       <nav className="bg-gray-800  fixed z-10 py-4 w-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between gap-5">
               <span className="text-white font-bold text-xl">
                 <img
                   src="https://cdn1.iconfinder.com/data/icons/user-interface-2311/24/menu_open_menu_menu_bar_three_lines_ui-512.png"
                   className="h-10 w-10 cursor-pointer"
                   onClick={() => setVisible(!visible)}
                 />
+              </span>
+              <span className="">
+                <YearButton />
               </span>
             </div>
             <div className="flex space-x-4">

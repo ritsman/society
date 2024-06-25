@@ -7,8 +7,8 @@ import Member from "./Pages/Member/Member";
 import Profile from "./Pages/Member/Profile";
 import MemberList from "./Pages/Member/MemberList";
 import Master from "./Pages/Master/Master";
-import Ledger from "./Pages/Master/Ledger";
-import NewLedger from "./Pages/Master/NewLedger";
+import Ledger from "./Pages/Master/Ledger/Ledger";
+import NewLedger from "./Pages/Master/Ledger/NewLedger";
 import Group from "./Pages/Master/Group";
 import Bills from "./Pages/Societies/Bills";
 import Payment from "./Pages/Transaction/Payment";
@@ -18,11 +18,11 @@ import MaintainanceHead from "./Pages/Master/MaintainanceHead";
 import Report from "./Pages/Report/Report";
 import ViewBills from "./Pages/Report/BillsView";
 import AllChargeMemberView from "./Pages/Report/AllChargeMemberView";
-import LedgerView from "./Pages/Master/LedgerView";
+import LedgerView from "./Pages/Master/Ledger/LedgerView";
 import GroupView from "./Pages/Master/GroupView";
 import NewGroup from "./Pages/Master/NewGroup";
 import GenerateBill from "./Pages/Societies/GenerateBill";
-import UpdateLedger from "./Pages/Master/UpdateLedger";
+import UpdateLedger from "./Pages/Master/Ledger/UpdateLedger";
 import UpdateGroup from "./Pages/Master/UpdateGroup";
 import NewMaintenanceHead from "./Pages/Master/NewMaitenanceHead";
 import ViewMaintenanceHead from "./Pages/Master/ViewMaintenanceHead";
@@ -38,6 +38,11 @@ import MultipleReceipt from "./Pages/Transaction/Receipt/MultipleReceipt";
 import MultiplePayment from "./Pages/Transaction/Payment/MultiplePayment";
 import UnitHead from "./Pages/Master/UnitHead";
 import OpeningBalance from "./Pages/Transaction/OpeningBalance";
+import LedgerMain from "./Pages/Master/Ledger/LedgerMain";
+import AccLedger from "./Pages/Master/Ledger/AccLedger";
+import MemberTrasaction from "./Pages/Member/Transaction";
+import TransactionView from "./Pages/Member/TransactionView";
+import IndividualLedger from "./Pages/Member/IndividualLedger";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +78,20 @@ const router = createBrowserRouter([
         element: <Profile />,
       },
       {
+        path: "/member/memTransactions",
+        element: <MemberTrasaction />,
+        children: [
+          {
+            path: "",
+            element: <TransactionView />,
+          },
+          {
+            path: "individualLedger",
+            element: <IndividualLedger />,
+          },
+        ],
+      },
+      {
         path: "/member/member-list",
         element: <MemberList />,
       },
@@ -95,10 +114,18 @@ const router = createBrowserRouter([
           },
           {
             path: "ledger",
+            element: <LedgerMain />,
+          },
+          {
+            path: "ledger/partyLedger",
             element: <Ledger />,
           },
           {
-            path: "ledger/newledger",
+            path: "ledger/accLedger",
+            element: <AccLedger />,
+          },
+          {
+            path: "ledger/partyLedger/newledger",
             element: <NewLedger />,
           },
           {

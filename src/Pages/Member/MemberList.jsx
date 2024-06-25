@@ -4,10 +4,11 @@ import { useState } from "react";
 import * as XLSX from "xlsx";
 import UploadedData from "../../components/UploadedData";
 import "./memberlist.css";
+import { toast } from "react-toastify";
 
 const template = [
-  "firstName",
-  "lastName",
+  "name",
+  "email",
   "permanentAddress",
   "registeredMobileNo",
   "alternateMobileNo",
@@ -24,18 +25,16 @@ const template = [
   "societyShareCertificate",
   "memberSince",
   "systemId",
-  "photo",
 ];
-
-const tableHead = [
+let tableHeads = [
   "Name",
   "Mobile No.",
+  "Email",
   "Address",
   "Flat No.",
   "Wing No.",
-  "Society NOC Status",
-  "Occupancy",
 ];
+let tableHead = [];
 
 const MemberList = () => {
   const [upload, setUpload] = useState(false);
@@ -98,22 +97,61 @@ const MemberList = () => {
           excelData
         );
         console.log(result);
+        toast.success("successfully data saved");
       } catch (error) {
         console.log(error);
+        toast.error("error in stroring data");
       }
     }
   };
   console.log(excelData);
-
+  const [tableRow, setTableRow] = useState([]);
   const [data, setData] = useState([]);
+  const [head, setHead] = useState([]);
+  const [list, setList] = useState([]);
+
+  useEffect(() => {
+    let arr = data.map((item) => {
+      return {
+        name: item.name,
+
+        registeredMobileNo: item.registeredMobileNo,
+        email: item.email,
+        permanentAddress: item.permanentAddress,
+        flatNo: item.flatNo,
+        wingNo: item.wingNo,
+        head: head.map((row, index) => ({
+          heads: row,
+          value: item.head?.[index]?.value || 0,
+        })),
+      };
+    });
+
+    setTableRow(arr);
+  }, [head, data]);
 
   useEffect(() => {
     fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error(error));
+
+    // fetch maintenance head
+
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+      .then((response) => response.json())
+      .then((data) => {
+        tableHead = [];
+
+        data.map((item) => {
+          tableHead.push(item.Header);
+        });
+        setHead(tableHead);
+      })
+      .catch((error) => console.error(error));
   }, []);
   console.log(data);
+  console.log(head);
 
   const exportData = data.map((item) => item);
 
@@ -168,13 +206,44 @@ const MemberList = () => {
     setChkStat2(c);
   };
 
+  const handleFieldChange = (index, field, value) => {
+    const updateRow = [...tableRow];
+    updateRow[index][field] = value;
+    setTableRow(updateRow);
+  };
+
+  const handleRowValueChange = (item, rowIndex, event) => {
+    const newHead = [...item.head];
+    newHead[rowIndex].value = event.target.value;
+    setTableRow((prevTableRow) =>
+      prevTableRow.map((row) =>
+        row === item ? { ...row, head: newHead } : row
+      )
+    );
+  };
+
+  const handleSave = async () => {
+    console.log(tableRow, "table Head");
+    try {
+      let res = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/member/postOpeningMember",
+        tableRow
+      );
+      console.log(res);
+      toast.success("successfully saved data");
+    } catch (error) {
+      console.log(error);
+      toast.error("error in storing data");
+    }
+  };
+
   return (
     <>
       <div
         className="pt-4  overflow-y-auto  gap-6"
         style={{ height: "calc(100vh - 150px)" }}
       >
-        <h1 className="text-2xl mb-5"></h1>
+        <h1 className="text-2xl text-center mb-5">Member List</h1>
         <div className="flex justify-end mr-10">
           <button
             onClick={handleExportData}
@@ -237,54 +306,117 @@ const MemberList = () => {
           </div>
         ) : (
           <>
-            <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6 rounded-lg ">
-              <table className="rounded-md">
-                <thead className="bg-gray-700 text-slate-200">
-                  <tr>
-                    <th className="p-4 ">
-                      <input
-                        type="checkbox"
-                        onChange={(event) => leadSet(event)}
-                      />
-                    </th>
-                    {tableHead.map((item) => (
-                      <th className="p-4 " key={item}>
-                        {item}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-300">
-                  {data.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-200">
-                      <td className="p-4">
-                        <input
-                          type="checkbox"
-                          checked={chkstat2[item._id]}
-                          onChange={(event) => setTick(item, event)}
-                          name={item._id}
-                        />
-                      </td>
-                      <td className="p-4">
-                        {item.firstName}
-                        {item.lastName}
-                      </td>
-                      <td className="p-4 text-center">
-                        {item.registeredMobileNo}
-                      </td>
-                      <td className="p-4 text-center">
-                        {item.permanentAddress}
-                      </td>
-                      <td className="p-4 text-center">{item.flatNo}</td>
-                      <td className="p-4 text-center">{item.wingNo}</td>
-                      <td className="p-4 text-center">
-                        {item.societyNocStatus}
-                      </td>
-                      <td className="p-4 text-center">{item.occupancy}</td>
+            <div className="px-10">
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-gray-600 rounded-md text-white mb-3"
+              >
+                Save
+              </button>
+              <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6  rounded-lg ">
+                <table className="rounded-md">
+                  <thead className="bg-gray-700 text-slate-200">
+                    <tr>
+                      {tableHeads.map((item) => (
+                        <th
+                          className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
+                          key={item}
+                        >
+                          {item}
+                        </th>
+                      ))}
+                      {head.map((item) => (
+                        <th
+                          className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
+                          key={item}
+                        >
+                          {item}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-300">
+                    {tableRow.map((item, index) => (
+                      <tr key={index} className="">
+                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis">
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(event) =>
+                              handleFieldChange(
+                                index,
+                                "name",
+                                event.target.value
+                              )
+                            }
+                            className="text-center"
+                          />
+                        </td>
+                        <td className="p-4 text-center whitespace-nowrap overflow-hidden text-ellipsis">
+                          <input
+                            type="text"
+                            value={item.registeredMobileNo}
+                            onChange={(event) =>
+                              handleFieldChange(
+                                index,
+                                "registeredMobileNo",
+                                event.target.value
+                              )
+                            }
+                            className="text-center"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="text"
+                            value={item.email}
+                            onChange={(event) =>
+                              handleFieldChange(
+                                index,
+                                "email",
+                                event.target.value
+                              )
+                            }
+                            className="text-center"
+                          />
+                        </td>
+                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                          <input
+                            type="text"
+                            value={item.permanentAddress}
+                            onChange={(event) =>
+                              handleFieldChange(
+                                index,
+                                "permanentAddress",
+                                event.target.value
+                              )
+                            }
+                            className="text-center"
+                          />
+                        </td>
+                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                          {item.flatNo}
+                        </td>
+                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
+                          {item.wingNo}
+                        </td>
+                        {item.head.map((row, rowIndex) => (
+                          <td className=" text-center" key={rowIndex}>
+                            <input
+                              type="text"
+                              value={row.value}
+                              onChange={(event) =>
+                                handleRowValueChange(item, rowIndex, event)
+                              }
+                              className="text-center"
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}
