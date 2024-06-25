@@ -1,4 +1,6 @@
 import profile from "../Models/MemberProfile.model.js";
+import { OpeningMember } from "../Models/MemberProfile.model.js";
+import { MemberLedger } from "../Models/MemberProfile.model.js";
 import fs from "fs";
 
 export const Profile = async (req, res) => {
@@ -12,11 +14,12 @@ export const Profile = async (req, res) => {
         // Destructure flatNo and wingNo for easy reference
         const { flatNo, wingNo } = item;
         const update = {
-          firstName: item.firstName,
-          lastName: item.lastName,
+          name: item.name,
+
           permanentAddress: item.permanentAddress,
           registeredMobileNo: item.registeredMobileNo,
           alternateMobileNo: item.alternateMobileNo,
+          email: item.email,
           flatNo: item.flatNo,
           wingNo: item.wingNo,
           area: item.area,
@@ -29,6 +32,7 @@ export const Profile = async (req, res) => {
           vehicleDetails: item.vehicleDetails,
           memberSince: item.memberSince,
           systemId: item.systemId,
+          head: item.head,
         };
 
         try {
@@ -53,11 +57,11 @@ export const Profile = async (req, res) => {
         const { flatNo, wingNo } = req.body;
         const { photo, societyShareCertificate } = req.files;
         const update = {
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
+          name: req.body.name,
           permanentAddress: req.body.permanentAddress,
           registeredMobileNo: req.body.registeredMobileNo,
           alternateMobileNo: req.body.alternateMobileNo,
+          email: req.body.email,
           flatNo: req.body.flatNo,
           wingNo: req.body.wingNo,
           area: req.body.area,
@@ -119,8 +123,7 @@ export const updateProfile = async (req, res) => {
         const { photo, societyShareCertificate } = req.files;
 
         const update = {
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
+          name: req.body.name,
           permanentAddress: req.body.permanentAddress,
           registeredMobileNo: req.body.registeredMobileNo,
           alternateMobileNo: req.body.alternateMobileNo,
@@ -154,8 +157,7 @@ export const updateProfile = async (req, res) => {
         console.log("photo not exist");
 
         const update = {
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
+          name: req.body.name,
           permanentAddress: req.body.permanentAddress,
           registeredMobileNo: req.body.registeredMobileNo,
           alternateMobileNo: req.body.alternateMobileNo,
@@ -212,3 +214,67 @@ export const deleteProfile = async (req, res) => {
     res.status(500).send(error);
   }
 };
+
+// opening member list
+
+export const postOpeningMember = async (req, res) => {
+  console.log("inside post opening member");
+  try {
+    req.body.map(async (item) => {
+      const { flatNo, wingno } = item;
+      let isExist = await profile.findOne({ flatNo: flatNo });
+      if (isExist) {
+        isExist.head = item.head;
+        isExist.name = item.name;
+
+        isExist.email = item.email;
+        isExist.permanentAddress = item.permanentAddress;
+        isExist.registeredMobileNo = item.registeredMobileNo;
+        isExist.save();
+      }
+    });
+    res.send("successfully data saved");
+  } catch (error) {
+    console.log(error);
+    res.send("error in storing data", error);
+  }
+};
+
+export const getOpeningMember = async (req, res) => {
+  try {
+    let result = await OpeningMember.find({});
+    res.send(result);
+  } catch (error) {
+    res.send(error);
+    console.log(error);
+  }
+};
+
+// starting of member Ledgers Controller
+
+export const postLedger = async (req, res) => {
+  console.log("inside postLedger", req.body);
+
+  try {
+    const { memberId, ledger } = req.body;
+
+    // Find member by ID and update items
+    const updatedMember = await MemberLedger.findOneAndUpdate(
+      { memberId },
+      { $set: { ledger } },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedMember) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res
+      .status(201)
+      .json({ success: true, message: "successfully saved Ledger " });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+// ending of member Ledgers Controller

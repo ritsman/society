@@ -1,5 +1,5 @@
 import MasterHead from "../Models/MasterHead.models.js";
-import Ledger from "../Models/Ledger.models.js";
+import PartyLedger from "../Models/Ledger.models.js";
 import groups from "../Models/Group.models.js";
 import groupList from "../Models/GroupList.models.js";
 import { UnitHead } from "../Models/MasterHead.models.js";
@@ -102,13 +102,21 @@ export const deleteHead = async (req, res) => {
   }
 };
 
+// Starting of Account Ledgers controller
+
+export const postAccLedger = async (req, res) => {
+  console.log("post Account ledger contoller", req.body);
+};
+
+//Ending of  Account Ledgers controller
+
 // Ledger crud operations
 
 export const postLedger = async (req, res) => {
   console.log("postLedger controller reached", req.body);
 
   try {
-    let result = new Ledger({
+    let result = new PartyLedger({
       data: req.body,
     });
     result.save();
@@ -122,7 +130,7 @@ export const getLedger = async (req, res) => {
   console.log("reached inside getLedger controller");
 
   try {
-    let result = await Ledger.find({});
+    let result = await PartyLedger.find({});
     res.send(result);
   } catch (error) {
     res.send(error);
@@ -139,7 +147,7 @@ export const updateLedger = async (req, res) => {
       return res.status(400).send("Missing _id in request body");
     }
 
-    const result = await Ledger.findByIdAndUpdate(id, {
+    const result = await PartyLedger.findByIdAndUpdate(id, {
       $set: { data: req.body },
     });
 
@@ -164,7 +172,7 @@ export const deleteLedger = async (req, res) => {
       return res.status(400).send("Missing _id in request parameters");
     }
 
-    const result = await Ledger.findByIdAndDelete(id);
+    const result = await PartyLedger.findByIdAndDelete(id);
 
     if (!result) {
       return res.status(404).send("Ledger not found");
@@ -188,6 +196,7 @@ export const postGroup = async (req, res) => {
     if (!existing) {
       console.log("not found");
       let result = new groups({
+        Code: req.body.code,
         GroupName: req.body.groupName,
         Under: req.body.under,
       });
@@ -240,6 +249,7 @@ export const updateGroup = async (req, res) => {
   try {
     const groupId = req.params.id;
     const updateData = {
+      Code: req.body.code,
       GroupName: req.body.groupName,
       Under: req.body.under,
     };

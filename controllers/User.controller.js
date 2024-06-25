@@ -36,7 +36,10 @@ export const login = async (req, res) => {
             name: users.name,
             user: users.user,
           },
-          jwtSecret
+          jwtSecret,
+          {
+            expiresIn: "2d",
+          }
         );
         res.send(token);
       }

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const LedgerSchema = new mongoose.Schema(
+const partyLedgerSchema = new mongoose.Schema(
   {
     data: {
       type: Object,
@@ -11,6 +11,20 @@ const LedgerSchema = new mongoose.Schema(
   }
 );
 
-const Ledger = mongoose.model("Ledger", LedgerSchema);
+const PartyLedger = mongoose.model("Ledger", partyLedgerSchema);
 
-export default Ledger;
+export default PartyLedger;
+
+const accountLedger = new mongoose.Schema(
+  {
+    name: String,
+    shortName: String,
+    accountType: String,
+    narration: String,
+  },
+  {
+    timestams: true,
+  }
+);
+
+export const AccLedger = mongoose.model("AccLedger", accountLedger);

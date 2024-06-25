@@ -8,6 +8,9 @@ const GroupSchema = new mongoose.Schema(
     Under: {
       type: String,
     },
+    Code: {
+      type: String,
+    },
   },
   {
     timestams: true,

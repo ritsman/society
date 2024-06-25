@@ -17,6 +17,7 @@ import {
   deleteHead,
   postUnitHead,
   getUnitHead,
+  postAccLedger,
 } from "../controllers/masterHead.controller.js";
 import {
   getBillMaster,
@@ -30,6 +31,8 @@ router.post("/masterHead", postMHead);
 router.get("/getHead", getHead);
 router.put("/updateHead/:groupId", updateHead);
 router.delete("/deleteHead/:groupId", deleteHead);
+
+router.post("/postAccLedger", postAccLedger);
 
 router.post("/postLedger", postLedger);
 router.get("/getLedger", getLedger);
