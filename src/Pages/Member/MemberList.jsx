@@ -92,7 +92,7 @@ const MemberList = () => {
       e.preventDefault();
       try {
         let result = await axios.post(
-          "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
+          "http://localhost:3001/api/member/postProfile",
 
           excelData
         );
@@ -131,7 +131,7 @@ const MemberList = () => {
   }, [head, data]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+    fetch("http://localhost:3001/api/member/getMemberList")
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error(error));
@@ -226,7 +226,7 @@ const MemberList = () => {
     console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/member/postOpeningMember",
+        "http://localhost:3001/api/member/postOpeningMember",
         tableRow
       );
       console.log(res);

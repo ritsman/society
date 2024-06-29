@@ -39,10 +39,13 @@ import MultiplePayment from "./Pages/Transaction/Payment/MultiplePayment";
 import UnitHead from "./Pages/Master/UnitHead";
 import OpeningBalance from "./Pages/Transaction/OpeningBalance";
 import LedgerMain from "./Pages/Master/Ledger/LedgerMain";
-import AccLedger from "./Pages/Master/Ledger/AccLedger";
+import AccLedger from "./Pages/Master/Ledger/AccLedgers";
 import MemberTrasaction from "./Pages/Member/Transaction";
 import TransactionView from "./Pages/Member/TransactionView";
 import IndividualLedger from "./Pages/Member/IndividualLedger";
+import BankAccLedger from "./Pages/Master/Ledger/BankAccLedger";
+import CashAccLedger from "./Pages/Master/Ledger/CashAccLedger";
+import AllLedgers from "./Pages/Report/AllLedgers";
 
 const router = createBrowserRouter([
   {
@@ -125,6 +128,14 @@ const router = createBrowserRouter([
             element: <AccLedger />,
           },
           {
+            path: "ledger/accLedger/bankAcLedger",
+            element: <BankAccLedger />,
+          },
+          {
+            path: "ledger/accLedger/cashAcLedger",
+            element: <CashAccLedger />,
+          },
+          {
             path: "ledger/partyLedger/newledger",
             element: <NewLedger />,
           },
@@ -202,6 +213,10 @@ const router = createBrowserRouter([
       {
         path: "report/bills",
         element: <Report />,
+      },
+      {
+        path: "report/AllLedgers",
+        element: <AllLedgers />,
       },
       {
         path: "report/bills-view",

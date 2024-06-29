@@ -3,6 +3,7 @@ import axios from "axios";
 
 import ReceiptBankMode from "./Receipt-BankMode";
 import ReceiptCashMode from "./Receipt-CashMode";
+import { isEqual } from "date-fns";
 
 const MultipleReceipt = () => {
   const [cashReceiptData, setCashReceiptData] = useState([]);
@@ -10,6 +11,7 @@ const MultipleReceipt = () => {
   const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
   const [account, setAccount] = useState("");
+  const [isView, setIsView] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
@@ -27,7 +29,7 @@ const MultipleReceipt = () => {
             code: item.data.flatNo,
             name: item.data.ownerName,
             balance: item.data.total,
-            amount: filteredRec.length > 0 ? filteredRec[0].amount : 0,
+            amount: 0,
             principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
             interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
             chequeNo: filteredRec.length > 0 ? filteredRec[0].chequeNo : null,
@@ -60,19 +62,24 @@ const MultipleReceipt = () => {
           filteredRec = data2.filter((row) => row.code == item.data.flatNo);
           console.log(filteredRec);
           return {
+            headTotal: item.data.total,
+            head: item.data.head,
+            memberId: item.data.memberId,
             date: null,
+            mode: paymentMethod,
             code: item.data.flatNo,
             name: item.data.ownerName,
-            balance: item.data.total,
-            amount: filteredRec.length > 0 ? filteredRec[0].amount : 0,
+            chequeNo: null,
+            chequeDate: null,
+            bank: null,
+            branch: null,
+            balance:
+              filteredRec.length > 0 ? filteredRec[0].balance : item.data.total,
+            amount: 0,
             principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
             interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
 
-            principleBalance:
-              filteredRec.length > 0 ? filteredRec[0].principleBalance : 0,
-            interestBalance:
-              filteredRec.length > 0 ? filteredRec[0].interestBalance : 0,
-            narration: filteredRec.length > 0 ? filteredRec[0].narration : null,
+            narration: null,
           };
         });
         setCashReceiptData(updatedReceiptData);
@@ -87,7 +94,7 @@ const MultipleReceipt = () => {
     async function fetch() {
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/transaction/getBankReceipt"
+          "http://localhost:3001/api/transaction/getBankReceipt"
         );
         setData1(result.data);
       } catch (error) {
@@ -95,7 +102,7 @@ const MultipleReceipt = () => {
       }
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
+          "http://localhost:3001/api/transaction/getCashReceipt"
         );
         setData2(result.data);
       } catch (error) {
@@ -117,6 +124,7 @@ const MultipleReceipt = () => {
     setAccount("");
     const selectedPaymentMethod = event.target.value;
     setPaymentMethod(selectedPaymentMethod);
+    setIsView(false);
   };
 
   useEffect(() => {
@@ -130,6 +138,14 @@ const MultipleReceipt = () => {
     const accounts = event.target.value;
     setAccount(accounts);
   };
+
+  const toggleView = () => {
+    setIsView(true);
+  };
+
+  useEffect(() => {
+    console.log(isView);
+  }, [isView]);
 
   return (
     <div className="py-5 px-10">
@@ -159,21 +175,36 @@ const MultipleReceipt = () => {
               <option value="cash in hand">Cash In Hand</option>
             )}
           </select>
+
+          <button
+            onClick={toggleView}
+            className="border-2 px-4 py-2 rounded-md"
+          >
+            View
+          </button>
         </div>
         <div>
-          {paymentMethod === "bank" && account === "bank account" && (
+          {/* {paymentMethod === "bank" && account === "bank account" && (
             <ReceiptBankMode
               receiptData={bankReceiptData}
               setReceiptData={setBankReceiptData}
             />
+          )} */}
+
+          {isView && (
+            <ReceiptCashMode
+              receiptData={cashReceiptData}
+              setReceiptData={setCashReceiptData}
+              paymentMethod={paymentMethod}
+            />
           )}
 
-          {paymentMethod === "cash" && account === "cash in hand" && (
+          {/* {paymentMethod === "cash" && account === "cash in hand" && (
             <ReceiptCashMode
               receiptData={cashReceiptData}
               setReceiptData={setCashReceiptData}
             />
-          )}
+          )} */}
         </div>
       </div>
     </div>

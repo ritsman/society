@@ -2,7 +2,10 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 
 const Report = () => {
-  const cards = [{ name: "Bills", path: "/report/bills-view" }];
+  const cards = [
+    { name: "Bills", path: "/report/bills-view" },
+    { name: "Ledgers", path: "/report/allLedgers" },
+  ];
 
   return (
     <>

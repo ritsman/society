@@ -7,7 +7,7 @@ const ReceiptBankMode = ({ receiptData, setReceiptdata }) => {
     console.log(receiptData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/postBankReceipt",
+        "http://localhost:3001/api/transaction/postBankReceipt",
         receiptData
       );
       console.log(res);
@@ -28,7 +28,9 @@ const ReceiptBankMode = ({ receiptData, setReceiptdata }) => {
   const handleCellChange = (index, field, value) => {
     const updatedData = [...receiptData];
     updatedData[index][field] = value;
-    setReceiptdata(updatedData);
+    if (setReceiptdata) {
+      setReceiptdata(updatedData);
+    }
   };
   return (
     <div>
@@ -71,7 +73,6 @@ const ReceiptBankMode = ({ receiptData, setReceiptdata }) => {
                 <td className="border px-4 py-2">
                   <input
                     type="date"
-                    value={item.date || format(new Date(), "yyyy-MM-dd")}
                     onChange={(e) =>
                       handleCellChange(index, "date", e.target.value)
                     }

@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 const LedgerMain = () => {
   const cards = [
     { name: "Account Ledger", path: "/master/ledger/accLedger" },
-    { name: "party Ledger", path: "/master/ledger/partyLedger" },
+    { name: "Party Ledger", path: "/master/ledger/partyLedger" },
     { name: "Member Ledger", path: "/master/ledger/memberLedger" },
   ];
 

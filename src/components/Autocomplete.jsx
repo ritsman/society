@@ -51,7 +51,7 @@ const AutoComplete = ({ options, onSelect }) => {
     <div className="relative">
       <input
         required
-        className="w-full px-3 py-2 border focus:outline-none border-gray-300 rounded"
+        className="w-full px-3 py-2 border text-center focus:outline-none border-gray-300 rounded"
         type="text"
         value={inputValue}
         onChange={handleInputChange}

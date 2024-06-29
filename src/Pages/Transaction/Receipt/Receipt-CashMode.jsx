@@ -1,13 +1,55 @@
 import { toast } from "react-toastify";
 import axios from "axios";
 import format from "date-fns/format";
+import { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 
-const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
+const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
+  const [head, setHead] = useState([]);
+  const [headValues, setHeadValues] = useState([]);
+
+  function generateShortUUID() {
+    return uuidv4().replace(/-/g, "").slice(0, 8);
+  }
+
+  useEffect(() => {
+    // fetch maintenance head
+    async function fetch() {
+      try {
+        let res = await axios.get(
+          "https://a3.arya-erp.in/api2/socapi/api/master/getHead"
+        );
+        console.log(res.data);
+        let tableHead = [];
+
+        res.data.map((item) => {
+          tableHead.push(item.Header);
+        });
+        console.log(tableHead);
+        setHead(tableHead);
+        setHeadValues(
+          tableHead.map((row, index) => ({
+            heads: row,
+            value: 2,
+          }))
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetch();
+  }, []);
+
+  useEffect(() => {
+    console.log(headValues);
+  }, [headValues]);
+
   const handleSave = async () => {
     console.log(receiptData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashReceipt",
+        "http://localhost:3001/api/transaction/postCashReceipt",
         receiptData
       );
       console.log(res);
@@ -16,7 +58,88 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
       console.log(error);
       toast.error("error in storing data");
     }
+    // update member ledger
+    const processReceipts = async (receiptData) => {
+      for (const row of receiptData) {
+        if (Number(row.amount) !== 0) {
+          let uniqueId = generateShortUUID();
+          try {
+            let res = await axios.post(
+              `http://localhost:3001/api/member/Ledger/${row.memberId}`,
+              {
+                memberId: row.memberId,
+                ledger: [
+                  {
+                    tranId: uniqueId,
+                    payMode: paymentMethod,
+                    date: row.date,
+                    billNo: "",
+                    dueDate: "",
+                    head: row.head,
+                    totalAmtDue: Number(row.headTotal) + Number(row.balance),
+                    billAmt: Number(row.headTotal) + Number(row.balance),
+                    paidAmt: row.amount,
+                    balance: row.balance - row.amount,
+                  },
+                ],
+              }
+            );
+
+            console.log(res);
+          } catch (error) {
+            console.error(error);
+          }
+
+          // for society ledger
+
+          console.log(paymentMethod, "method");
+          if (paymentMethod == "cash") {
+            console.log("inside cash ledger condition");
+            try {
+              let res = await axios.post(
+                "http://localhost:3001/api/master/postCashAccLedger",
+                {
+                  tranId: uniqueId,
+                  date: row.date,
+                  ref: row.name,
+                  billAmt: Number(row.headTotal) + Number(row.balance),
+                  paidAmt: row.amount,
+                  Balance: 0,
+                }
+              );
+
+              console.log(res);
+            } catch (error) {
+              console.log(error);
+            }
+          }
+
+          if (paymentMethod == "bank") {
+            try {
+              let res = await axios.post(
+                "http://localhost:3001/api/master/postBankAccLedger",
+                {
+                  tranId: uniqueId,
+                  date: row.date,
+                  ref: row.name,
+                  billAmt: Number(row.headTotal) + Number(row.balance),
+                  paidAmt: row.amount,
+                  Balance: 0,
+                }
+              );
+
+              console.log(res);
+            } catch (error) {
+              console.log(error);
+            }
+          }
+        }
+      }
+    };
+
+    processReceipts(receiptData);
   };
+
   const handleKeyDown = (e, index, field) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -28,7 +151,9 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
   const handleCellChange = (index, field, value) => {
     const updatedData = [...receiptData];
     updatedData[index][field] = value;
-    setReceiptdata(updatedData);
+    if (setReceiptdata) {
+      setReceiptdata(updatedData);
+    }
   };
   return (
     <div>
@@ -48,8 +173,14 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
             <th className="px-4 py-2">Amount</th>
             <th className="px-4 py-2">Principal</th>
             <th className="px-4 py-2">Interest</th>
-            <th className="px-4 py-2">PrincipalBalance</th>
-            <th className="px-4 py-2">InterestBalance</th>
+
+            {paymentMethod == "bank" && <th className="px-4 py-2">ChequeNo</th>}
+            {paymentMethod == "bank" && <th className="px-4 py-2">ChqDate</th>}
+
+            {paymentMethod == "bank" && <th className="px-4 py-2">Bank</th>}
+
+            {paymentMethod == "bank" && <th className="px-4 py-2">Branch</th>}
+
             <th className="px-4 py-2">Narration</th>
           </tr>
         </thead>
@@ -59,7 +190,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
               <td className="border px-4 py-2">
                 <input
                   type="date"
-                  value={item.date || format(new Date(), "yyyy-MM-dd")}
+                  required
                   onChange={(e) =>
                     handleCellChange(index, "date", e.target.value)
                   }
@@ -103,30 +234,56 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata }) => {
                 {item.interest}
               </td>
 
-              <td
-                className="border px-4 py-2"
-                contentEditable
-                onBlur={(e) =>
-                  handleCellChange(
-                    index,
-                    "principleBalance",
-                    e.target.innerText
-                  )
-                }
-                onKeyDown={(e) => handleKeyDown(e, index, "principleBalance")}
-              >
-                {item.principleBalance}
-              </td>
-              <td
-                className="border px-4 py-2"
-                contentEditable
-                onBlur={(e) =>
-                  handleCellChange(index, "interestBalance", e.target.innerText)
-                }
-                onKeyDown={(e) => handleKeyDown(e, index, "interestBalance")}
-              >
-                {item.interestBalance}
-              </td>
+              {paymentMethod == "bank" && (
+                <td
+                  className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis"
+                  contentEditable
+                  onBlur={(e) =>
+                    handleCellChange(index, "chequeNo", e.target.innerText)
+                  }
+                  onKeyDown={(e) => handleKeyDown(e, index, "chequeNo")}
+                >
+                  {item.chequeNo}
+                </td>
+              )}
+              {paymentMethod == "bank" && (
+                <td className="border px-4 py-2">
+                  <input
+                    type="date"
+                    required
+                    onChange={(e) =>
+                      handleCellChange(index, "chequeDate", e.target.value)
+                    }
+                  />
+                </td>
+              )}
+
+              {paymentMethod == "bank" && (
+                <td
+                  className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis"
+                  contentEditable
+                  onBlur={(e) =>
+                    handleCellChange(index, "bank", e.target.innerText)
+                  }
+                  onKeyDown={(e) => handleKeyDown(e, index, "bank")}
+                >
+                  {item.bank}
+                </td>
+              )}
+
+              {paymentMethod == "bank" && (
+                <td
+                  className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis"
+                  contentEditable
+                  onBlur={(e) =>
+                    handleCellChange(index, "branch", e.target.innerText)
+                  }
+                  onKeyDown={(e) => handleKeyDown(e, index, "branch")}
+                >
+                  {item.branch}
+                </td>
+              )}
+
               <td
                 className="border px-4 py-2 whitespace-nowrap overflow-hidden text-ellipsis"
                 contentEditable

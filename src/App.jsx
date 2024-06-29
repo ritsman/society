@@ -42,10 +42,17 @@ function App() {
     { title: "newLedger", link: "/master/ledger/newledger" },
     { title: "Account Ledger", link: "/master/ledger/accLedger" },
     { title: "Update Ledger", link: "/master/ledger/updateLedger" },
+    {
+      title: "Cash Account ",
+      link: "master/ledger/accLedger/cashAcLedger",
+    },
+    {
+      title: "Bank Account ",
+      link: "master/ledger/accLedger/bankAcLedger",
+    },
     { title: "Society", link: "/society" },
     { title: "Bills", link: "/society/bills" },
     { title: "Profile", link: "/member/profile" },
-    // { title: "Transactions", link: "/member/transactions" },
     { title: "Member List", link: "/member/member-list" },
     { title: "Transactions", link: "/transaction" },
     { title: "Payment", link: "/transaction/payment" },
