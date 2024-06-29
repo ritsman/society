@@ -13,7 +13,7 @@ const BankAccLedger = () => {
   async function fetchBankACLedger() {
     try {
       let res = await axios.get(
-        "http://localhost:3001/api/master/getBankAccLedger"
+        "https://a3.arya-erp.in/api2/socapi/api/master/getBankAccLedger"
       );
       console.log(res);
       setBankLedger(res.data);

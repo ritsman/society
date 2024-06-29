@@ -49,7 +49,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
     console.log(receiptData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/transaction/postCashReceipt",
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashReceipt",
         receiptData
       );
       console.log(res);
@@ -65,7 +65,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
           let uniqueId = generateShortUUID();
           try {
             let res = await axios.post(
-              `http://localhost:3001/api/member/Ledger/${row.memberId}`,
+              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row.memberId}`,
               {
                 memberId: row.memberId,
                 ledger: [
@@ -97,7 +97,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
             console.log("inside cash ledger condition");
             try {
               let res = await axios.post(
-                "http://localhost:3001/api/master/postCashAccLedger",
+                "https://a3.arya-erp.in/api2/socapi/api/master/postCashAccLedger",
                 {
                   tranId: uniqueId,
                   date: row.date,
@@ -117,7 +117,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
           if (paymentMethod == "bank") {
             try {
               let res = await axios.post(
-                "http://localhost:3001/api/master/postBankAccLedger",
+                "https://a3.arya-erp.in/api2/socapi/api/master/postBankAccLedger",
                 {
                   tranId: uniqueId,
                   date: row.date,

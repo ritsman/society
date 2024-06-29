@@ -63,7 +63,7 @@ const IndividualLedger = () => {
   async function fetch() {
     try {
       let res = await axios.get(
-        `http://localhost:3001/api/member/Ledger/${indiMember._id}`
+        `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${indiMember._id}`
       );
       console.log(res.data);
       setLedger(res.data.data);

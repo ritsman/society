@@ -65,7 +65,7 @@ const OpeningBalance = () => {
 
   useEffect(() => {
     try {
-      fetch("http://localhost:3001/api/member/getOpeningMember")
+      fetch("https://a3.arya-erp.in/api2/socapi/api/member/getOpeningMember")
         .then((response) => response.json())
         .then((data) => setList(data))
         .catch((error) => console.error(error));
@@ -90,7 +90,7 @@ const OpeningBalance = () => {
   }, [head, data]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/member/getMemberList")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error(error));
@@ -124,7 +124,7 @@ const OpeningBalance = () => {
     console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/member/postOpeningMember",
+        "https://a3.arya-erp.in/api2/socapi/api/member/postOpeningMember",
         tableRow
       );
       console.log(res);

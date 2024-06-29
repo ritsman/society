@@ -155,7 +155,7 @@ const AccLedger = () => {
   const handleSave = async () => {
     try {
       await axios.put(
-        `http://localhost:3001/api/master/updateAccLedger/${editingId}`,
+        `https://a3.arya-erp.in/api2/socapi/api/master/updateAccLedger/${editingId}`,
         editedData
       );
       setEditingId(null);
@@ -260,7 +260,7 @@ const AccLedger = () => {
 
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/master/postAccLedger",
+        "https://a3.arya-erp.in/api2/socapi/api/master/postAccLedger",
         formData
       );
       console.log(res);
@@ -277,7 +277,7 @@ const AccLedger = () => {
   async function fetch() {
     try {
       let res = await axios.get(
-        "http://localhost:3001/api/master/getAccLedger"
+        "https://a3.arya-erp.in/api2/socapi/api/master/getAccLedger"
       );
       console.log(res);
       setAccountLedgers(res.data);
@@ -303,7 +303,7 @@ const AccLedger = () => {
     try {
       console.log(result);
       let res = await axios.delete(
-        "http://localhost:3001/api/master/deleteAccLedger",
+        "https://a3.arya-erp.in/api2/socapi/api/master/deleteAccLedger",
         {
           data: { ids: result },
           headers: { "Content-Type": "application/json" },

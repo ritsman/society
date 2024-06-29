@@ -10,7 +10,7 @@ const TransactionView = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "http://localhost:3001/api/member/getMemberList"
+          "https://a3.arya-erp.in/api2/socapi/api/member/getMemberList"
         );
         console.log(res);
         setMembers(res.data);

@@ -7,7 +7,7 @@ const ReceiptBankMode = ({ receiptData, setReceiptdata }) => {
     console.log(receiptData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/transaction/postBankReceipt",
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/postBankReceipt",
         receiptData
       );
       console.log(res);
