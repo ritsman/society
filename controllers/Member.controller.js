@@ -257,6 +257,7 @@ export const postLedger = async (req, res) => {
 
   try {
     const { memberId, ledger } = req.body;
+    console.log(ledger);
 
     const updatedMember = await MemberLedger.findOneAndUpdate(
       { memberId },

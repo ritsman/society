@@ -99,6 +99,7 @@ export const postCashReceipt = async (req, res) => {
         narration,
         principle,
         chequeNo,
+        memberId,
         chequeDate,
         bank,
         branch,
@@ -130,7 +131,7 @@ export const postCashReceipt = async (req, res) => {
           name: name,
           balance: Number(balance) - amountNumber,
           interest: interest,
-
+          memberId: memberId,
           narration: narration,
           principle: principle,
         },

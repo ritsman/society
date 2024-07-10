@@ -54,7 +54,9 @@ const cashSchema = new mongoose.Schema({
   paid: {
     type: Array,
   },
-
+  memberId: {
+    type: String,
+  },
   balance: {
     type: String,
   },

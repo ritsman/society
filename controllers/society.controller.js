@@ -1,6 +1,8 @@
 import Bills from "../Models/Bills.models.js";
 
-export const generateBills = async (req, res) => {
+import { billGenerate } from "../Models/Bills.models.js";
+
+export const BillAmounts = async (req, res) => {
   console.log("Reached inside generateBills controllers", req.body);
 
   try {
@@ -50,4 +52,43 @@ export const getBillno = async (req, res) => {
     });
     res.send(arr);
   } catch (error) {}
+};
+
+export const generateBills = async (req, res) => {
+  console.log("inside generate Bills");
+  try {
+    const { memberId, memberName, billDetails } = req.body;
+
+    const updateBill = await billGenerate.findOneAndUpdate(
+      { memberId, memberName },
+      {
+        $push: {
+          billDetails: { $each: billDetails },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    if (!updateBill) {
+      return res.status(404).json({ message: "Member not found" });
+    }
+
+    res
+      .status(201)
+      .json({ success: true, message: "successfully bill generated " });
+  } catch (error) {
+    console.error("Error in bill generation:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getGeneratedBills = async (req, res) => {
+  try {
+    let result = await billGenerate.find({});
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error in get generate bills:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
