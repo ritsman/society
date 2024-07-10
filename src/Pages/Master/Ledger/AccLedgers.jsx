@@ -220,6 +220,7 @@ const AccLedger = () => {
         let res = await axios.get(
           "https://a3.arya-erp.in/api2/socapi/api/master/getgroup"
         );
+        console.error(res.data)
         setHeads([...primary, ...res.data]);
       } catch (error) {
         console.log(error);

@@ -12,11 +12,11 @@ const AllChargeMemberView = () => {
   const [endDate, setEndDate] = useState(null);
 
   useEffect(() => {
-    fetch("http://103.235.106.18:3001/api/member/getMemberList")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
       .then((response) => response.json())
       .then((data) => setNames(data));
 
-    fetch("http://103.235.106.18:3001/api/society/getBills")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
       .then((response) => response.json())
       .then((data) => {
         setCharges(data);

@@ -5,6 +5,7 @@ const Report = () => {
   const cards = [
     { name: "Bills", path: "/report/bills-view" },
     { name: "Ledgers", path: "/report/allLedgers" },
+    { name: "Print Bill", path: "/report/printBill" },
   ];
 
   return (

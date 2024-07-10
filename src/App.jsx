@@ -60,6 +60,7 @@ function App() {
     { title: "Purchase", link: "/transaction/purchase" },
     { title: "Purchase", link: "/transaction/purchase" },
     { title: "Report", link: "/report" },
+    { title: "Print Bill", link: "/report/printBill" },
     { title: "View Bills", link: "/report/bills-view" },
   ];
 

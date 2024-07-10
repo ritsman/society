@@ -8,6 +8,7 @@ import {
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
 import { toast } from "react-toastify";
+import GenerateBillForm from "./GenerateBillForm";
 
 const headers = [
   { key: "wing No", name: "Wing No" },
@@ -273,13 +274,14 @@ const GenerateBill = () => {
 
   return (
     <>
+      <h1 className="text-center text-2xl mb-2">Generate Maintenance Bills</h1>
+      <div>
+        <GenerateBillForm />
+      </div>
       <div
-        className="pt-10 overflow-y-auto  gap-6"
+        className="pt-2 overflow-y-auto  gap-6"
         style={{ height: "calc(100vh - 150px)" }}
       >
-        <h1 className="text-center text-2xl mb-5">
-          Generate Maintenance Bills
-        </h1>
         <div className="gap-6 gap-y-2  max-w-7xl mx-auto sm:px-6 lg:px-8"></div>
         <div>
           <div className="container mx-auto p-4">

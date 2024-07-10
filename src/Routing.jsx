@@ -10,7 +10,6 @@ import Master from "./Pages/Master/Master";
 import Ledger from "./Pages/Master/Ledger/Ledger";
 import NewLedger from "./Pages/Master/Ledger/NewLedger";
 import Group from "./Pages/Master/Group";
-import Bills from "./Pages/Societies/Bills";
 import Payment from "./Pages/Transaction/Payment";
 import Receipt from "./Pages/Transaction/Receipt";
 import Purchase from "./Pages/Transaction/Purchase";
@@ -46,6 +45,7 @@ import IndividualLedger from "./Pages/Member/IndividualLedger";
 import BankAccLedger from "./Pages/Master/Ledger/BankAccLedger";
 import CashAccLedger from "./Pages/Master/Ledger/CashAccLedger";
 import AllLedgers from "./Pages/Report/AllLedgers";
+import PrintBill from "./Pages/Report/PrintBill";
 
 const router = createBrowserRouter([
   {
@@ -213,6 +213,10 @@ const router = createBrowserRouter([
       {
         path: "report/bills",
         element: <Report />,
+      },
+      {
+        path: "report/printBill",
+        element: <PrintBill />,
       },
       {
         path: "report/AllLedgers",

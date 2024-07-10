@@ -8,51 +8,50 @@ import { isEqual } from "date-fns";
 const MultipleReceipt = () => {
   const [cashReceiptData, setCashReceiptData] = useState([]);
   const [bankReceiptData, setBankReceiptData] = useState([]);
-  const [data1, setData1] = useState([]);
+  // const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
   const [account, setAccount] = useState("");
   const [isView, setIsView] = useState(false);
+  const [billGenerated, setBillGenerated] = useState([]);
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
-  useEffect(() => {
-    async function fetch() {
-      try {
-        let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-        );
-        console.log(res.data);
-        const updatedReceiptData = res.data.map((item) => {
-          let filteredRec = [];
-          filteredRec = data1.filter((row) => row.code == item.data.flatNo);
-          console.log(filteredRec);
-          return {
-            date: filteredRec.length > 0 ? filteredRec[0].date : null,
-            code: item.data.flatNo,
-            name: item.data.ownerName,
-            balance: item.data.total,
-            amount: 0,
-            principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
-            interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
-            chequeNo: filteredRec.length > 0 ? filteredRec[0].chequeNo : null,
-            chqDate: filteredRec.length > 0 ? filteredRec[0].chqDate : null,
-            micr: null,
-            bank: null,
-            branch: null,
-            principleBalance:
-              filteredRec.length > 0 ? filteredRec[0].principleBalance : 0,
-            interestBalance:
-              filteredRec.length > 0 ? filteredRec[0].interestBalance : 0,
-            narration: filteredRec.length > 0 ? filteredRec[0].narration : null,
-          };
-        });
-        setBankReceiptData(updatedReceiptData);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetch();
-  }, [data1]);
+  // useEffect(() => {
+  //   async function fetch() {
+  //     try {
+  //       let res = await axios.get("http://localhost:3001/api/society/getBills");
+  //       console.log(res.data);
+  //       const updatedReceiptData = res.data.map((item) => {
+  //         let filteredRec = [];
+  //         filteredRec = data1.filter((row) => row.code == item.data.flatNo);
+  //         console.log(filteredRec);
+  //         return {
+  //           date: filteredRec.length > 0 ? filteredRec[0].date : null,
+  //           code: item.data.flatNo,
+  //           name: item.data.ownerName,
+  //           balance: item.data.total,
+  //           amount: 0,
+  //           principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
+  //           interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
+  //           chequeNo: filteredRec.length > 0 ? filteredRec[0].chequeNo : null,
+  //           chqDate: filteredRec.length > 0 ? filteredRec[0].chqDate : null,
+  //           micr: null,
+  //           bank: null,
+  //           branch: null,
+  //           principleBalance:
+  //             filteredRec.length > 0 ? filteredRec[0].principleBalance : 0,
+  //           interestBalance:
+  //             filteredRec.length > 0 ? filteredRec[0].interestBalance : 0,
+  //           narration: filteredRec.length > 0 ? filteredRec[0].narration : null,
+  //         };
+  //       });
+  //       setBankReceiptData(updatedReceiptData);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   fetch();
+  // }, [data1]);
 
   useEffect(() => {
     async function fetch() {
@@ -64,6 +63,12 @@ const MultipleReceipt = () => {
         const updatedReceiptData = res.data.map((item) => {
           let filteredRec = [];
           filteredRec = data2.filter((row) => row.code == item.data.flatNo);
+
+          let filteredBillGenerated = billGenerated.filter(
+            (a) => a.memberId == item.data.memberId
+          );
+          console.log(filteredBillGenerated);
+
           console.log(filteredRec);
           return {
             headTotal: item.data.total,
@@ -78,7 +83,11 @@ const MultipleReceipt = () => {
             bank: null,
             branch: null,
             balance:
-              filteredRec.length > 0 ? filteredRec[0].balance : item.data.total,
+              filteredRec.length > 0
+                ? filteredRec[0].balance
+                : filteredBillGenerated[0]
+                ? filteredBillGenerated[0].billDetails[0].currentBillAmt
+                : 0,
             amount: 0,
             principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
             interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
@@ -96,14 +105,24 @@ const MultipleReceipt = () => {
 
   useEffect(() => {
     async function fetch() {
+      // try {
+      //   let result = await axios.get(
+      //     "http://localhost:3001/api/transaction/getBankReceipt"
+      //   );
+      //   setData1(result.data);
+      // } catch (error) {
+      //   console.log(error);
+      // }
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/transaction/getBankReceipt"
+          "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
         );
-        setData1(result.data);
+        console.log(result);
+        setBillGenerated(result.data.data);
       } catch (error) {
         console.log(error);
       }
+
       try {
         let result = await axios.get(
           "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
