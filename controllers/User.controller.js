@@ -29,6 +29,14 @@ export const login = async (req, res) => {
       if (!validPassword) {
         return res.status(400).send("Invalid email or password");
       } else {
+          if (users.status == "pending") {
+
+            return res.status(403).json({
+              message: "Account not approved. Please wait for admin approval.",
+            });
+          }
+
+
         const token = jwt.sign(
           {
             _id: users._id,
@@ -46,8 +54,9 @@ export const login = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
-  }
+ return res.status(500).json({
+   message: "Internal Server Error",
+ });  }
 };
 
 export const register = async (req, res) => {
@@ -66,12 +75,14 @@ export const register = async (req, res) => {
       name,
       user,
       password: hashedPassword,
+      status: "pending",
     });
     await users.save();
-    res.status(201).send("User registered successfully");
-  } catch (error) {
+    res.status(200).json({
+   message: "Signup request submitted. Waiting for admin approval.",
+ });  } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ message: "Error processing signup request" });
   }
 };
 
@@ -139,6 +150,47 @@ export const resetPass = async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+
+export const getUsers = async (req,res) =>{
+    try {
+      let result = await User.find({});
+
+      res.status(200).json({ success: true, data: result });
+    } catch (error) {
+      console.error("Error in getting users", error);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+export const approveUser = async (req,res) =>{
+   try {
+    const role = req.body.role;
+     const user = await User.findByIdAndUpdate(
+       req.params.userId,
+       { status: "active" },
+       { new: true }
+     );
+     if (!user) {
+       return res.status(404).json({ message: "User not found" });
+     }
+     res.json({ message: "User approved successfully" });
+   } catch (error) {
+     res.status(500).json({ message: "Error approving user" });
+   }
+}
+
+export const rejectUser = async (req,res)=>{
+   try {
+     const user = await User.findByIdAndDelete(req.params.userId);
+     if (!user) {
+       return res.status(404).json({ message: "User not found" });
+     }
+     res.json({ message: "User rejected successfully" });
+   } catch (error) {
+     res.status(500).json({ message: "Error rejecting user" });
+   }
+}
 
 // function authenticateToken(req, res, next) {
 //   const token = req.header("Authorization");

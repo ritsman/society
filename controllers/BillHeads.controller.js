@@ -1,7 +1,7 @@
 import BillHeads from "../Models/BillHeads.model.js";
 
 export const postBillHeads = async (req, res) => {
-  console.log("insdie post bill Heads");
+  console.log("insdie post bill Heads",req.body);
 
   try {
     req.body.map(async (item) => {
@@ -16,6 +16,7 @@ export const postBillHeads = async (req, res) => {
         sequenceNo: item.sequenceNo,
         sgst: item.sgst,
         under: item.under,
+        isActive :item.isActive
       };
       await BillHeads.findOneAndUpdate({ billHead, under }, update, {
         upsert: true,
@@ -23,5 +24,19 @@ export const postBillHeads = async (req, res) => {
       });
     });
     res.send("successfully data stored");
-  } catch (error) {}
+  } catch (error) {
+    res.send(error)
+    console.log(error)
+  }
 };
+
+
+export const getBillHeads = async (req,res)=>{
+  try {
+    const response = await BillHeads.find();
+    res.send(response)
+  } catch (error) {
+    res.send(error)
+    console.log(error);
+  }
+}

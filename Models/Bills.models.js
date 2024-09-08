@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
 const billSchema = new mongoose.Schema(
-  {
+  { 
+    prevDue:{
+       type:Number,
+       default:0
+  },
     data: {
       type: Object,
     },

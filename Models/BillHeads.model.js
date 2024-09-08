@@ -27,6 +27,10 @@ const BillHeadSchema = new mongoose.Schema(
     igst: {
       type: String,
     },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestams: true,

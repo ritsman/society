@@ -4,6 +4,8 @@ const userSchema = new mongoose.Schema({
   name: String,
   user: String,
   password: String,
+  status:String,
+  role:String,
   resetPasswordToken: String,
   resetPasswordExpires: String,
 });

@@ -1,6 +1,76 @@
 import Bills from "../Models/Bills.models.js";
+import SocProfile from "../Models/Society/SocProfile.model.js";
 
 import { billGenerate } from "../Models/Bills.models.js";
+
+// start of society profile
+export const postSocProfile = async (req, res) => {
+  try {
+    const { registrationNumber } = req.body;
+
+    // Check if a society profile already exists
+    let existingSociety = await SocProfile.findOne();
+
+    if (existingSociety) {
+      // Update the existing society profile
+      existingSociety = await SocProfile.findOneAndUpdate(
+        { _id: existingSociety._id },
+        req.body,
+        { new: true } // Return the updated document
+      );
+      return res.status(200).json({
+        message: "Society profile updated successfully.",
+        data: existingSociety,
+      });
+    }
+
+    // Create and save the new society profile
+    const newSociety = new SocProfile(req.body);
+    await newSociety.save();
+    res.status(201).json({
+      message: "Society profile created successfully.",
+      data: newSociety,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+
+export const getSocProfile = async(req,res)=>{
+    try {
+      const societies = await SocProfile.find();
+      res.status(200).json(societies);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+}
+
+
+
+export const deleteSocProfile = async (req, res) => {
+  try {
+    const { registrationNumber } = req.params;
+
+    // Find and delete the society profile by registration number
+    const deletedSociety = await SocProfile.findOneAndDelete({
+      registrationNumber,
+    });
+
+    if (!deletedSociety) {
+      return res.status(404).json({ message: "Society not found" });
+    }
+
+    res.status(200).json({ message: "Society deleted successfully" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+
+// end of society profile 
+
 
 export const BillAmounts = async (req, res) => {
   console.log("Reached inside generateBills controllers", req.body);

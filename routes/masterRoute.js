@@ -30,9 +30,10 @@ import {
   getBillMaster,
   postBillMaster,
 } from "../controllers/billsMaster.controller.js";
-import { postBillHeads } from "../controllers/BillHeads.controller.js";
+import { getBillHeads, postBillHeads } from "../controllers/BillHeads.controller.js";
 
 router.post("/postBillHeads", postBillHeads);
+router.get("/getBillHeads",getBillHeads);
 
 router.post("/masterHead", postMHead);
 router.get("/getHead", getHead);
