@@ -11,7 +11,6 @@ const isValidToken = (token) => {
   try {
     const decoded = jwtDecode(token);
     const currentTime = Date.now() / 1000;
-    console.log(decoded);
     return decoded.exp > currentTime; // Check if token is expired
   } catch (error) {
     return false;
@@ -79,12 +78,13 @@ const LoginPage = () => {
       console.log(decodedToken);
       setIsAuthenticated(true);
       setLocalStorage(authToken, decodedToken.name);
+     
       toast.success("successfully Logged In");
       navigate("/");
     } catch (error) {
       console.log("login error", error);
       if (error.response) {
-        toast.error(error.response.data);
+        toast.error(error.response.data.message);
       } else {
         toast.error(error.message);
       }

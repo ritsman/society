@@ -39,6 +39,23 @@ const PrintBill = () => {
     setFilteredTableData(filtered);
   };
 
+  const [societyData , setSocietyData] = useState({})
+
+   useEffect(() => {
+     fetchData1();
+   }, []);
+
+   const fetchData1 = async () => {
+     try {
+       const res = await axios.get(
+         "https://a3.arya-erp.in/api2/socapi/api/society/getSocProfile"
+       );
+          setSocietyData(res.data[0]) 
+     } catch (error) {
+       console.error(error);
+     }
+   };
+
   useEffect(() => {
     handleSearch();
   }, [tableData]);
@@ -169,12 +186,12 @@ const PrintBill = () => {
 
     // Header
     doc.setFontSize(16);
-    doc.text("SHREENATH AVENUE CO-OP. HOUSING SOCIETY LTD", 105, 20, {
+    doc.text(`${societyData.societyName}`, 105, 20, {
       align: "center",
     });
     doc.setFontSize(10);
-    doc.text("TNA / TNA / HSG / TC / 32551", 105, 25, { align: "center" });
-    doc.text("Sai Krupa Complex,Kashi Village,Mira Road", 105, 30, {
+    // doc.text("TNA / TNA / HSG / TC / 32551", 105, 25, { align: "center" });
+    doc.text(`${societyData.address},${societyData.city},${societyData.state}`, 105, 30, {
       align: "center",
     });
 
@@ -248,7 +265,7 @@ const PrintBill = () => {
     doc.setFontSize(10);
 
     // Footer
-    doc.text("For SHREENATH AVENUE CO-OP. HOUSING SOCIETY LTD", 190, 180, {
+    doc.text(`${societyData.societyName}`, 190, 180, {
       align: "right",
     });
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 
-const AutoComplete = ({ options, onSelect }) => {
+const AutoComplete = ({ options, onSelect ,value}) => {
   const [inputValue, setInputValue] = useState("");
   const [selectedValues, setSelectedValues] = useState([]);
   const [filteredOptions, setFilteredOptions] = useState([]);

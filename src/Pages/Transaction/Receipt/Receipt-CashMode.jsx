@@ -4,13 +4,35 @@ import format from "date-fns/format";
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
+const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
   const [head, setHead] = useState([]);
   const [headValues, setHeadValues] = useState([]);
 
   function generateShortUUID() {
     return uuidv4().replace(/-/g, "").slice(0, 8);
   }
+
+
+ // Calculate interest
+ const calculateInterest = (data) => {
+   return data.map((item) => {
+     const date = item.date ? new Date(item.date) : new Date();
+     const interestAfter = new Date(item.interestAfter);
+     const differenceInTime = date.getTime() - interestAfter.getTime();
+     const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+     const interest =
+       differenceInDays > 0 ? differenceInDays * item.intPerDay : 0;
+
+     return { ...item, interest };
+   });
+ };
+
+ useEffect(() => {
+   if (receiptData.length > 0) {
+     const updatedData = calculateInterest(receiptData);
+     setReceiptData(updatedData);
+   }
+ }, []);
 
   useEffect(() => {
     // fetch maintenance head
@@ -151,10 +173,20 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
   const handleCellChange = (index, field, value) => {
     const updatedData = [...receiptData];
     updatedData[index][field] = value;
-    if (setReceiptdata) {
-      setReceiptdata(updatedData);
-    }
+    // if (setReceiptdata) {
+    
+    
+    setReceiptData(updatedData);
+    const a = calculateInterest(receiptData);
+    setReceiptData(a);
+   
+    // }
   };
+
+  useEffect(()=>{
+    console.log(receiptData)
+  },[receiptData])
+
   return (
     <div>
       <button
@@ -169,10 +201,11 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
             <th className="px-4 py-2">Date</th>
             <th className="px-4 py-2">Code</th>
             <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Balance</th>
-            <th className="px-4 py-2">Amount</th>
-            <th className="px-4 py-2">Principal</th>
+            <th className="px-4 py-2">Outstanding</th>
+            <th className="px-4 py-2">Interst applied on</th>
             <th className="px-4 py-2">Interest</th>
+            <th className="px-4 py-2">Total to be paid</th>
+            <th className="px-4 py-2">Amount</th>
 
             {paymentMethod == "bank" && <th className="px-4 py-2">ChequeNo</th>}
             {paymentMethod == "bank" && <th className="px-4 py-2">ChqDate</th>}
@@ -191,6 +224,8 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
                 <input
                   type="date"
                   required
+                  name="date"
+                  value={item.date}
                   onChange={(e) =>
                     handleCellChange(index, "date", e.target.value)
                   }
@@ -203,6 +238,10 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
                 {item.name}
               </td>
               <td className="border px-4 py-2">{item.balance}</td>
+              <td className="border px-4 py-2">{item.interest > 0 ? item.intApplOn : 0}</td>
+              <td className="border px-4 py-2">{(item.interest).toFixed(2)}</td>
+              <td className="border px-4 py-2">{(Number(item.balance) + Number(item.interest)).toFixed(2)}</td>
+
               <td
                 className="border px-4 py-2"
                 contentEditable
@@ -212,26 +251,6 @@ const ReceiptCashMode = ({ receiptData, setReceiptdata, paymentMethod }) => {
                 onKeyDown={(e) => handleKeyDown(e, index, "amount")}
               >
                 {item.amount}
-              </td>
-              <td
-                className="border px-4 py-2"
-                contentEditable
-                onBlur={(e) =>
-                  handleCellChange(index, "principle", e.target.innerText)
-                }
-                onKeyDown={(e) => handleKeyDown(e, index, "principle")}
-              >
-                {item.principle}
-              </td>
-              <td
-                className="border px-4 py-2"
-                contentEditable
-                onBlur={(e) =>
-                  handleCellChange(index, "interest", e.target.innerText)
-                }
-                onKeyDown={(e) => handleKeyDown(e, index, "interest")}
-              >
-                {item.interest}
               </td>
 
               {paymentMethod == "bank" && (

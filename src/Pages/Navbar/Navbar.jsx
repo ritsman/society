@@ -13,7 +13,6 @@ const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
   useEffect(() => {
     let tkn = localStorage.getItem("SocToken");
     let token = parseJwt(tkn);
-    console.log(token);
     let userName = localStorage.getItem("SocUser");
     setUser(userName);
     setUserDetails(token);
@@ -45,6 +44,7 @@ const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
     { name: "Transaction", path: "/transaction" },
     { name: "Report", path: "/report" },
     { name: "Master", path: "/master" },
+    
   ];
   return (
     <div className="">

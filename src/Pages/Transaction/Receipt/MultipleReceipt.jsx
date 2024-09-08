@@ -13,47 +13,36 @@ const MultipleReceipt = () => {
   const [account, setAccount] = useState("");
   const [isView, setIsView] = useState(false);
   const [billGenerated, setBillGenerated] = useState([]);
-
+  const [interstRate,setInterstRate] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
+ 
+   useEffect(()=>{
+       async function fetchInt(){
+            try {
+                let res = await axios.get(
+                  "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+                );
+                setInterstRate(res.data[0].interestRatePerMonth);
+                
+            } catch (error) {
+              console.log(error);
+            }
 
-  // useEffect(() => {
-  //   async function fetch() {
-  //     try {
-  //       let res = await axios.get("http://localhost:3001/api/society/getBills");
-  //       console.log(res.data);
-  //       const updatedReceiptData = res.data.map((item) => {
-  //         let filteredRec = [];
-  //         filteredRec = data1.filter((row) => row.code == item.data.flatNo);
-  //         console.log(filteredRec);
-  //         return {
-  //           date: filteredRec.length > 0 ? filteredRec[0].date : null,
-  //           code: item.data.flatNo,
-  //           name: item.data.ownerName,
-  //           balance: item.data.total,
-  //           amount: 0,
-  //           principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
-  //           interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
-  //           chequeNo: filteredRec.length > 0 ? filteredRec[0].chequeNo : null,
-  //           chqDate: filteredRec.length > 0 ? filteredRec[0].chqDate : null,
-  //           micr: null,
-  //           bank: null,
-  //           branch: null,
-  //           principleBalance:
-  //             filteredRec.length > 0 ? filteredRec[0].principleBalance : 0,
-  //           interestBalance:
-  //             filteredRec.length > 0 ? filteredRec[0].interestBalance : 0,
-  //           narration: filteredRec.length > 0 ? filteredRec[0].narration : null,
-  //         };
-  //       });
-  //       setBankReceiptData(updatedReceiptData);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  //   fetch();
-  // }, [data1]);
+            // calculate interest amount 
+             
+
+       }
+       fetchInt();
+   },[])
+
+   useEffect(()=>{console.log(interstRate)},[interstRate])
+
+    const formatDate = (date) => date.toISOString().split("T")[0];
+
 
   useEffect(() => {
+        const today = new Date();
+
     async function fetch() {
       try {
         let res = await axios.get(
@@ -74,7 +63,7 @@ const MultipleReceipt = () => {
             headTotal: item.data.total,
             head: item.data.head,
             memberId: item.data.memberId,
-            date: null,
+            date: formatDate(today),
             mode: paymentMethod,
             code: item.data.flatNo,
             name: item.data.ownerName,
@@ -82,6 +71,15 @@ const MultipleReceipt = () => {
             chequeDate: null,
             bank: null,
             branch: null,
+            intPerDay: (item.data.intAppliedAmt * (interstRate / 100)) / 30,
+            interestAfter:
+              filteredBillGenerated[0]?.billDetails.length > 0
+                ? filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].dueDate
+                : null, // Handle case if billDetails is empty
+
+            intApplOn: item.data.intAppliedAmt,
             balance:
               filteredRec.length > 0
                 ? filteredRec[0].balance
@@ -89,8 +87,8 @@ const MultipleReceipt = () => {
                 ? filteredBillGenerated[0].billDetails[0].currentBillAmt
                 : 0,
             amount: 0,
-            principle: filteredRec.length > 0 ? filteredRec[0].principle : 0,
-            interest: filteredRec.length > 0 ? filteredRec[0].interest : 0,
+
+            interest: 0,
 
             narration: null,
           };

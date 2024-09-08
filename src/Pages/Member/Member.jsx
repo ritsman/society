@@ -1,11 +1,18 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+
 
 const Member = () => {
+    const { userDetails} = useAuth();
+
   const cards = [
     { name: "Profile", path: "/member/profile" },
     { name: "Transactions", path: "/member/memTransactions" },
     { name: "Member List", path: "/member/member-list" },
+    ...(userDetails.role === "admin"
+      ? [{ name: "Approval", path: "/member/approval" }]
+      : []),
   ];
 
   return (

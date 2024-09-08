@@ -46,6 +46,8 @@ import BankAccLedger from "./Pages/Master/Ledger/BankAccLedger";
 import CashAccLedger from "./Pages/Master/Ledger/CashAccLedger";
 import AllLedgers from "./Pages/Report/AllLedgers";
 import PrintBill from "./Pages/Report/PrintBill";
+import Approval from "./Pages/Member/Approval";
+import SocietyForm from "./Pages/Societies/Profile/Profile";
 
 const router = createBrowserRouter([
   {
@@ -79,6 +81,10 @@ const router = createBrowserRouter([
       {
         path: "/member/profile",
         element: <Profile />,
+      },
+      {
+        path: "/member/approval",
+        element: <Approval />,
       },
       {
         path: "/member/memTransactions",
@@ -190,6 +196,11 @@ const router = createBrowserRouter([
         path: "society/bills",
         element: <GenerateBill />,
       },
+      {
+        path: "society/profile",
+        element: < SocietyForm/>,
+      },
+
       {
         path: "transaction/payment",
         element: <MultiplePayment />,

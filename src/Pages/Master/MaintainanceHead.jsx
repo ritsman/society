@@ -13,6 +13,7 @@ const header = [
   "SGST",
   "IGST",
 ];
+
 const MaintenanceHead = () => {
   const navigate = useNavigate();
 
@@ -20,54 +21,47 @@ const MaintenanceHead = () => {
     navigate("/master/maintenance-head/new-maintenanceHead");
   };
 
-  const [mmData, setMMData] = useState([]);
+  const [billHeadData, setBillHeadData] = useState([]);
+
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
-        let arr = [];
-        data.forEach((item, index) => {
-          let obj = {
-            GhCode: index,
-            billHead: item.Header,
-            under: item.Under,
-            sequenceNo: index + 1,
-            interestApplied: false,
-            cgst: "0",
-            sgst: "0",
-            igst: "0",
-          };
-          arr.push(obj);
-        });
-        setMMData(arr);
+        setBillHeadData(data);
       });
   }, []);
 
-  const [chkstat2, setChkStat2] = useState({});
+  const [mmData, setMMData] = useState([]);
 
-  useEffect(() => {
-    const chkstat = {};
-    mmData?.forEach((val) => {
-      chkstat[val._id] = false;
+ 
+useEffect(() => {
+  // Fetch data for mmData
+  fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    .then((response) => response.json())
+    .then((data) => {
+      const arr = data.map((item, index) => {
+        // Match item with billHeadData by _id or other identifier
+        const matchedBillHead =
+          billHeadData.find((b) => b.billHead === item.Header) || {};
+
+        console.log(matchedBillHead, "bill head data");
+
+        return {
+          _id: item._id,
+          GhCode: index,
+          billHead: item.Header,
+          under: item.Under,
+          sequenceNo: matchedBillHead.sequenceNo || index + 1,
+          interestApplied: matchedBillHead.interestApplied || false, // Take from billHeadData if exists
+          cgst: matchedBillHead.cgst || "0",
+          sgst: matchedBillHead.sgst || "0",
+          igst: matchedBillHead.igst || "0",
+          isActive: matchedBillHead.isActive || false, // Take from billHeadData if exists
+        };
+      });
+      setMMData(arr);
     });
-    setChkStat2(chkstat);
-  }, [mmData]);
-
-  const leadSet = (event) => {
-    let c = {};
-    Object.keys(chkstat2).forEach((key) => {
-      c[key] = event.target.checked;
-    });
-    setChkStat2(c);
-  };
-
-  const setTick = (contact, event) => {
-    chkstat2[contact._id] = event.target.checked;
-    const c = {
-      ...chkstat2,
-    };
-    setChkStat2(c);
-  };
+}, [billHeadData]);
 
   const handleInputChange = (index, field, value) => {
     const updatedData = [...mmData];
@@ -75,18 +69,24 @@ const MaintenanceHead = () => {
     setMMData(updatedData);
   };
 
+  const setTick = (contact, event) => {
+    const updatedData = mmData.map((item) =>
+      item._id === contact._id
+        ? { ...item, isActive: event.target.checked }
+        : item
+    );
+    setMMData(updatedData);
+  };
+
   const handleSubmit = async () => {
-    console.log(mmData);
     try {
       let res = await axios.post(
         "https://a3.arya-erp.in/api2/socapi/api/master/postBillHeads",
         mmData
       );
-      console.log(res);
-      toast.success("successfully data saved");
+      toast.success("Successfully saved data");
     } catch (error) {
-      console.log(error);
-      toast.error("error in storing data");
+      toast.error("Error storing data");
     }
   };
 
@@ -95,7 +95,7 @@ const MaintenanceHead = () => {
       className="md:py-10 px-10 overflow-y-auto gap-6"
       style={{ height: "calc(100vh - 150px)" }}
     >
-      <h1 className="text-center font-bold text-2xl"> Bills Head</h1>
+      <h1 className="text-center font-bold text-2xl">Bills Head</h1>
       <div className="flex justify-between">
         <div className="flex gap-5">
           <button
@@ -118,12 +118,10 @@ const MaintenanceHead = () => {
         </Link>
       </div>
       <div className="max-w-screen overflow-x-auto shadow-lg mt-6">
-        <table className="w-full border-collapse ">
-          <thead className="bg-gray-700 text-slate-200 ">
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-700 text-slate-200">
             <tr>
-              <th className="p-2">
-                <input type="checkbox" onChange={(event) => leadSet(event)} />
-              </th>
+              <th className="p-2 text-sm">Is Active</th>
               {header.map((head, index) => (
                 <th className="px-2 text-sm border" key={index}>
                   {head}
@@ -134,18 +132,18 @@ const MaintenanceHead = () => {
           <tbody className="bg-white divide-y divide-gray-300">
             {mmData.map((row, index) => (
               <tr key={index} className="hover:bg-gray-200 cursor-pointer">
-                <td className="p-4 border">
+                <td className="p-4 border text-center">
                   <input
                     type="checkbox"
-                    checked={chkstat2[row._id]}
+                    checked={row.isActive}
                     onChange={(event) => setTick(row, event)}
                     name={row._id}
                   />
                 </td>
-                <td className="px-8 border ">{row.GhCode}</td>
+                <td className="px-8 border">{row.GhCode}</td>
                 <td className="px-4 border">{row.billHead}</td>
                 <td className="px-4 border">{row.under}</td>
-                <td className="px-4  border text-center">
+                <td className="px-4 border text-center">
                   <input
                     type="text"
                     value={row.sequenceNo}
@@ -198,7 +196,7 @@ const MaintenanceHead = () => {
                     onChange={(e) =>
                       handleInputChange(index, "igst", e.target.value)
                     }
-                    className="bg-transparent text-center focus:outline-none w-[40%] "
+                    className="bg-transparent text-center focus:outline-none w-[40%]"
                   />
                 </td>
               </tr>

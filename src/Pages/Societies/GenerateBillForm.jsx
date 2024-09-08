@@ -1,13 +1,11 @@
 import axios from "axios";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 
-const GenerateBillForm = () => {
+const GenerateBillForm = ({ selectedItems }) => {
   const [receiptData, setReceiptData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,8 +14,7 @@ const GenerateBillForm = () => {
     type: "",
     billDate: "",
     billDueDate: "",
-    interestRate: "",
-    dueDays: "",
+    
   });
 
   function generateShortUUID() {
@@ -25,52 +22,29 @@ const GenerateBillForm = () => {
   }
 
   useEffect(() => {
+    // Set the bill date to today's date when the component loads
     const today = new Date();
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 2);
-    const dueDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 21);
-
     setFormData((prevData) => ({
       ...prevData,
-      billDate: formatDate(firstDayOfMonth),
-      billDueDate: formatDate(dueDayOfMonth),
+      billDate: formatDate(today), // Set default bill date as current date
     }));
-
     fetchBills();
   }, []);
 
   useEffect(() => {
-    const dueDate = new Date(formData.billDueDate);
-    const billDate = new Date(formData.billDate);
-    const diffTime = Math.abs(dueDate - billDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    setFormData((prevData) => ({
-      ...prevData,
-      dueDays: diffDays.toString(),
-    }));
-  }, [formData.billDate, formData.billDueDate]);
+    // Automatically set the billDueDate to 20 days after billDate
+    if (formData.billDate) {
+      const billDate = new Date(formData.billDate);
+      const dueDate = new Date(billDate);
+      dueDate.setDate(billDate.getDate() + 20); // Add 20 days
+      setFormData((prevData) => ({
+        ...prevData,
+        billDueDate: formatDate(dueDate),
+      }));
+    }
+  }, [formData.billDate]);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const toggleItem = useCallback((id) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  }, []);
-
-  const selectAll = () =>
-    setSelectedItems(items.map((item) => item.data.memberId));
-  const deselectAll = () => setSelectedItems([]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const formatDate = (date) => date.toISOString().split("T")[0];
 
@@ -91,7 +65,7 @@ const GenerateBillForm = () => {
       );
       setItems(res.data);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       setError("Failed to fetch bills. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -103,28 +77,10 @@ const GenerateBillForm = () => {
       ...formData,
       member: selectedItems,
     };
-    console.log(billData);
+
     selectedItems.map(async (row) => {
       let arr = items.filter((item) => item.data.memberId == row);
-
-      //start of post generate bill
-      console.log({
-        memberId: row,
-        memberName: arr[0].data.ownerName,
-        billDetails: [
-          {
-            type: formData.type,
-            billDate: formData.billDate,
-            dueDate: formData.dueDate,
-            currentBillAmt: arr[0].data.total,
-            interestRate: formData.interestRate,
-          },
-        ],
-      });
-
       let filterReceipt = receiptData.filter((a) => a.memberId == row);
-      console.log(filterReceipt);
-
       let uniqueBill = generateShortUUID();
 
       try {
@@ -140,21 +96,17 @@ const GenerateBillForm = () => {
                 billDate: formData.billDate,
                 dueDate: billData.billDueDate,
                 currentBillAmt: arr[0].data.total,
-                interestRate: formData.interestRate,
+                interestAfter: formData.interestAfter,
                 prevBalance:
                   filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
               },
             ],
           }
         );
-        console.log(res);
         toast.success("successfully bills generated");
       } catch (error) {
-        console.error(error);
         toast.error("error in generating bills");
       }
-
-      // end of post generate bill
 
       let uniqueId = generateShortUUID();
 
@@ -183,10 +135,8 @@ const GenerateBillForm = () => {
             ],
           }
         );
-
-        console.log(res);
       } catch (error) {
-        console.error(error);
+        console.log(error);
       }
     });
   };
@@ -208,7 +158,7 @@ const GenerateBillForm = () => {
 
   return (
     <div className="p-4">
-      <div className="text-right mb-5 px-10 ">
+      <div className="text-right mb-5 px-10">
         <button
           onClick={handleGenerate}
           className="px-4 py-2 bg-white text-gray-700 border-black border-2 rounded-md hover:text-white hover:bg-gray-600"
@@ -232,7 +182,7 @@ const GenerateBillForm = () => {
         </div>
 
         <div>
-          <label className="block mb-1 text-sm font-medium ">Bill Date</label>
+          <label className="block mb-1 text-sm font-medium">Bill Date</label>
           <input
             type="date"
             name="billDate"
@@ -249,102 +199,12 @@ const GenerateBillForm = () => {
             type="date"
             name="billDueDate"
             value={formData.billDueDate}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block mb-1 text-sm font-medium ">Due Days</label>
-          <input
-            type="text"
-            name="dueDays"
-            value={formData.dueDays}
-            className="w-full p-2 bg-gray-100 rounded"
             readOnly
+            className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
-      </div>
 
-      <div className="grid grid-cols-4 px-5 gap-4">
-        <div>
-          <label className="block mb-1 text-sm font-medium ">
-            Select Members
-          </label>
-          <div className="relative w-64" ref={dropdownRef}>
-            <button
-              onClick={toggleDropdown}
-              className="w-full p-2 text-left bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {selectedItems.length === 0
-                ? "Select Members"
-                : `${selectedItems.length} items selected`}
-            </button>
-            {isOpen && (
-              <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                <div className="flex justify-between p-2 bg-gray-100">
-                  <button
-                    onClick={selectAll}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded"
-                  >
-                    Select All
-                  </button>
-                  <button
-                    onClick={deselectAll}
-                    className="px-3 py-1 text-sm bg-white border border-gray-300 rounded"
-                  >
-                    Deselect All
-                  </button>
-                </div>
-                <div className="max-h-48 overflow-y-auto">
-                  {isLoading ? (
-                    <p className="p-2">Loading...</p>
-                  ) : error ? (
-                    <p className="p-2 text-red-500">{error}</p>
-                  ) : items.length === 0 ? (
-                    <p className="p-2">No items found</p>
-                  ) : (
-                    items.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => toggleItem(item.data.memberId)}
-                        className={`p-2 hover:bg-gray-300 cursor-pointer ${
-                          selectedItems.includes(item.data.memberId)
-                            ? "bg-purple-100"
-                            : ""
-                        }`}
-                      >
-                        <span className="inline-block w-8 h-6 mr-2 text-sm text-white bg-gray-500 rounded-md  text-center leading-6">
-                          {item.data.flatNo}
-                        </span>
-                        {item.data.ownerName}
-                      </div>
-                    ))
-                  )}
-                </div>
-                <div className="p-2 bg-gray-100 border-t border-gray-300">
-                  {selectedItems.length === 0
-                    ? "All"
-                    : `${selectedItems.length} items selected`}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-end gap-2">
-          <div>
-            <label className="block mb-1 text-sm font-medium">
-              Interest Rate
-            </label>
-            <input
-              type="text"
-              name="interestRate"
-              value={formData.interestRate}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-          </div>
-        </div>
+     
       </div>
     </div>
   );

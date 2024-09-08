@@ -38,13 +38,13 @@ const IndividualLedger = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getHead"
+          "https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads"
         );
         console.log(res.data);
         let tableHead = [];
 
         res.data.map((item) => {
-          tableHead.push(item.Header);
+          tableHead.push(item);
         });
         console.log(tableHead);
         setHead(tableHead);
@@ -112,7 +112,7 @@ const IndividualLedger = () => {
 
               {head.map((item) => (
                 <th className="px-6 py-3  whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {item}
+                  {item.billHead}
                 </th>
               ))}
               <th className="px-6 py-3  whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

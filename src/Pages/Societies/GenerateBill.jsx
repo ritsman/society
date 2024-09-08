@@ -1,19 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCirclePlus,
-  faCircleXmark,
-  faCheck,
-} from "@fortawesome/free-solid-svg-icons";
-import AutoComplete from "../../components/Autocomplete";
+
 import axios from "axios";
 import { toast } from "react-toastify";
 import GenerateBillForm from "./GenerateBillForm";
 
-const headers = [
-  { key: "wing No", name: "Wing No" },
-  { key: "ownerName", name: "OwnerName" },
-];
+// const headers = [
+//   { key: "wing No", name: "Wing No" },
+//   { key: "ownerName", name: "OwnerName" },
+// ];
 
 const GenerateBill = () => {
   const [row_id, setRow_id] = useState(1);
@@ -24,6 +18,7 @@ const GenerateBill = () => {
   const [filteredData, setFilteredData] = useState(gridRow);
   const [heads, setHeads] = useState([]);
   const [billData, setBillData] = useState([]);
+  const [ selectedItems , setSelectedItems] = useState([]);
 
   useEffect(() => {
     setFilteredData(gridRow);
@@ -69,7 +64,7 @@ const GenerateBill = () => {
   useEffect(() => {
     const chkstat = {};
     filteredData?.forEach((val) => {
-      chkstat[val.id] = false;
+      chkstat[val.memberId] = false;
     });
     setChkStat2(chkstat);
   }, [members]);
@@ -79,59 +74,94 @@ const GenerateBill = () => {
     Object.keys(chkstat2).forEach((key) => {
       c[key] = event.target.checked;
     });
-    setChkStat2(c);
+     setChkStat2(c);
+     
+    let arr = []
+      Object.keys(c).forEach((key)=>{
+        if(c[key]){
+            arr.push(key)
+        }
+          })
+          console.log(arr)
+          setSelectedItems(arr);
   };
 
   const setTick = (contact, event) => {
-    chkstat2[contact.id] = event.target.checked;
+    chkstat2[contact.memberId] = event.target.checked;
     const c = {
       ...chkstat2,
     };
     setChkStat2(c);
+
+    let arr = [];
+    Object.keys(c).forEach((key) => {
+      if (c[key]) {
+        arr.push(key);
+      }
+    });
+    console.log(arr);
+    setSelectedItems(arr);
+    
   };
 
+ useEffect(() => {
+   fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+     .then((response) => response.json())
+     .then((data) => {
+       setMembers(data);
+       let arr = [];
+       data.forEach((item, index) => {
+         let billObj = billData.find(
+           (row) =>
+             row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
+         );
+         let obj = {
+           id: index,
+           memberId: item._id,
+           wingNo: item.wingNo,
+           flatNo: item.flatNo,
+           ownerName: item.name,
+           prevDue: billObj && billObj.prevDue ? billObj.prevDue : 0,
+           // Fixed intAppliedAmt calculation
+           intAppliedAmt:
+             billObj && billObj.data.head
+               ? billObj.data.head.reduce((acc, ele) => {
+                   return ele.interestApplied ? acc + Number(ele.value) : acc;
+                 }, 0)
+               : 0,
+           head: heads.map((headItem, index) => ({
+             head: headItem.head,
+             isActive: headItem.isActive,
+             interestApplied: headItem.interestApplied,
+             id: index + 1,
+             value:
+               billObj && billObj.data.head
+                 ? billObj.data.head.find((h) => h.head === headItem.head)
+                     ?.value
+                 : "0", // Default to "0" if not found
+           })),
+           total: billObj && billObj.data.total ? billObj.data.total : 0, // Calculate total if bill data exists
+         };
+         arr.push(obj);
+       });
+       setGridRow(arr);
+       setFilteredData(arr);
+     });
+ }, [heads, billData]);
+
+
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
-        setMembers(data);
-        let arr = [];
-        data.forEach((item, index) => {
-          let billObj = [];
-          console.log("billData", billData);
-
-          billObj = billData.filter(
-            (row) =>
-              row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
-          );
-
-          console.log(billObj, "billObj");
-          let obj = {
-            id: index,
-            memberId: item._id,
-            wingNo: item.wingNo,
-            flatNo: item.flatNo,
-            ownerName: item.name,
-            head: billObj.length > 0 ? billObj[0].data.head : heads,
-            total: billObj.length > 0 ? billObj[0].data.total : 0,
-          };
-          arr.push(obj);
-        });
-        setGridRow([...arr]);
-        setFilteredData([...arr]);
-      });
-  }, [heads, billData]);
-
-  useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
-      .then((response) => response.json())
-      .then((data) => {
         let arr = [];
         data.forEach((item, index) => {
           let obj = {
             id: index,
-            head: item.Header,
+            head: item.billHead,
             value: "0",
+            isActive:item.isActive,
+            interestApplied:item.interestApplied
           };
           arr.push(obj);
         });
@@ -231,12 +261,13 @@ const GenerateBill = () => {
       filteredData.map((item) => {
         if (item.id === id) {
           const updatedHead = item.head.map((headItem, index) => {
-            if (index === headIndex) {
+            if (headItem.id === headIndex) {
               return { ...headItem, value: value };
             } else {
               return headItem;
             }
           });
+          
           const total = calculateTotal({ ...item, head: updatedHead });
           return { ...item, head: updatedHead, total: total };
         } else {
@@ -244,6 +275,8 @@ const GenerateBill = () => {
         }
       })
     );
+
+
   };
 
   const handleSave = async () => {
@@ -276,7 +309,7 @@ const GenerateBill = () => {
     <>
       <h1 className="text-center text-2xl mb-2">Generate Maintenance Bills</h1>
       <div>
-        <GenerateBillForm />
+        <GenerateBillForm selectedItems={selectedItems} />
       </div>
       <div
         className="pt-2 overflow-y-auto  gap-6"
@@ -319,14 +352,20 @@ const GenerateBill = () => {
                     <th className="px-10 py-2  sticky z-10 bg-gray-700 left-40 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis ">
                       Owner Name
                     </th>
-                    {heads.map((item, index) => (
-                      <th
-                        key={index}
-                        className="px-10 py-2 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis"
-                      >
-                        {item.head}
-                      </th>
-                    ))}
+                    <th className="px-10 py-2  sticky z-10 bg-gray-700 left-40 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis ">
+                      Previous Due
+                    </th>
+                    {heads
+                      .filter((item) => item.isActive) // Filter out inactive heads
+                      .map((item, index) => (
+                        <th
+                          key={index}
+                          className="px-10 py-2 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
+                          {item.head}
+                        </th>
+                      ))}
+
                     <th className="px-4 py-2 text-start ">Total</th>
                   </tr>
                 </thead>
@@ -337,7 +376,7 @@ const GenerateBill = () => {
                         <td className="p-4 sticky border-2 z-10 left-0 bg-white">
                           <input
                             type="checkbox"
-                            checked={chkstat2[item.id]}
+                            checked={chkstat2[item.memberId]}
                             onChange={(event) => setTick(item, event)}
                             name={item.id}
                             className="text-center"
@@ -352,27 +391,34 @@ const GenerateBill = () => {
                         <td className="px-4 py-2 border-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
                           {item.ownerName}
                         </td>
+                        <td className="px-4 py-2 border-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
+                          {item.prevDue}
+                        </td>
+
                         {item.head &&
-                          item.head.map((item2, index) => (
-                            <td
-                              key={index}
-                              className="w-48 whitespace-nowrap border-2 overflow-hidden text-ellipsis"
-                            >
-                              <input
-                                type="text"
-                                value={item2.value}
-                                onChange={(e) =>
-                                  handleChange2(
-                                    item.id,
-                                    index,
-                                    item2.head,
-                                    e.target.value
-                                  )
-                                }
-                                className="w-full px-4 py-2 text-center"
-                              />
-                            </td>
-                          ))}
+                          item.head
+                            .filter((item2) => item2.isActive) // Filter to include only active items
+                            .map((item2, index) => (
+                              <td
+                                key={index}
+                                className="w-48 whitespace-nowrap border-2 overflow-hidden text-ellipsis"
+                              >
+                                <input
+                                  type="text"
+                                  value={item2.value}
+                                  onChange={(e) =>
+                                    handleChange2(
+                                      item.id,
+                                      item2.id,
+                                      item2.head,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-full px-4 py-2 text-center"
+                                />
+                              </td>
+                            ))}
+
                         <td className="px-4 py-2 border-2">{item.total}</td>
                       </tr>
                     ))

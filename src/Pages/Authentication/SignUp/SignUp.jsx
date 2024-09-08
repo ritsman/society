@@ -36,7 +36,7 @@ const SignUp = () => {
           }
         );
         console.log(response);
-        toast.success("User Signed Up successfully");
+        toast.success("Signup request submitted. Waiting for admin approval.");
         navigate("/");
       } catch (error) {
         console.log("register error", error.response);
@@ -173,7 +173,7 @@ const SignUp = () => {
                 onClick={handleSubmit}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full"
               >
-                SIGN UP
+                Submit Signup Request
               </button>
             </div>
             <div className="mt-4 text-center">
