@@ -106,7 +106,7 @@ const GenerateBill = () => {
   };
 
  useEffect(() => {
-   fetch("http://localhost:3001/api/member/getMemberList")
+   fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
      .then((response) => response.json())
      .then((data) => {
        setMembers(data);
@@ -152,7 +152,7 @@ const GenerateBill = () => {
 
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/master/getBillHeads")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
         let arr = [];
@@ -172,7 +172,7 @@ const GenerateBill = () => {
 
     // fetch bills table data
 
-    fetch("http://localhost:3001/api/society/getBills")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -290,7 +290,7 @@ const GenerateBill = () => {
     console.log(filteredData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/society/postBills",
+        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
         filteredData
       );
       console.log(res);

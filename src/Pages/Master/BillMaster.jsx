@@ -24,7 +24,7 @@ const BillMaster = () => {
        async function fetchInt() {
          try {
            let res = await axios.get(
-             "http://localhost:3001/api/master/getBillMaster"
+             "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
            );
                   const data = res.data[0];
                   setInterestData(data);
@@ -59,7 +59,7 @@ const BillMaster = () => {
     console.log(formData);
     try {
       let res = await axios.post(
-        "http://localhost:3001/api/master/postBillMaster",
+        "https://a3.arya-erp.in/api2/socapi/api/master/postBillMaster",
         formData
       );
       toast.success("successfully data saved");
