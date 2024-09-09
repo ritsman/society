@@ -19,6 +19,7 @@ const GenerateBill = () => {
   const [heads, setHeads] = useState([]);
   const [billData, setBillData] = useState([]);
   const [ selectedItems , setSelectedItems] = useState([]);
+  const [isSave , setIsSave] = useState(false);
 
   useEffect(() => {
     setFilteredData(gridRow);
@@ -105,7 +106,7 @@ const GenerateBill = () => {
   };
 
  useEffect(() => {
-   fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+   fetch("http://localhost:3001/api/member/getMemberList")
      .then((response) => response.json())
      .then((data) => {
        setMembers(data);
@@ -151,7 +152,7 @@ const GenerateBill = () => {
 
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
+    fetch("http://localhost:3001/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
         let arr = [];
@@ -160,8 +161,8 @@ const GenerateBill = () => {
             id: index,
             head: item.billHead,
             value: "0",
-            isActive:item.isActive,
-            interestApplied:item.interestApplied
+            isActive: item.isActive,
+            interestApplied: item.interestApplied,
           };
           arr.push(obj);
         });
@@ -171,7 +172,7 @@ const GenerateBill = () => {
 
     // fetch bills table data
 
-    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
+    fetch("http://localhost:3001/api/society/getBills")
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -267,9 +268,15 @@ const GenerateBill = () => {
               return headItem;
             }
           });
-          
+
+          //  let intAppliedAmt=
+          //    item.head.reduce((acc, ele) => {
+          //          return ele.interestApplied ? acc + Number(ele.value) : acc;
+          //        }, 0)
+            
+               
           const total = calculateTotal({ ...item, head: updatedHead });
-          return { ...item, head: updatedHead, total: total };
+          return { ...item, head: updatedHead, total: total,  };
         } else {
           return item;
         }
@@ -283,11 +290,12 @@ const GenerateBill = () => {
     console.log(filteredData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
+        "http://localhost:3001/api/society/postBills",
         filteredData
       );
       console.log(res);
       toast.success("Data Successfully Saved");
+      setIsSave(true);
     } catch (error) {
       console.log(error);
       toast.error("error in saving data");
@@ -309,7 +317,7 @@ const GenerateBill = () => {
     <>
       <h1 className="text-center text-2xl mb-2">Generate Maintenance Bills</h1>
       <div>
-        <GenerateBillForm selectedItems={selectedItems} />
+        <GenerateBillForm selectedItems={selectedItems} isSave={isSave}/>
       </div>
       <div
         className="pt-2 overflow-y-auto  gap-6"

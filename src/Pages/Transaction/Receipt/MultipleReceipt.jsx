@@ -14,15 +14,21 @@ const MultipleReceipt = () => {
   const [isView, setIsView] = useState(false);
   const [billGenerated, setBillGenerated] = useState([]);
   const [interstRate,setInterstRate] = useState(0);
+  const [intRebate , setIntRebate] = useState(0);
+  const [intMethod , setIntMethod] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [flatInt , setFlatInt] = useState(0);
  
    useEffect(()=>{
        async function fetchInt(){
             try {
                 let res = await axios.get(
-                  "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+                  "http://localhost:3001/api/master/getBillMaster"
                 );
                 setInterstRate(res.data[0].interestRatePerMonth);
+                setIntRebate(res.data[0].interestRebateUptoRs)
+                setIntMethod(res.data[0].interestCalculationMethod)
+                setFlatInt(res.data[0].flatInterestAmount);
                 
             } catch (error) {
               console.log(error);
@@ -45,9 +51,7 @@ const MultipleReceipt = () => {
 
     async function fetch() {
       try {
-        let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-        );
+        let res = await axios.get("http://localhost:3001/api/society/getBills");
         console.log(res.data);
         const updatedReceiptData = res.data.map((item) => {
           let filteredRec = [];
@@ -71,7 +75,11 @@ const MultipleReceipt = () => {
             chequeDate: null,
             bank: null,
             branch: null,
+            intRebate:intRebate,
             intPerDay: (item.data.intAppliedAmt * (interstRate / 100)) / 30,
+            intPerMonth:(item.data.intAppliedAmt * (interstRate / 100)) ,
+            intMethod: intMethod,
+            flatInt : flatInt,
             interestAfter:
               filteredBillGenerated[0]?.billDetails.length > 0
                 ? filteredBillGenerated[0].billDetails[
@@ -84,7 +92,9 @@ const MultipleReceipt = () => {
               filteredRec.length > 0
                 ? filteredRec[0].balance
                 : filteredBillGenerated[0]
-                ? filteredBillGenerated[0].billDetails[0].currentBillAmt
+                ? filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].currentBillAmt
                 : 0,
             amount: 0,
 
@@ -113,7 +123,7 @@ const MultipleReceipt = () => {
       // }
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
+          "http://localhost:3001/api/society/getGeneratedBills"
         );
         console.log(result);
         setBillGenerated(result.data.data);
@@ -123,7 +133,7 @@ const MultipleReceipt = () => {
 
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
+          "http://localhost:3001/api/transaction/getCashReceipt"
         );
         setData2(result.data);
       } catch (error) {

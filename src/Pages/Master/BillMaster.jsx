@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -17,6 +17,34 @@ const BillMaster = () => {
     interestRebateUptoRs: "",
   });
 
+  const [interestData , setInterestData] = useState({})
+
+
+     useEffect(() => {
+       async function fetchInt() {
+         try {
+           let res = await axios.get(
+             "http://localhost:3001/api/master/getBillMaster"
+           );
+                  const data = res.data[0];
+                  setInterestData(data);
+
+            setFormData((prevData) => ({
+              ...prevData,
+              interestRatePerMonth: data.interestRatePerMonth || "", // Pre-fill if it exists
+              interestRebateUptoRs:data.interestRebateUptoRs,
+              interestCalculationMethod:data.interestCalculationMethod,
+              flatInterestAmount : data.flatInterestAmount
+
+
+            }));
+         } catch (error) {
+           console.log(error);
+         }
+     }
+       fetchInt();
+     }, []);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
@@ -31,7 +59,7 @@ const BillMaster = () => {
     console.log(formData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postBillMaster",
+        "http://localhost:3001/api/master/postBillMaster",
         formData
       );
       toast.success("successfully data saved");
@@ -44,7 +72,7 @@ const BillMaster = () => {
 
   return (
     <div className="py-10">
-      <h1 className="text-center font-bold text-2xl mb-10">Bill Master</h1>
+      <h1 className="text-center font-bold text-2xl mb-10">Interest</h1>
       <form
         onSubmit={handleSubmit}
         className="max-w-3xl mx-auto grid grid-cols-3 gap-6"
@@ -174,8 +202,8 @@ const BillMaster = () => {
             className="w-full px-3 py-2 border border-gray-300 rounded"
           >
             <option value=""></option>
-            <option value="as on bill date">As on Bill Date</option>
-            <option value="as on due date">As on Due Date</option>
+            <option value="as per bill days">As per bill days</option>
+            <option value="as per bill month">As per bill month</option>
           </select>
         </div>
 

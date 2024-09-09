@@ -16,14 +16,29 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
  // Calculate interest
  const calculateInterest = (data) => {
    return data.map((item) => {
-     const date = item.date ? new Date(item.date) : new Date();
-     const interestAfter = new Date(item.interestAfter);
-     const differenceInTime = date.getTime() - interestAfter.getTime();
-     const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-     const interest =
-       differenceInDays > 0 ? differenceInDays * item.intPerDay : 0;
+    if (item.interestAfter && item.intRebate < item.balance) {
+      const date = item.date ? new Date(item.date) : new Date();
+      const interestAfter = new Date(item.interestAfter);
+      const differenceInTime = date.getTime() - interestAfter.getTime();
+      const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+      const differenceInMonths =
+     (date.getFullYear() - interestAfter.getFullYear()) * 12 +
+     (date.getMonth() - interestAfter.getMonth());      
+     let interest = 0
+     if (item.flatInt > 0) {
+        interest = differenceInDays > 0 ? Number(item.flatInt) : 0;
+        
+     } else if (item.intMethod == "as per bill days" && !item.flatInt > 0) {
+       interest = differenceInDays > 0 ? differenceInDays * item.intPerDay : 0;
+     } else {
+       interest =
+         differenceInDays > 0 ? item.intPerMonth * differenceInMonths : 0;
+     }
 
-     return { ...item, interest };
+      return { ...item, interest };
+    } else {
+      return { ...item, interest: 0 };
+    }
    });
  };
 
@@ -38,9 +53,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
     // fetch maintenance head
     async function fetch() {
       try {
-        let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getHead"
-        );
+        let res = await axios.get("http://localhost:3001/api/master/getHead");
         console.log(res.data);
         let tableHead = [];
 
@@ -71,7 +84,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
     console.log(receiptData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashReceipt",
+        "http://localhost:3001/api/transaction/postCashReceipt",
         receiptData
       );
       console.log(res);
@@ -87,7 +100,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
           let uniqueId = generateShortUUID();
           try {
             let res = await axios.post(
-              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row.memberId}`,
+              `http://localhost:3001/api/member/Ledger/${row.memberId}`,
               {
                 memberId: row.memberId,
                 ledger: [
@@ -119,7 +132,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
             console.log("inside cash ledger condition");
             try {
               let res = await axios.post(
-                "https://a3.arya-erp.in/api2/socapi/api/master/postCashAccLedger",
+                "http://localhost:3001/api/master/postCashAccLedger",
                 {
                   tranId: uniqueId,
                   date: row.date,
@@ -139,7 +152,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
           if (paymentMethod == "bank") {
             try {
               let res = await axios.post(
-                "https://a3.arya-erp.in/api2/socapi/api/master/postBankAccLedger",
+                "http://localhost:3001/api/master/postBankAccLedger",
                 {
                   tranId: uniqueId,
                   date: row.date,

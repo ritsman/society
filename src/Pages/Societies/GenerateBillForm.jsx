@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 
-const GenerateBillForm = ({ selectedItems }) => {
+const GenerateBillForm = ({ selectedItems, isSave }) => {
   const [receiptData, setReceiptData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -14,7 +14,6 @@ const GenerateBillForm = ({ selectedItems }) => {
     type: "",
     billDate: "",
     billDueDate: "",
-    
   });
 
   function generateShortUUID() {
@@ -29,7 +28,7 @@ const GenerateBillForm = ({ selectedItems }) => {
       billDate: formatDate(today), // Set default bill date as current date
     }));
     fetchBills();
-  }, []);
+  }, [isSave]);
 
   useEffect(() => {
     // Automatically set the billDueDate to 20 days after billDate
@@ -60,9 +59,7 @@ const GenerateBillForm = ({ selectedItems }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-      );
+      const res = await axios.get("http://localhost:3001/api/society/getBills");
       setItems(res.data);
     } catch (error) {
       console.log(error);
@@ -72,73 +69,86 @@ const GenerateBillForm = ({ selectedItems }) => {
     }
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     const billData = {
       ...formData,
       member: selectedItems,
     };
 
-    selectedItems.map(async (row) => {
-      let arr = items.filter((item) => item.data.memberId == row);
-      let filterReceipt = receiptData.filter((a) => a.memberId == row);
-      let uniqueBill = generateShortUUID();
+    let success = true; // Flag to track if all requests are successful
 
-      try {
-        let res = await axios.post(
-          "https://a3.arya-erp.in/api2/socapi/api/society/generateBill",
-          {
-            memberId: row,
-            memberName: arr[0].data.ownerName,
-            billDetails: [
-              {
-                billNo: `BL/24/${uniqueBill}`,
-                type: formData.type,
-                billDate: formData.billDate,
-                dueDate: billData.billDueDate,
-                currentBillAmt: arr[0].data.total,
-                interestAfter: formData.interestAfter,
-                prevBalance:
-                  filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
-              },
-            ],
+    // Use Promise.all to handle multiple requests and wait for all of them to complete
+    try {
+      await Promise.all(
+        selectedItems.map(async (row) => {
+          let arr = items.filter((item) => item.data.memberId === row);
+          let filterReceipt = receiptData.filter((a) => a.memberId === row);
+          let uniqueBill = generateShortUUID();
+
+          // First API call to generate the bill
+          try {
+            await axios.post("http://localhost:3001/api/society/generateBill", {
+              memberId: row,
+              memberName: arr[0].data.ownerName,
+              billDetails: [
+                {
+                  billNo: `BL/24/${uniqueBill}`,
+                  type: formData.type,
+                  billDate: formData.billDate,
+                  dueDate: billData.billDueDate,
+                  currentBillAmt: arr[0].data.total,
+                  interestAfter: formData.interestAfter,
+                  prevBalance:
+                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
+                },
+              ],
+            });
+          } catch (error) {
+            console.log("Error generating bill for memberId:", row, error);
+            success = false;
           }
-        );
-        toast.success("successfully bills generated");
-      } catch (error) {
-        toast.error("error in generating bills");
-      }
 
-      let uniqueId = generateShortUUID();
-
-      try {
-        let res = await axios.post(
-          `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row}`,
-          {
-            memberId: row,
-            ledger: [
-              {
-                tranId: uniqueId,
-                payMode: "",
-                date: billData.billDate,
-                billNo: "",
-                dueDate: billData.billDueDate,
-                head: arr[0].data.head,
-                totalAmtDue: filterReceipt[0]?.balance,
-                billAmt: arr[0].data.total,
-                paidAmt: "",
-                balance:
-                  filterReceipt.length > 0
-                    ? Number(filterReceipt[0].balance) +
-                      Number(arr[0].data.total)
-                    : arr[0].data.total,
-              },
-            ],
+          // Second API call to update the ledger
+          let uniqueId = generateShortUUID();
+          try {
+            await axios.post(`http://localhost:3001/api/member/Ledger/${row}`, {
+              memberId: row,
+              ledger: [
+                {
+                  tranId: uniqueId,
+                  payMode: "",
+                  date: billData.billDate,
+                  billNo: "",
+                  dueDate: billData.billDueDate,
+                  head: arr[0].data.head,
+                  totalAmtDue: filterReceipt[0]?.balance,
+                  billAmt: arr[0].data.total,
+                  paidAmt: "",
+                  balance:
+                    filterReceipt.length > 0
+                      ? Number(filterReceipt[0].balance) +
+                        Number(arr[0].data.total)
+                      : arr[0].data.total,
+                },
+              ],
+            });
+          } catch (error) {
+            console.log("Error updating ledger for memberId:", row, error);
+            success = false;
           }
-        );
-      } catch (error) {
-        console.log(error);
+        })
+      );
+
+      // If all requests were successful, show a success message
+      if (success) {
+        toast.success("Bills successfully generated");
+      } else {
+        toast.error("Some bills failed to generate");
       }
-    });
+    } catch (error) {
+      console.log("Error processing bills:", error);
+      toast.error("Error generating bills");
+    }
   };
 
   useEffect(() => {
@@ -148,7 +158,7 @@ const GenerateBillForm = ({ selectedItems }) => {
   async function fetchReciept() {
     try {
       let result = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
+        "http://localhost:3001/api/transaction/getCashReceipt"
       );
       setReceiptData(result.data);
     } catch (error) {
@@ -203,8 +213,6 @@ const GenerateBillForm = ({ selectedItems }) => {
             className="w-full p-2 border rounded bg-gray-100"
           />
         </div>
-
-     
       </div>
     </div>
   );
