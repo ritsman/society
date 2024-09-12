@@ -100,7 +100,10 @@ export const postCashReceipt = async (req, res) => {
         principle,
         chequeNo,
         memberId,
+        billNo,
         chequeDate,
+        billDate,
+        
         bank,
         branch,
       } = item;
@@ -119,10 +122,14 @@ export const postCashReceipt = async (req, res) => {
         date: date || new Date(), // Assuming you want to set the current date if date is null
         amount: amountNumber, // Use the numeric amount
         mode: mode,
+        OnBillAmt:balance,
         chequeNo: chequeNo,
         chequeDate: chequeDate,
         bank: bank,
         branch: branch,
+        interest:interest,
+        billNo:billNo,
+        billDate:billDate
       };
 
       const update = {
@@ -130,7 +137,6 @@ export const postCashReceipt = async (req, res) => {
           code: code,
           name: name,
           balance: Number(balance) - amountNumber,
-          interest: interest,
           memberId: memberId,
           narration: narration,
           principle: principle,

@@ -104,6 +104,34 @@ export const BillAmounts = async (req, res) => {
   }
 };
 
+
+export const updatePrvDue = async(req,res)=>{
+   const { billId, prevDue } = req.body;
+
+   try {
+     // Find the bill by ID and update the nested field data.prevDue
+     const updatedBill = await Bills.findByIdAndUpdate(
+       billId,
+       { "data.prevDue": prevDue },
+       { new: true }
+     );
+
+     if (!updatedBill) {
+       return res.status(404).json({ message: "Bill not found" });
+     }
+
+     res.status(200).json({
+       message: "data.prevDue updated successfully",
+       updatedBill,
+     });
+   } catch (error) {
+     res.status(500).json({
+       message: "Error updating data.prevDue",
+       error: error.message,
+     });
+   }
+}
+
 export const getBill = async (req, res) => {
   try {
     let result = await Bills.find({});

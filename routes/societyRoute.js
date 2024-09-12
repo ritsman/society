@@ -11,15 +11,18 @@ import {
   getGeneratedBills,
   getSocProfile,
   postSocProfile,
+  updatePrvDue,
  
 } from "../controllers/society.controller.js";
 
 router.post("/postBills", BillAmounts);
+router.put("/update-prev-due", updatePrvDue);
 router.get("/getBills", getBill);
 router.get("/getBillNo", getBillno);
 
 router.post("/generateBill", generateBills);
 router.get("/getGeneratedBills", getGeneratedBills);
+
 
 // society profile routes start
 
