@@ -24,7 +24,7 @@ const MaintenanceHead = () => {
   const [billHeadData, setBillHeadData] = useState([]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
+    fetch("http://localhost:3001/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
         setBillHeadData(data);
@@ -36,7 +36,7 @@ const MaintenanceHead = () => {
  
 useEffect(() => {
   // Fetch data for mmData
-  fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+  fetch("http://localhost:3001/api/master/getHead")
     .then((response) => response.json())
     .then((data) => {
       const arr = data.map((item, index) => {
@@ -81,7 +81,7 @@ useEffect(() => {
   const handleSubmit = async () => {
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postBillHeads",
+        "http://localhost:3001/api/master/postBillHeads",
         mmData
       );
       toast.success("Successfully saved data");

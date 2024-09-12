@@ -1,11 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-const Report = () => {
+const printBills = () => {
   const cards = [
-    { name: "Bills", path: "/report/bills-view" },
-    { name: "Ledgers", path: "/report/allLedgers" },
-    { name: "Print Bills", path: "/report/printBills" },
+    { name: "Society bill", path: "/report/printBills/bill" },
+    { name: "Member Receipt bill", path: "/report/printBills/receipt" },
+   
   ];
 
   return (
@@ -32,4 +32,4 @@ const Report = () => {
   );
 };
 
-export default Report;
+export default printBills;

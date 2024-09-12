@@ -29,6 +29,12 @@ function App() {
 
     { title: "M Head List", link: "/master/maintenance-head/M-headList" },
     { title: "Bills Head", link: "/master/maintenance-head" },
+
+    { title: "Report", link: "/report" },
+
+    { title: "Print bills", link: "/report/printBills" },
+
+    { title: "Society bill", link: "/report/printBills/bill" },
     { title: "Bill Master", link: "/master/bill-master" },
     { title: "Ledger", link: "/master/ledger" },
     { title: "Party Ledger", link: "/master/ledger/partyLedger" },
@@ -59,9 +65,6 @@ function App() {
     { title: "Receipt", link: "/transaction/receipt" },
     { title: "Purchase", link: "/transaction/purchase" },
     { title: "Purchase", link: "/transaction/purchase" },
-    { title: "Report", link: "/report" },
-    { title: "Print Bill", link: "/report/printBill" },
-    { title: "View Bills", link: "/report/bills-view" },
   ];
 
   return (

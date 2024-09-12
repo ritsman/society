@@ -48,6 +48,8 @@ import AllLedgers from "./Pages/Report/AllLedgers";
 import PrintBill from "./Pages/Report/PrintBill";
 import Approval from "./Pages/Member/Approval";
 import SocietyForm from "./Pages/Societies/Profile/Profile";
+import PrintBills from "./Pages/Report/PrintBills";
+import MemberReceipt from "./Pages/Report/MemberReceipt"
 
 const router = createBrowserRouter([
   {
@@ -198,7 +200,7 @@ const router = createBrowserRouter([
       },
       {
         path: "society/profile",
-        element: < SocietyForm/>,
+        element: <SocietyForm />,
       },
 
       {
@@ -226,8 +228,16 @@ const router = createBrowserRouter([
         element: <Report />,
       },
       {
-        path: "report/printBill",
+        path: "report/printBills/bill",
         element: <PrintBill />,
+      },
+      {
+        path: "report/printBills/receipt",
+        element: <MemberReceipt />,
+      },
+      {
+        path: "report/printBills",
+        element: <PrintBills />,
       },
       {
         path: "report/AllLedgers",

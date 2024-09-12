@@ -4,9 +4,7 @@ import { toast } from "react-toastify";
 
 const BillMaster = () => {
   const [formData, setFormData] = useState({
-    type: "",
-    code: "",
-    name: "",
+   
     billFrequency: "",
     billDate: "",
     billDueDays: "",
@@ -17,26 +15,26 @@ const BillMaster = () => {
     interestRebateUptoRs: "",
   });
 
-  const [interestData , setInterestData] = useState({})
 
 
      useEffect(() => {
        async function fetchInt() {
          try {
            let res = await axios.get(
-             "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+             "http://localhost:3001/api/master/getBillMaster"
            );
                   const data = res.data[0];
-                  setInterestData(data);
 
             setFormData((prevData) => ({
               ...prevData,
               interestRatePerMonth: data.interestRatePerMonth || "", // Pre-fill if it exists
-              interestRebateUptoRs:data.interestRebateUptoRs,
-              interestCalculationMethod:data.interestCalculationMethod,
-              flatInterestAmount : data.flatInterestAmount
-
-
+              interestRebateUptoRs: data.interestRebateUptoRs,
+              interestCalculationMethod: data.interestCalculationMethod,
+              flatInterestAmount: data.flatInterestAmount,
+              isFlatInterest: data.isFlatInterest,
+              billDate: data.billDate,
+              billDueDays: data.billDueDays,
+              billFrequency: data.billFrequency,
             }));
          } catch (error) {
            console.log(error);
@@ -59,7 +57,7 @@ const BillMaster = () => {
     console.log(formData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postBillMaster",
+        "http://localhost:3001/api/master/postBillMaster",
         formData
       );
       toast.success("successfully data saved");
@@ -77,7 +75,7 @@ const BillMaster = () => {
         onSubmit={handleSubmit}
         className="max-w-3xl mx-auto grid grid-cols-3 gap-6"
       >
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label htmlFor="type" className="block font-medium mb-2">
             Type
           </label>
@@ -92,9 +90,9 @@ const BillMaster = () => {
             <option value="maintenance bill">Maintenance Bill</option>
             <option value="supplementary bill">Supplementary Bill</option>
           </select>
-        </div>
+        </div> */}
 
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label htmlFor="code" className="block font-medium mb-2">
             Code
           </label>
@@ -106,9 +104,9 @@ const BillMaster = () => {
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded"
           />
-        </div>
+        </div> */}
 
-        <div className="mb-4">
+        {/* <div className="mb-4">
           <label htmlFor="name" className="block font-medium mb-2">
             Name
           </label>
@@ -120,7 +118,7 @@ const BillMaster = () => {
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded"
           />
-        </div>
+        </div> */}
 
         <div className="mb-4">
           <label htmlFor="billFrequency" className="block font-medium mb-2">
@@ -183,7 +181,10 @@ const BillMaster = () => {
             name="interestRatePerMonth"
             value={formData.interestRatePerMonth}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded"
+            disabled={formData.isFlatInterest} // Disable when flat interest is enabled
+            className={`w-full px-3 py-2 border border-gray-300 rounded ${
+              formData.isFlatInterest ? "bg-gray-200 text-gray-500" : ""
+            }`}
           />
         </div>
 
@@ -199,7 +200,10 @@ const BillMaster = () => {
             name="interestCalculationMethod"
             value={formData.interestCalculationMethod}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded"
+            disabled={formData.isFlatInterest} // Disable when flat interest is enabled
+            className={`w-full px-3 py-2 border border-gray-300 rounded ${
+              formData.isFlatInterest ? "bg-gray-200 text-gray-500" : ""
+            }`}
           >
             <option value=""></option>
             <option value="as per bill days">As per bill days</option>
@@ -251,7 +255,10 @@ const BillMaster = () => {
             name="interestRebateUptoRs"
             value={formData.interestRebateUptoRs}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded"
+            disabled={formData.isFlatInterest} // Disable when flat interest is enabled
+            className={`w-full px-3 py-2 border border-gray-300 rounded ${
+              formData.isFlatInterest ? "bg-gray-200 text-gray-500" : ""
+            }`}
           />
         </div>
 

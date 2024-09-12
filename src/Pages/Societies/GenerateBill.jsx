@@ -19,6 +19,7 @@ const GenerateBill = () => {
   const [heads, setHeads] = useState([]);
   const [billData, setBillData] = useState([]);
   const [ selectedItems , setSelectedItems] = useState([]);
+  const [allMemberId , setAllMembId] = useState([])
   const [isSave , setIsSave] = useState(false);
 
   useEffect(() => {
@@ -62,12 +63,21 @@ const GenerateBill = () => {
 
   const [chkstat2, setChkStat2] = useState({});
 
+
   useEffect(() => {
     const chkstat = {};
     filteredData?.forEach((val) => {
       chkstat[val.memberId] = false;
     });
     setChkStat2(chkstat);
+
+       const arr = []
+    filteredData?.forEach((val) => {
+      arr.push(val.memberId);
+    });
+    setAllMembId(arr);
+
+
   }, [members]);
 
   const leadSet = (event) => {
@@ -106,7 +116,7 @@ const GenerateBill = () => {
   };
 
  useEffect(() => {
-   fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+   fetch("http://localhost:3001/api/member/getMemberList")
      .then((response) => response.json())
      .then((data) => {
        setMembers(data);
@@ -122,14 +132,17 @@ const GenerateBill = () => {
            wingNo: item.wingNo,
            flatNo: item.flatNo,
            ownerName: item.name,
-           prevDue: billObj && billObj.prevDue ? billObj.prevDue : 0,
+           prevDue: billObj && billObj.data ? billObj.data.prevDue : 0,
            // Fixed intAppliedAmt calculation
-           intAppliedAmt:
-             billObj && billObj.data.head
-               ? billObj.data.head.reduce((acc, ele) => {
-                   return ele.interestApplied ? acc + Number(ele.value) : acc;
-                 }, 0)
-               : 0,
+           intAppliedAmt: 0,
+           //  billObj && billObj.data && Array.isArray(billObj.data.head)
+           //  ? billObj.data.head.reduce((acc, ele) => {
+           //  return ele.interestApplied && ele.value
+           // ? acc + parseFloat(ele.value) // Parse value as a float to handle numbers properly
+           // : acc;
+           // }, 0)
+           // : 0,
+
            head: heads.map((headItem, index) => ({
              head: headItem.head,
              isActive: headItem.isActive,
@@ -141,7 +154,7 @@ const GenerateBill = () => {
                      ?.value
                  : "0", // Default to "0" if not found
            })),
-           total: billObj && billObj.data.total ? billObj.data.total : 0, // Calculate total if bill data exists
+           total: billObj && billObj.data.total ? calculateTotal(billObj.data) : 0, // Calculate total if bill data exists
          };
          arr.push(obj);
        });
@@ -152,7 +165,7 @@ const GenerateBill = () => {
 
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
+    fetch("http://localhost:3001/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
         let arr = [];
@@ -172,7 +185,7 @@ const GenerateBill = () => {
 
     // fetch bills table data
 
-    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
+    fetch("http://localhost:3001/api/society/getBills")
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -269,14 +282,19 @@ const GenerateBill = () => {
             }
           });
 
-          //  let intAppliedAmt=
-          //    item.head.reduce((acc, ele) => {
-          //          return ele.interestApplied ? acc + Number(ele.value) : acc;
-          //        }, 0)
+           let intAppliedAmt=
+             item.head.reduce((acc, ele) => {
+                   return ele.interestApplied ? acc + Number(ele.value) : acc;
+                 }, 0)
             
                
           const total = calculateTotal({ ...item, head: updatedHead });
-          return { ...item, head: updatedHead, total: total,  };
+          return {
+            ...item,
+            head: updatedHead,
+            total: total,
+            intAppliedAmt: intAppliedAmt,
+          };
         } else {
           return item;
         }
@@ -286,21 +304,70 @@ const GenerateBill = () => {
 
   };
 
-  const handleSave = async () => {
-    console.log(filteredData);
-    try {
-      let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
-        filteredData
+const calculateIntAppliedAmtAndTotal = () => {
+  return new Promise((resolve) => {
+    const updatedData = filteredData.map((item) => {
+      // Calculate intAppliedAmt based on active heads with interestApplied
+      const intAppliedAmt = item.head
+        .filter((headItem) => headItem.interestApplied)
+        .reduce((acc, headItem) => acc + parseFloat(headItem.value || 0), 0);
+
+      // Calculate total based on all heads' values
+      const total = item.head.reduce(
+        (acc, headItem) => acc + parseFloat(headItem.value || 0),
+        0
       );
-      console.log(res);
-      toast.success("Data Successfully Saved");
-      setIsSave(true);
-    } catch (error) {
-      console.log(error);
-      toast.error("error in saving data");
-    }
-  };
+
+      // Return updated item with calculated values
+          console.log("calculate int applied function",intAppliedAmt);
+
+      return { ...item, intAppliedAmt, total };
+    });
+
+    // Update the state with the new data
+    setFilteredData(updatedData);
+
+    // Resolve the promise once calculations are done
+    resolve(updatedData);
+  });
+};
+
+ useEffect(() => {
+   if (isSave) {
+     console.log("Filtered data after state update:", filteredData);
+     handleSaveToAPI();
+   }
+ }, [filteredData, isSave]); // Dependency on both filteredData and isSave
+
+ // Function to handle saving the data
+ const handleSave = async () => {
+   try {
+     await calculateIntAppliedAmtAndTotal();
+     setIsSave(true); // This will trigger the useEffect to call the API after state update
+   } catch (error) {
+     console.error("Error in calculation:", error);
+     toast.error("Error in saving data");
+   }
+ };
+
+ // Function to handle the API call
+ const handleSaveToAPI = async () => {
+   try {
+     let res = await axios.post(
+       "http://localhost:3001/api/society/postBills",
+       filteredData
+     );
+     console.log("API response:", res);
+     toast.success("Data Successfully Saved");
+     setIsSave(false); // Reset save flag
+   } catch (error) {
+     console.error("API error:", error);
+     toast.error("Error in saving data");
+     setIsSave(false); // Reset save flag in case of failure
+   }
+ };
+
+ 
 
   const calculateTotal = (row) => {
     console.log(row);
@@ -309,7 +376,8 @@ const GenerateBill = () => {
         (acc, curr) => acc + parseInt(curr.value || 0),
         0
       );
-      return total;
+      console.log(row.prevDue,"previous dueeeee")
+      return (total+row.prevDue)
     }
   };
 
@@ -317,7 +385,7 @@ const GenerateBill = () => {
     <>
       <h1 className="text-center text-2xl mb-2">Generate Maintenance Bills</h1>
       <div>
-        <GenerateBillForm selectedItems={selectedItems} isSave={isSave}/>
+        <GenerateBillForm allMemberId={allMemberId} selectedItems={selectedItems} isSave={isSave}/>
       </div>
       <div
         className="pt-2 overflow-y-auto  gap-6"

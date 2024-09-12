@@ -35,7 +35,7 @@ const PrintBill = () => {
 
       return isDateInRange && isMemberMatch;
     });
-
+     console.log(filtered)
     setFilteredTableData(filtered);
   };
 
@@ -48,7 +48,7 @@ const PrintBill = () => {
    const fetchData1 = async () => {
      try {
        const res = await axios.get(
-         "https://a3.arya-erp.in/api2/socapi/api/society/getSocProfile"
+         "http://localhost:3001/api/society/getSocProfile"
        );
           setSocietyData(res.data[0]) 
      } catch (error) {
@@ -115,9 +115,7 @@ const PrintBill = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-      );
+      const res = await axios.get("http://localhost:3001/api/society/getBills");
       console.log(res.data);
       setItems(res.data);
     } catch (error) {
@@ -144,12 +142,11 @@ const PrintBill = () => {
   async function fetchGeneratedBill() {
     try {
       let res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
+        "http://localhost:3001/api/society/getGeneratedBills"
       );
       console.log(res.data.data);
       let arr = res.data.data.flatMap((item) => {
         let arr2 = items.filter((row) => row.data.memberId == item.memberId);
-
         let heads = arr2[0].data.head.filter((item) => Number(item.value) != 0);
 
         return item.billDetails.map((item2) => {
@@ -431,7 +428,7 @@ const PrintBill = () => {
                   <th className="py-3 px-6 text-center">Date</th>
                   <th className="py-3 px-6 text-center">Flat No</th>
                   <th className="py-3 px-6 text-center">Member Name</th>
-                  <th className="py-3 px-6 text-center">Net Amount</th>
+                  <th className="py-3 px-6 text-center">Outstanding </th>
                   <th className="py-3 px-6 text-center">Interest</th>
                   <th className="py-3 px-6 text-center">Total Amount</th>
                 </tr>
@@ -439,7 +436,7 @@ const PrintBill = () => {
               <tbody className="text-gray-600 text-sm font-light">
                 {(filteredTableData.length > 0
                   ? filteredTableData
-                  : tableData
+                  : []
                 ).map((bill) => (
                   <tr
                     onClick={() => handleRowClick(bill)}
