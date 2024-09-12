@@ -48,7 +48,7 @@ const PrintBill = () => {
    const fetchData1 = async () => {
      try {
        const res = await axios.get(
-         "http://localhost:3001/api/society/getSocProfile"
+         "https://a3.arya-erp.in/api2/socapi/api/society/getSocProfile"
        );
           setSocietyData(res.data[0]) 
      } catch (error) {
@@ -115,7 +115,9 @@ const PrintBill = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get("http://localhost:3001/api/society/getBills");
+      const res = await axios.get(
+        "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
+      );
       console.log(res.data);
       setItems(res.data);
     } catch (error) {
@@ -142,7 +144,7 @@ const PrintBill = () => {
   async function fetchGeneratedBill() {
     try {
       let res = await axios.get(
-        "http://localhost:3001/api/society/getGeneratedBills"
+        "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
       );
       console.log(res.data.data);
       let arr = res.data.data.flatMap((item) => {

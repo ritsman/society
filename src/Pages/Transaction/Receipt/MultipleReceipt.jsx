@@ -24,7 +24,7 @@ const MultipleReceipt = () => {
        async function fetchInt(){
             try {
                 let res = await axios.get(
-                  "http://localhost:3001/api/master/getBillMaster"
+                  "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
                 );
                 setInterstRate(res.data[0].interestRatePerMonth);
                 setIntRebate(res.data[0].interestRebateUptoRs)
@@ -89,7 +89,9 @@ const MultipleReceipt = () => {
 
     async function fetch() {
       try {
-        let res = await axios.get("http://localhost:3001/api/society/getBills");
+        let res = await axios.get(
+          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
+        );
         console.log(res.data);
         const updatedReceiptData = res.data.map((item) => {
           let filteredRec = [];
@@ -105,7 +107,7 @@ const MultipleReceipt = () => {
           async function updateDue(){
                try {
                 let res = await axios.put(
-                  "http://localhost:3001/api/society/update-prev-due",
+                  "https://a3.arya-erp.in/api2/socapi/api/society/update-prev-due",
                   {
                     billId: item._id,
                     prevDue: calculateOutstanding(
@@ -200,7 +202,7 @@ const MultipleReceipt = () => {
       // }
       try {
         let result = await axios.get(
-          "http://localhost:3001/api/society/getGeneratedBills"
+          "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
         );
         console.log(result);
         setBillGenerated(result.data.data);
@@ -210,7 +212,7 @@ const MultipleReceipt = () => {
 
       try {
         let result = await axios.get(
-          "http://localhost:3001/api/transaction/getCashReceipt"
+          "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
         );
         setData2(result.data);
       } catch (error) {

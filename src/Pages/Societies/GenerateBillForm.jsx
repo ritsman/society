@@ -25,7 +25,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     async function fetchInt() {
       try {
         let res = await axios.get(
-          "http://localhost:3001/api/master/getBillMaster"
+          "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
         );
         setIntData(res.data[0]);
         console.log(res.data[0]);
@@ -91,7 +91,9 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get("http://localhost:3001/api/society/getBills");
+      const res = await axios.get(
+        "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
+      );
       setItems(res.data);
     } catch (error) {
       console.log(error);
@@ -123,22 +125,25 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
 
           // First API call to generate the bill
           try {
-            await axios.post("http://localhost:3001/api/society/generateBill", {
-              memberId: row,
-              memberName: arr[0].data.ownerName,
-              billDetails: [
-                {
-                  billNo: `BL/24/${uniqueBill}`,
-                  type: formData.type,
-                  billDate: formData.billDate,
-                  dueDate: billData.billDueDate,
-                  currentBillAmt: arr[0].data.total,
-                  interestAfter: formData.interestAfter,
-                  prevBalance:
-                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
-                },
-              ],
-            });
+            await axios.post(
+              "https://a3.arya-erp.in/api2/socapi/api/society/generateBill",
+              {
+                memberId: row,
+                memberName: arr[0].data.ownerName,
+                billDetails: [
+                  {
+                    billNo: `BL/24/${uniqueBill}`,
+                    type: formData.type,
+                    billDate: formData.billDate,
+                    dueDate: billData.billDueDate,
+                    currentBillAmt: arr[0].data.total,
+                    interestAfter: formData.interestAfter,
+                    prevBalance:
+                      filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
+                  },
+                ],
+              }
+            );
           } catch (error) {
             console.log("Error generating bill for memberId:", row, error);
             success = false;
@@ -147,27 +152,30 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
           // Second API call to update the ledger
           let uniqueId = generateShortUUID();
           try {
-            await axios.post(`http://localhost:3001/api/member/Ledger/${row}`, {
-              memberId: row,
-              ledger: [
-                {
-                  tranId: uniqueId,
-                  payMode: "",
-                  date: billData.billDate,
-                  billNo: "",
-                  dueDate: billData.billDueDate,
-                  head: arr[0].data.head,
-                  totalAmtDue: filterReceipt[0]?.balance,
-                  billAmt: arr[0].data.total,
-                  paidAmt: "",
-                  balance:
-                    filterReceipt.length > 0
-                      ? Number(filterReceipt[0].balance) +
-                        Number(arr[0].data.total)
-                      : arr[0].data.total,
-                },
-              ],
-            });
+            await axios.post(
+              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row}`,
+              {
+                memberId: row,
+                ledger: [
+                  {
+                    tranId: uniqueId,
+                    payMode: "",
+                    date: billData.billDate,
+                    billNo: "",
+                    dueDate: billData.billDueDate,
+                    head: arr[0].data.head,
+                    totalAmtDue: filterReceipt[0]?.balance,
+                    billAmt: arr[0].data.total,
+                    paidAmt: "",
+                    balance:
+                      filterReceipt.length > 0
+                        ? Number(filterReceipt[0].balance) +
+                          Number(arr[0].data.total)
+                        : arr[0].data.total,
+                  },
+                ],
+              }
+            );
           } catch (error) {
             console.log("Error updating ledger for memberId:", row, error);
             success = false;
@@ -205,22 +213,25 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
 
           // First API call to generate the bill
           try {
-            await axios.post("http://localhost:3001/api/society/generateBill", {
-              memberId: row,
-              memberName: arr[0].data.ownerName,
-              billDetails: [
-                {
-                  billNo: `BL/24/${uniqueBill}`,
-                  type: formData.type,
-                  billDate: formData.billDate,
-                  dueDate: billData.billDueDate,
-                  currentBillAmt: arr[0].data.total,
-                  interestAfter: formData.interestAfter,
-                  prevBalance:
-                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
-                },
-              ],
-            });
+            await axios.post(
+              "https://a3.arya-erp.in/api2/socapi/api/society/generateBill",
+              {
+                memberId: row,
+                memberName: arr[0].data.ownerName,
+                billDetails: [
+                  {
+                    billNo: `BL/24/${uniqueBill}`,
+                    type: formData.type,
+                    billDate: formData.billDate,
+                    dueDate: billData.billDueDate,
+                    currentBillAmt: arr[0].data.total,
+                    interestAfter: formData.interestAfter,
+                    prevBalance:
+                      filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
+                  },
+                ],
+              }
+            );
           } catch (error) {
             console.log("Error generating bill for memberId:", row, error);
             success = false;
@@ -231,27 +242,30 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
           // Second API call to update the ledger
           let uniqueId = generateShortUUID();
           try {
-            await axios.post(`http://localhost:3001/api/member/Ledger/${row}`, {
-              memberId: row,
-              ledger: [
-                {
-                  tranId: uniqueId,
-                  payMode: "",
-                  date: billData.billDate,
-                  billNo: "",
-                  dueDate: billData.billDueDate,
-                  head: arr[0].data.head,
-                  totalAmtDue: filterReceipt[0]?.balance,
-                  billAmt: arr[0].data.total,
-                  paidAmt: "",
-                  balance:
-                    filterReceipt.length > 0
-                      ? Number(filterReceipt[0].balance) +
-                        Number(arr[0].data.total)
-                      : arr[0].data.total,
-                },
-              ],
-            });
+            await axios.post(
+              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row}`,
+              {
+                memberId: row,
+                ledger: [
+                  {
+                    tranId: uniqueId,
+                    payMode: "",
+                    date: billData.billDate,
+                    billNo: "",
+                    dueDate: billData.billDueDate,
+                    head: arr[0].data.head,
+                    totalAmtDue: filterReceipt[0]?.balance,
+                    billAmt: arr[0].data.total,
+                    paidAmt: "",
+                    balance:
+                      filterReceipt.length > 0
+                        ? Number(filterReceipt[0].balance) +
+                          Number(arr[0].data.total)
+                        : arr[0].data.total,
+                  },
+                ],
+              }
+            );
           } catch (error) {
             console.log("Error updating ledger for memberId:", row, error);
             success = false;
@@ -261,7 +275,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
 
            try {
              let res = await axios.post(
-               "http://localhost:3001/api/transaction/postCashReceipt",
+               "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashReceipt",
                receiptData
              );
              console.log(res);
@@ -292,7 +306,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
   async function fetchReciept() {
     try {
       let result = await axios.get(
-        "http://localhost:3001/api/transaction/getCashReceipt"
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
       );
       setReceiptData(result.data);
     } catch (error) {

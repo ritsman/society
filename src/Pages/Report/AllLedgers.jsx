@@ -26,7 +26,7 @@ const AllLedgers = () => {
   async function fetchBankACLedger() {
     try {
       let res = await axios.get(
-        "http://localhost:3001/api/master/getBankAccLedger"
+        "https://a3.arya-erp.in/api2/socapi/api/master/getBankAccLedger"
       );
       console.log(res);
       setBankLedger(res.data);
@@ -38,7 +38,7 @@ const AllLedgers = () => {
   async function fetchCashACLedger() {
     try {
       let res = await axios.get(
-        "http://localhost:3001/api/master/getCashAccLedger"
+        "https://a3.arya-erp.in/api2/socapi/api/master/getCashAccLedger"
       );
       console.log(res);
       setCashLedger(res.data);

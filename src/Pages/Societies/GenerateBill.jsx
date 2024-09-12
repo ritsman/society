@@ -116,7 +116,7 @@ const GenerateBill = () => {
   };
 
  useEffect(() => {
-   fetch("http://localhost:3001/api/member/getMemberList")
+   fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
      .then((response) => response.json())
      .then((data) => {
        setMembers(data);
@@ -154,7 +154,8 @@ const GenerateBill = () => {
                      ?.value
                  : "0", // Default to "0" if not found
            })),
-           total: billObj && billObj.data.total ? calculateTotal(billObj.data) : 0, // Calculate total if bill data exists
+           total:
+             billObj && billObj.data.total ? calculateTotal(billObj.data) : 0, // Calculate total if bill data exists
          };
          arr.push(obj);
        });
@@ -165,7 +166,7 @@ const GenerateBill = () => {
 
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/master/getBillHeads")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
       .then((response) => response.json())
       .then((data) => {
         let arr = [];
@@ -185,7 +186,7 @@ const GenerateBill = () => {
 
     // fetch bills table data
 
-    fetch("http://localhost:3001/api/society/getBills")
+    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -354,7 +355,7 @@ const calculateIntAppliedAmtAndTotal = () => {
  const handleSaveToAPI = async () => {
    try {
      let res = await axios.post(
-       "http://localhost:3001/api/society/postBills",
+       "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
        filteredData
      );
      console.log("API response:", res);

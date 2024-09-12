@@ -72,7 +72,7 @@ const PrintBill = () => {
   async function fetchData() {
     try {
       let res = await axios.get(
-        "http://localhost:3001/api/transaction/getCashReceipt"
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
       );
       const mappedData = res.data.flatMap((item) =>
         item.paid.map((paidEntry) => ({
