@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 import axios from "axios";
 import { toast } from "react-toastify";
 import GenerateBillForm from "./GenerateBillForm";
+import { HotTable } from "@handsontable/react";
+import "handsontable/dist/handsontable.full.css";
+// import "./BillView.css";
+import { registerAllModules } from "handsontable/registry";
 
 // const headers = [
 //   { key: "wing No", name: "Wing No" },
@@ -18,9 +22,15 @@ const GenerateBill = () => {
   const [filteredData, setFilteredData] = useState(gridRow);
   const [heads, setHeads] = useState([]);
   const [billData, setBillData] = useState([]);
-  const [ selectedItems , setSelectedItems] = useState([]);
-  const [allMemberId , setAllMembId] = useState([])
-  const [isSave , setIsSave] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [allMemberId, setAllMembId] = useState([]);
+  const [isSave, setIsSave] = useState(false);
+  const [columns, setColumn] = useState([]);
+  const [tableRows, setTableRows] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const hotTableRef = useRef(null);
+  registerAllModules();
 
   useEffect(() => {
     setFilteredData(gridRow);
@@ -63,7 +73,6 @@ const GenerateBill = () => {
 
   const [chkstat2, setChkStat2] = useState({});
 
-
   useEffect(() => {
     const chkstat = {};
     filteredData?.forEach((val) => {
@@ -71,13 +80,11 @@ const GenerateBill = () => {
     });
     setChkStat2(chkstat);
 
-       const arr = []
+    const arr = [];
     filteredData?.forEach((val) => {
       arr.push(val.memberId);
     });
     setAllMembId(arr);
-
-
   }, [members]);
 
   const leadSet = (event) => {
@@ -85,16 +92,16 @@ const GenerateBill = () => {
     Object.keys(chkstat2).forEach((key) => {
       c[key] = event.target.checked;
     });
-     setChkStat2(c);
-     
-    let arr = []
-      Object.keys(c).forEach((key)=>{
-        if(c[key]){
-            arr.push(key)
-        }
-          })
-          console.log(arr)
-          setSelectedItems(arr);
+    setChkStat2(c);
+
+    let arr = [];
+    Object.keys(c).forEach((key) => {
+      if (c[key]) {
+        arr.push(key);
+      }
+    });
+    console.log(arr);
+    setSelectedItems(arr);
   };
 
   const setTick = (contact, event) => {
@@ -112,58 +119,103 @@ const GenerateBill = () => {
     });
     console.log(arr);
     setSelectedItems(arr);
-    
   };
 
- useEffect(() => {
-   fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
-     .then((response) => response.json())
-     .then((data) => {
-       setMembers(data);
-       let arr = [];
-       data.forEach((item, index) => {
-         let billObj = billData.find(
-           (row) =>
-             row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
-         );
-         let obj = {
-           id: index,
-           memberId: item._id,
-           wingNo: item.wingNo,
-           flatNo: item.flatNo,
-           ownerName: item.name,
-           prevDue: billObj && billObj.data ? billObj.data.prevDue : 0,
-           // Fixed intAppliedAmt calculation
-           intAppliedAmt: 0,
-           //  billObj && billObj.data && Array.isArray(billObj.data.head)
-           //  ? billObj.data.head.reduce((acc, ele) => {
-           //  return ele.interestApplied && ele.value
-           // ? acc + parseFloat(ele.value) // Parse value as a float to handle numbers properly
-           // : acc;
-           // }, 0)
-           // : 0,
+  useEffect(() => {
+    let col = [
+      { data: "isSelected", title: "Select", type: "checkbox", width: 100 },
+    ];
+    if (filteredData.length > 0) {
+      Object.keys(filteredData[0]).forEach((key) => {
+        if (key != "id" && key != "memberId" && key != "intAppliedAmt")
+          if (key == "head") {
+            filteredData[0][key].forEach((item) => {
+              if (item.isActive) {
+                let obj = {
+                  data: item.head,
+                  title: item.head,
+                  width: 100,
+                  readOnly: false,
+                };
+                col.push(obj);
+              }
+            });
+          } else {
+            let obj = {
+              data: key,
+              title: key,
+              width: 130,
+              readOnly: true,
+            };
+            col.push(obj);
+          }
+      });
+    }
 
-           head: heads.map((headItem, index) => ({
-             head: headItem.head,
-             isActive: headItem.isActive,
-             interestApplied: headItem.interestApplied,
-             id: index + 1,
-             value:
-               billObj && billObj.data.head
-                 ? billObj.data.head.find((h) => h.head === headItem.head)
-                     ?.value
-                 : "0", // Default to "0" if not found
-           })),
-           total:
-             billObj && billObj.data.total ? calculateTotal(billObj.data) : 0, // Calculate total if bill data exists
-         };
-         arr.push(obj);
-       });
-       setGridRow(arr);
-       setFilteredData(arr);
-     });
- }, [heads, billData]);
+    console.log(col);
+    setColumn(col);
+    let arr = [];
+    filteredData.forEach((item) => {
+      let obj = { isSelected: false };
+      Object.keys(item).forEach((key) => {
+        if (key == "head") {
+          item[key].forEach((item2) => {
+            if (item2.isActive) {
+              obj[item2.head] = item2.value;
+            }
+          });
+        } else {
+          obj[key] = item[key];
+        }
+      });
+      arr.push(obj);
+    });
+    console.log(arr);
+    setTableRows(arr);
+  }, [filteredData]);
 
+  useEffect(() => {
+    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+      .then((response) => response.json())
+      .then((data) => {
+        setMembers(data);
+        let arr = [];
+        data.forEach((item, index) => {
+          let billObj = billData.find(
+            (row) =>
+              row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
+          );
+
+          let obj = {
+            id: index,
+            memberId: item._id,
+            wingNo: item.wingNo,
+            flatNo: item.flatNo,
+            ownerName: item.name,
+            prevDue: billObj && billObj.data ? billObj.data.prevDue : 0,
+            // Fixed intAppliedAmt calculation
+            intAppliedAmt: 0,
+
+            head: heads.map((headItem, index) => ({
+              head: headItem.head,
+              isActive: headItem.isActive,
+              interestApplied: headItem.interestApplied,
+              id: index + 1,
+              value:
+                billObj && billObj.data.head
+                  ? billObj.data.head.find((h) => h.head === headItem.head)
+                      ?.value
+                  : "0", // Default to "0" if not found
+            })),
+            total:
+              billObj && billObj.data.total ? calculateTotal(billObj.data) : 0, // Calculate total if bill data exists
+          };
+          arr.push(obj);
+        });
+        setGridRow(arr);
+        setFilteredData(arr);
+      });
+  }, [heads, billData]);
 
   useEffect(() => {
     fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
@@ -283,12 +335,10 @@ const GenerateBill = () => {
             }
           });
 
-           let intAppliedAmt=
-             item.head.reduce((acc, ele) => {
-                   return ele.interestApplied ? acc + Number(ele.value) : acc;
-                 }, 0)
-            
-               
+          let intAppliedAmt = item.head.reduce((acc, ele) => {
+            return ele.interestApplied ? acc + Number(ele.value) : acc;
+          }, 0);
+
           const total = calculateTotal({ ...item, head: updatedHead });
           return {
             ...item,
@@ -301,74 +351,70 @@ const GenerateBill = () => {
         }
       })
     );
-
-
   };
 
-const calculateIntAppliedAmtAndTotal = () => {
-  return new Promise((resolve) => {
-    const updatedData = filteredData.map((item) => {
-      // Calculate intAppliedAmt based on active heads with interestApplied
-      const intAppliedAmt = item.head
-        .filter((headItem) => headItem.interestApplied)
-        .reduce((acc, headItem) => acc + parseFloat(headItem.value || 0), 0);
+  const calculateIntAppliedAmtAndTotal = () => {
+    return new Promise((resolve) => {
+      const updatedData = filteredData.map((item) => {
+        // Calculate intAppliedAmt based on active heads with interestApplied
+        const intAppliedAmt = item.head
+          .filter((headItem) => headItem.interestApplied)
+          .reduce((acc, headItem) => acc + parseFloat(headItem.value || 0), 0);
 
-      // Calculate total based on all heads' values
-      const total = item.head.reduce(
-        (acc, headItem) => acc + parseFloat(headItem.value || 0),
-        0
-      );
+        // Calculate total based on all heads' values
+        const total = item.head.reduce(
+          (acc, headItem) => acc + parseFloat(headItem.value || 0),
+          0
+        );
 
-      // Return updated item with calculated values
-          console.log("calculate int applied function",intAppliedAmt);
+        // Return updated item with calculated values
+        console.log("calculate int applied function", intAppliedAmt);
 
-      return { ...item, intAppliedAmt, total };
+        return { ...item, intAppliedAmt, total };
+      });
+
+      // Update the state with the new data
+      setFilteredData(updatedData);
+
+      // Resolve the promise once calculations are done
+      resolve(updatedData);
     });
+  };
 
-    // Update the state with the new data
-    setFilteredData(updatedData);
+  useEffect(() => {
+    if (isSave) {
+      console.log("Filtered data after state update:", filteredData);
+      handleSaveToAPI();
+    }
+  }, [filteredData, isSave]); // Dependency on both filteredData and isSave
 
-    // Resolve the promise once calculations are done
-    resolve(updatedData);
-  });
-};
+  // Function to handle saving the data
+  const handleSave = async () => {
+    try {
+      await calculateIntAppliedAmtAndTotal();
+      setIsSave(true); // This will trigger the useEffect to call the API after state update
+    } catch (error) {
+      console.error("Error in calculation:", error);
+      toast.error("Error in saving data");
+    }
+  };
 
- useEffect(() => {
-   if (isSave) {
-     console.log("Filtered data after state update:", filteredData);
-     handleSaveToAPI();
-   }
- }, [filteredData, isSave]); // Dependency on both filteredData and isSave
-
- // Function to handle saving the data
- const handleSave = async () => {
-   try {
-     await calculateIntAppliedAmtAndTotal();
-     setIsSave(true); // This will trigger the useEffect to call the API after state update
-   } catch (error) {
-     console.error("Error in calculation:", error);
-     toast.error("Error in saving data");
-   }
- };
-
- // Function to handle the API call
- const handleSaveToAPI = async () => {
-   try {
-     let res = await axios.post(
-       "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
-       filteredData
-     );
-     console.log("API response:", res);
-     toast.success("Data Successfully Saved");
-     setIsSave(false); // Reset save flag
-   } catch (error) {
-     console.error("API error:", error);
-     toast.error("Error in saving data");
-     setIsSave(false); // Reset save flag in case of failure
-   }
- };
-
- 
+  // Function to handle the API call
+  const handleSaveToAPI = async () => {
+    try {
+      let res = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
+        filteredData
+      );
+      console.log("API response:", res);
+      toast.success("Data Successfully Saved");
+      setIsSave(false); // Reset save flag
+    } catch (error) {
+      console.error("API error:", error);
+      toast.error("Error in saving data");
+      setIsSave(false); // Reset save flag in case of failure
+    }
+  };
 
   const calculateTotal = (row) => {
     console.log(row);
@@ -377,8 +423,150 @@ const calculateIntAppliedAmtAndTotal = () => {
         (acc, curr) => acc + parseInt(curr.value || 0),
         0
       );
-      console.log(row.prevDue,"previous dueeeee")
-      return (total+row.prevDue)
+      console.log(row.prevDue, "previous dueeeee");
+      return total + row.prevDue;
+    }
+  };
+
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedColumn, setSelectedColumn] = useState(null);
+  const [bulkEditValue, setBulkEditValue] = useState("");
+  const [isEdited, setIsEdited] = useState([]);
+
+  const handleSelection = (r, c, r2, c2) => {
+    const rows = [];
+    for (let i = Math.min(r, r2); i <= Math.max(r, r2); i++) {
+      rows.push(i);
+    }
+    setSelectedRows(rows);
+    setSelectedColumn(c); // Track the selected column index
+  };
+
+  const handleBulkEdit = () => {
+    if (selectedRows.length === 0 || selectedColumn === null || !bulkEditValue)
+      return;
+
+    const newData = tableRows.map((row, index) => {
+      if (selectedRows.includes(index)) {
+        const key = columns[selectedColumn].data;
+        return { ...row, [key]: bulkEditValue }; // Update the correct column
+      }
+      return row;
+    });
+
+    setTableRows(newData);
+    setIsEdited(newData);
+    console.log(newData);
+    setBulkEditValue("");
+
+    // Notify Handsontable of the data change
+    if (hotTableRef.current) {
+      hotTableRef.current.hotInstance.loadData(newData);
+    }
+  };
+
+  useEffect(() => {
+    const secondArrayMap = new Map();
+    tableRows.forEach((item) => {
+      const { id, ...heads } = item;
+      secondArrayMap.set(id, heads);
+    });
+
+    // Function to map heads from the second array
+    function mapHeadsFromSecondArray(item) {
+      const newHeads = secondArrayMap.get(item.id);
+      if (newHeads) {
+        return item.head.map((h) => {
+          // Replace heads with new values from the second array only if isActive is true and value is not "0"
+          if (h.isActive) {
+            return {
+              ...h,
+              value: newHeads[h.head] || h.value, // Use value from second array if available
+            };
+          }
+          return h; // Keep existing head if isActive is false or value is "0"
+        });
+      }
+      return item.head; // Return existing heads if no match found
+    }
+
+    const updateSelect = (item) => {
+      const newHeads = secondArrayMap.get(item.id);
+      if (newHeads) {
+        return newHeads.isSelected;
+      }
+      return item.isSelected;
+    };
+    // Replace heads in the first array
+    const updatedFirstArray = filteredData.map((item) => ({
+      ...item,
+      isSelected: updateSelect(item),
+      head: mapHeadsFromSecondArray(item),
+    }));
+
+    console.log(updatedFirstArray);
+    setFilteredData(updatedFirstArray);
+  }, [isEdited]);
+
+  const handleTick = (rowIndex, isChecked) => {
+    const updatedRows = [...tableRows];
+    updatedRows[rowIndex].isSelected = isChecked;
+
+    const updatedSelectedItems = isChecked
+      ? [...selectedItems, filteredData[rowIndex].memberId]
+      : selectedItems.filter((id) => id !== filteredData[rowIndex].memberId);
+
+    setTableRows(updatedRows);
+    setSelectedItems(updatedSelectedItems);
+
+    if (hotTableRef.current) {
+      hotTableRef.current.hotInstance.loadData(updatedRows);
+    }
+  };
+
+  const handleAfterChange = (changes, source) => {
+    if (source === "loadData") return; // Skip on data load
+
+    if (source === "edit" || source === "paste") {
+      changes.forEach(([row, prop, oldValue, newValue]) => {
+        if (prop === "isSelected" && oldValue !== newValue) {
+          handleTick(row, newValue);
+        }
+      });
+    }
+    // Ensure changes is not empty
+    if (changes) {
+      // Only update `isEdited` if there are changes
+      const hasChanges = changes.some(
+        ([row, prop, oldValue, newValue]) => oldValue !== newValue
+      );
+
+      // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
+      if (hasChanges) {
+        setIsEdited(tableRows);
+        console.log("value changed", tableRows);
+      }
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectAll(!selectAll); // Toggle selectAll state
+
+    const updatedRows = tableRows.map((row) => ({
+      ...row,
+      isSelected: !selectAll, // Set all rows' isSelected to the opposite of selectAll
+    }));
+
+    setTableRows(updatedRows);
+    setSelectedItems(
+      !selectAll
+        ? updatedRows.map((row) => row.memberId) // If selectAll is true, select all memberIds
+        : [] // If selectAll is false, deselect all
+    );
+
+    // If Handsontable is in use, notify the table of the data change
+    if (hotTableRef.current) {
+      hotTableRef.current.hotInstance.loadData(updatedRows);
     }
   };
 
@@ -386,7 +574,11 @@ const calculateIntAppliedAmtAndTotal = () => {
     <>
       <h1 className="text-center text-2xl mb-2">Generate Maintenance Bills</h1>
       <div>
-        <GenerateBillForm allMemberId={allMemberId} selectedItems={selectedItems} isSave={isSave}/>
+        <GenerateBillForm
+          allMemberId={allMemberId}
+          selectedItems={selectedItems}
+          isSave={isSave}
+        />
       </div>
       <div
         className="pt-2 overflow-y-auto  gap-6"
@@ -409,108 +601,32 @@ const calculateIntAppliedAmtAndTotal = () => {
               >
                 Save
               </button>
+              <button
+                onClick={handleSelectAll} // Add Select All button
+                className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-600"
+              >
+                {selectAll ? "Deselect All" : "Select All"}
+              </button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="table-auto w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-700 text-white w-screen">
-                    <th className="p-4 sticky left-0 bg-gray-700 z-10">
-                      <input
-                        type="checkbox"
-                        onChange={(event) => leadSet(event)}
-                      />
-                    </th>
-                    <th className="px-10 py-2 sticky z-12 bg-gray-700 w-40 left-10 text-start whitespace-nowrap overflow-hidden text-ellipsis ">
-                      Wing No
-                    </th>
-                    <th className="px-10 py-2 sticky z-12 bg-gray-700 w-40 left-10 text-start whitespace-nowrap overflow-hidden text-ellipsis">
-                      Flat No
-                    </th>
-                    <th className="px-10 py-2  sticky z-10 bg-gray-700 left-40 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis ">
-                      Owner Name
-                    </th>
-                    <th className="px-10 py-2  sticky z-10 bg-gray-700 left-40 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis ">
-                      Previous Due
-                    </th>
-                    {heads
-                      .filter((item) => item.isActive) // Filter out inactive heads
-                      .map((item, index) => (
-                        <th
-                          key={index}
-                          className="px-10 py-2 text-start w-48 whitespace-nowrap overflow-hidden text-ellipsis"
-                        >
-                          {item.head}
-                        </th>
-                      ))}
-
-                    <th className="px-4 py-2 text-start ">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((item) => (
-                      <tr key={item.id} className="text-center">
-                        <td className="p-4 sticky border-2 z-10 left-0 bg-white">
-                          <input
-                            type="checkbox"
-                            checked={chkstat2[item.memberId]}
-                            onChange={(event) => setTick(item, event)}
-                            name={item.id}
-                            className="text-center"
-                          />
-                        </td>
-                        <td className="px-4 py-2 border-2 sticky z-10 left-10 bg-white">
-                          {item.wingNo}
-                        </td>
-                        <td className="px-4 py-2 border-2  sticky z-10 left-10 bg-white">
-                          {item.flatNo}
-                        </td>
-                        <td className="px-4 py-2 border-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {item.ownerName}
-                        </td>
-                        <td className="px-4 py-2 border-2  sticky z-10 left-40 bg-white w-48 whitespace-nowrap overflow-hidden text-ellipsis">
-                          {item.prevDue}
-                        </td>
-
-                        {item.head &&
-                          item.head
-                            .filter((item2) => item2.isActive) // Filter to include only active items
-                            .map((item2, index) => (
-                              <td
-                                key={index}
-                                className="w-48 whitespace-nowrap border-2 overflow-hidden text-ellipsis"
-                              >
-                                <input
-                                  type="text"
-                                  value={item2.value}
-                                  onChange={(e) =>
-                                    handleChange2(
-                                      item.id,
-                                      item2.id,
-                                      item2.head,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full px-4 py-2 text-center"
-                                />
-                              </td>
-                            ))}
-
-                        <td className="px-4 py-2 border-2">{item.total}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={heads.length + 4}
-                        className="px-5 text-xl font-bold text-center"
-                      >
-                        Data not found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <div className="mt-8">
+              <div className="hot-table-container mt-5">
+                <HotTable
+                  ref={hotTableRef}
+                  data={tableRows}
+                  columns={columns}
+                  colHeaders={true}
+                  rowHeaders={true}
+                  height="auto"
+                  licenseKey="non-commercial-and-evaluation"
+                  multiColumnSorting={true}
+                  filters={true}
+                  dropdownMenu={true}
+                  afterChange={handleAfterChange}
+                  contextMenu={true}
+                  autoWrapRow={true}
+                  autoWrapCol={true}
+                />
+              </div>
             </div>
           </div>
         </div>

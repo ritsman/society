@@ -1,10 +1,15 @@
 import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useEffect,useRef } from "react";
 import { useState } from "react";
 import * as XLSX from "xlsx";
 import UploadedData from "../../components/UploadedData";
 import "./memberlist.css";
-import { toast } from "react-toastify";
+import { toast, useToastContainer } from "react-toastify";
+import { HotTable } from "@handsontable/react";
+import "handsontable/dist/handsontable.full.css";
+import { registerAllModules } from "handsontable/registry";
+import Handsontable from "handsontable";
+
 
 const template = [
   "name",
@@ -27,12 +32,12 @@ const template = [
   "systemId",
 ];
 let tableHeads = [
-  "Name",
-  "Mobile No.",
-  "Email",
-  "Address",
-  "Flat No.",
-  "Wing No.",
+  "name",
+  "mobileNo",
+  "email",
+  "address",
+  "flatNo",
+  "wingNo",
 ];
 let tableHead = [];
 
@@ -45,6 +50,9 @@ const MemberList = () => {
   const handleUpload = () => {
     setUpload(true);
   };
+
+  registerAllModules();
+  const hotTableRef = useRef(null);
 
   const handleFileUpload = (event) => {
     let fileTypes = [
@@ -109,15 +117,19 @@ const MemberList = () => {
   const [data, setData] = useState([]);
   const [head, setHead] = useState([]);
   const [list, setList] = useState([]);
+  const [column , setColumn] = useState([]);
+  const [column1 , setColumn1] = useState([])
+  const [tableRow1 , setTableRow1] = useState([]);
+  const [isEdited , setIsEdited] = useState([])
 
   useEffect(() => {
     let arr = data.map((item) => {
       return {
         name: item.name,
-
-        registeredMobileNo: item.registeredMobileNo,
+        id:item._id,
+        mobileNo: item.registeredMobileNo,
         email: item.email,
-        permanentAddress: item.permanentAddress,
+        address: item.permanentAddress,
         flatNo: item.flatNo,
         wingNo: item.wingNo,
         head: head.map((row, index) => ({
@@ -126,7 +138,7 @@ const MemberList = () => {
         })),
       };
     });
-
+      console.log(arr)
     setTableRow(arr);
   }, [head, data]);
 
@@ -146,7 +158,10 @@ const MemberList = () => {
         data.map((item) => {
           tableHead.push(item.Header);
         });
+
         setHead(tableHead);
+        setColumn([...tableHeads, ...tableHead]);
+        console.log(column);
       })
       .catch((error) => console.error(error));
   }, []);
@@ -236,6 +251,124 @@ const MemberList = () => {
       toast.error("error in storing data");
     }
   };
+    let col = [];
+
+  useEffect(()=>{
+    column.forEach((item)=>{
+         let obj = {
+             data : item,
+             title:item,
+             
+            
+         }
+         col.push(obj)
+    })
+    setColumn1(col);
+    console.log(col)
+
+  },[column])
+   let arr = [];
+  useEffect(()=>{
+   
+   tableRow.forEach((item) => {
+     let obj = {};
+     Object.keys(item).forEach((key) => {
+       if (key == "head") {
+         item[key].forEach((item2) => {
+          
+             obj[item2.heads] = item2.value;
+           
+         });
+       } else {
+         obj[key] = item[key];
+       }
+     });
+     arr.push(obj);
+   });
+   console.log(arr);
+   setTableRow1(arr);
+  },[tableRow])
+
+   const handleAfterChange = (changes, source) => {
+     if (source === "loadData") return; // Skip on data load
+
+     // Ensure changes is not empty
+     if (changes) {
+       // Only update `isEdited` if there are changes
+       const hasChanges = changes.some(
+         ([row, prop, oldValue, newValue]) => oldValue !== newValue
+       );
+
+       // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
+       if (hasChanges) {
+         setIsEdited(tableRow1);
+         console.log("value changed");
+       }
+     }
+   };
+
+
+
+
+   useEffect(() => {
+     const secondArrayMap = new Map();
+     tableRow1.forEach((item) => {
+       const { id,...heads } = item;
+       secondArrayMap.set(id,heads);
+     });
+
+     // Function to map heads from the second array
+     function mapHeadsFromSecondArray(item) {
+       const newHeads = secondArrayMap.get(item.id);
+       if (newHeads) {
+         return item.head.map((h) => {
+           // Replace heads with new values from the second array only if isActive is true and value is not "0"
+           
+             return {
+               ...h,
+               value: newHeads[h.heads] || h.value, // Use value from second array if available
+             };
+          
+            // Keep existing head if isActive is false or value is "0"
+         });
+       }
+       return item.head; // Return existing heads if no match found
+     }
+
+
+     function otherValues(item,itemName,value){
+         const newHeads = secondArrayMap.get(item.id);
+          if (newHeads) {
+             return newHeads[`${itemName}`];
+
+          }
+          return value
+     }
+
+     // Replace heads in the first array
+     const updatedFirstArray = tableRow.map((item) => ({
+      ...item,
+       name: otherValues(item, "name", item.name),
+
+       mobileNo: otherValues(
+         item,
+         "mobileNo",
+         item.mobileNo
+       ),
+       email: otherValues(item, "email", item.email),
+       address: otherValues(
+         item,
+         "address",
+         item.address
+       ),
+       flatNo: otherValues(item, "flatNo", item.flatNo),
+       wingNo: otherValues(item, "wingNo", item.wingNo),
+       head: mapHeadsFromSecondArray(item),
+     }));
+
+     console.log(updatedFirstArray);
+     setTableRow(updatedFirstArray);
+   }, [isEdited]);
 
   return (
     <>
@@ -313,109 +446,32 @@ const MemberList = () => {
               >
                 Save
               </button>
-              <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6  rounded-lg ">
-                <table className="rounded-md">
-                  <thead className="bg-gray-700 text-slate-200">
-                    <tr>
-                      {tableHeads.map((item) => (
-                        <th
-                          className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
-                          key={item}
-                        >
-                          {item}
-                        </th>
-                      ))}
-                      {head.map((item) => (
-                        <th
-                          className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
-                          key={item}
-                        >
-                          {item}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-300">
-                    {tableRow.map((item, index) => (
-                      <tr key={index} className="">
-                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis">
-                          <input
-                            type="text"
-                            value={item.name}
-                            onChange={(event) =>
-                              handleFieldChange(
-                                index,
-                                "name",
-                                event.target.value
-                              )
-                            }
-                            className="text-center"
-                          />
-                        </td>
-                        <td className="p-4 text-center whitespace-nowrap overflow-hidden text-ellipsis">
-                          <input
-                            type="text"
-                            value={item.registeredMobileNo}
-                            onChange={(event) =>
-                              handleFieldChange(
-                                index,
-                                "registeredMobileNo",
-                                event.target.value
-                              )
-                            }
-                            className="text-center"
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            value={item.email}
-                            onChange={(event) =>
-                              handleFieldChange(
-                                index,
-                                "email",
-                                event.target.value
-                              )
-                            }
-                            className="text-center"
-                          />
-                        </td>
-                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                          <input
-                            type="text"
-                            value={item.permanentAddress}
-                            onChange={(event) =>
-                              handleFieldChange(
-                                index,
-                                "permanentAddress",
-                                event.target.value
-                              )
-                            }
-                            className="text-center"
-                          />
-                        </td>
-                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                          {item.flatNo}
-                        </td>
-                        <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                          {item.wingNo}
-                        </td>
-                        {item.head.map((row, rowIndex) => (
-                          <td className=" text-center" key={rowIndex}>
-                            <input
-                              type="text"
-                              value={row.value}
-                              onChange={(event) =>
-                                handleRowValueChange(item, rowIndex, event)
-                              }
-                              className="text-center"
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+
+              <div className=" ">
+                <div className="w-full h-full mt-5">
+                  {tableRow1.length > 0 && column1.length > 0 ? (
+                    <HotTable
+                      ref={hotTableRef}
+                      data={tableRow1}
+                      columns={column1}
+                      colHeaders={true}
+                      rowHeaders={true}
+                      height="400px" // Set a specific height to ensure the table renders visibly
+                      width="100%"
+                      licenseKey="non-commercial-and-evaluation"
+                      multiColumnSorting={true}
+                      filters={true}
+                      afterChange={handleAfterChange}
+                      
+                      dropdownMenu={true}
+                      contextMenu={true}
+                      autoWrapRow={true}
+                      autoWrapCol={true}
+                    />
+                  ) : (
+                    "loading.."
+                  )}
+                </div>
               </div>
             </div>
           </>

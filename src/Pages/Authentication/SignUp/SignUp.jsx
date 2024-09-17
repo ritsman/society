@@ -28,7 +28,7 @@ const SignUp = () => {
     } else {
       try {
         let response = await axios.post(
-          "https://a3.arya-erp.in/api2/socapi/api/auth/register",
+          "http://localhost:3001/api/auth/register",
           {
             name: name,
             user: email,

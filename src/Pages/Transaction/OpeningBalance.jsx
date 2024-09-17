@@ -1,7 +1,11 @@
 import axios from "axios";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
+import { HotTable } from "@handsontable/react";
+import "handsontable/dist/handsontable.full.css";
+import { registerAllModules } from "handsontable/registry";
+import Handsontable from "handsontable";
 
 const OpeningBalance = () => {
   const [opBalanceType, setOpBalanceType] = useState("Members");
@@ -16,8 +20,16 @@ const OpeningBalance = () => {
   const [data, setData] = useState([]);
   const [head, setHead] = useState([]);
   const [list, setList] = useState([]);
+  const [column, setColumn] = useState([]);
+
+  const [column1, setColumn1] = useState([]);
+  const [tableRow1, setTableRow1] = useState([]);
+  const [isEdited, setIsEdited] = useState([]);
 
   const [chkstat2, setChkStat2] = useState({});
+
+  registerAllModules();
+  const hotTableRef = useRef(null);
 
   useEffect(() => {
     const chkstat = {};
@@ -53,14 +65,7 @@ const OpeningBalance = () => {
   };
 
   //asdflkadsf
-  let tableHeads = [
-    "Name",
-    "Mobile No.",
-    "Email",
-    "Address",
-    "Flat No.",
-    "Wing No.",
-  ];
+  let tableHeads = ["name", "mobileNo", "email", "address", "flatNo", "wingNo"];
   let tableHead = [];
 
   useEffect(() => {
@@ -74,6 +79,7 @@ const OpeningBalance = () => {
     let arr = data.map((item) => {
       return {
         name: item.name,
+        id:item._id,
         mobileNo: item.registeredMobileNo,
         email: item.email,
         address: item.permanentAddress,
@@ -106,6 +112,7 @@ const OpeningBalance = () => {
           tableHead.push(item.Header);
         });
         setHead(tableHead);
+        setColumn([...tableHeads, ...tableHead]);
       })
       .catch((error) => console.error(error));
   }, []);
@@ -134,6 +141,106 @@ const OpeningBalance = () => {
       toast.error("error in storing data");
     }
   };
+
+  let col = [];
+
+  useEffect(() => {
+    column.forEach((item) => {
+      if(item == "name" || item == "mobileNo" || item == "address" || item == "email" || item == "flatNo" || item == "wingNo"
+      ){
+      let obj = {
+        data: item,
+        title: item,
+        readOnly: true,
+      };
+      col.push(obj);
+    }else{
+       let obj = {
+         data: item,
+         title: item,
+         
+       };
+       col.push(obj);
+    }
+    });
+    setColumn1(col);
+    console.log(col);
+  }, [column]);
+  let arr = [];
+  useEffect(() => {
+    tableRow.forEach((item) => {
+      let obj = {};
+      Object.keys(item).forEach((key) => {
+        if (key == "head") {
+          item[key].forEach((item2) => {
+            obj[item2.heads] = item2.value;
+          });
+        } else {
+          obj[key] = item[key];
+        }
+      });
+      arr.push(obj);
+    });
+    console.log(arr);
+    setTableRow1(arr);
+  }, [tableRow]);
+
+    const handleAfterChange = (changes, source) => {
+      if (source === "loadData") return; // Skip on data load
+
+      // Ensure changes is not empty
+      if (changes) {
+        // Only update `isEdited` if there are changes
+        const hasChanges = changes.some(
+          ([row, prop, oldValue, newValue]) => oldValue !== newValue
+        );
+
+        // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
+        if (hasChanges) {
+          setIsEdited(tableRow1);
+          console.log("value changed");
+        }
+      }
+    };
+
+  useEffect(() => {
+    if (tableRow1.length === 0 || tableRow.length === 0) return; // Ensure arrays are populated
+
+    // Create a map for the second array (tableRow1)
+    console.log("hereeee")
+    const secondArrayMap = new Map();
+    tableRow1.forEach((item) => {
+      const { id, ...heads } = item; // Destructure to extract 'id' and the heads
+      secondArrayMap.set(id, heads); // Map by 'id'
+    });
+
+    // Function to map heads from the second array into the first array
+    function mapHeadsFromSecondArray(item) {
+      console.log(item)
+      const newHeads = secondArrayMap.get(item.id); // Get matching heads for this item
+
+      if (newHeads) {
+        // If new heads exist for the item
+        return item.head.map((h) => {
+          // Replace heads only if there is a value in newHeads
+          return {
+            ...h,
+            value: newHeads[h.heads] || h.value, // Keep the current value if new one doesn't exist
+          };
+        });
+      }
+      return item.head; // Return existing heads if no match found
+    }
+
+    // Replace heads in the first array with mapped heads from the second array
+    const updatedFirstArray = tableRow.map((item) => ({
+      ...item,
+      head: mapHeadsFromSecondArray(item), // Update the head based on the second array
+    }));
+
+    console.log("Updated First Array:", updatedFirstArray);
+    setTableRow(updatedFirstArray); // Set the updated first array into state
+  }, [isEdited]); // Add all dependencies
 
   return (
     <div>
@@ -209,63 +316,28 @@ const OpeningBalance = () => {
         >
           Save
         </button>
-        <div className="max-w-max overflow-x-auto shadow-lg m-auto mt-6  rounded-lg ">
-          <table className="rounded-md">
-            <thead className="bg-gray-700 text-slate-200">
-              <tr>
-                {tableHeads.map((item) => (
-                  <th
-                    className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
-                    key={item}
-                  >
-                    {item}
-                  </th>
-                ))}
-                {head.map((item) => (
-                  <th
-                    className="p-4 whitespace-nowrap overflow-hidden text-ellipsis "
-                    key={item}
-                  >
-                    {item}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-300">
-              {tableRow.map((item, index) => (
-                <tr key={index} className="">
-                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis">
-                    {item.name}
-                  </td>
-                  <td className="p-4 text-center whitespace-nowrap overflow-hidden text-ellipsis">
-                    {item.mobileNo}
-                  </td>
-                  <td>{item.email}</td>
-                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                    {item.address}
-                  </td>
-                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                    {item.flatNo}
-                  </td>
-                  <td className="p-4 whitespace-nowrap overflow-hidden text-ellipsis text-center">
-                    {item.wingNo}
-                  </td>
-                  {item.head.map((row, rowIndex) => (
-                    <td className=" text-center" key={rowIndex}>
-                      <input
-                        type="text"
-                        value={row.value}
-                        onChange={(event) =>
-                          handleRowValueChange(item, rowIndex, event)
-                        }
-                        className="text-center"
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="w-full h-full mt-5">
+          {tableRow1.length > 0 && column1.length > 0 ? (
+            <HotTable
+              ref={hotTableRef}
+              data={tableRow1}
+              columns={column1}
+              colHeaders={true}
+              rowHeaders={true}
+              height="400px" // Set a specific height to ensure the table renders visibly
+              width="100%"
+              licenseKey="non-commercial-and-evaluation"
+              multiColumnSorting={true}
+              filters={true}
+              afterChange={handleAfterChange}
+              dropdownMenu={true}
+              contextMenu={true}
+              autoWrapRow={true}
+              autoWrapCol={true}
+            />
+          ) : (
+            "loading.."
+          )}
         </div>
       </div>
     </div>

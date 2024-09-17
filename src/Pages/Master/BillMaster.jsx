@@ -16,32 +16,40 @@ const BillMaster = () => {
   });
 
 
+useEffect(() => {
+  async function fetchInt() {
+    try {
+      let res = await axios.get(
+        "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+      );
 
-     useEffect(() => {
-       async function fetchInt() {
-         try {
-           let res = await axios.get(
-             "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
-           );
-                  const data = res.data[0];
+      // Check if the response has data and if the first element exists
+      if (res.data && res.data.length > 0) {
+        const data = res.data[0];
 
-            setFormData((prevData) => ({
-              ...prevData,
-              interestRatePerMonth: data.interestRatePerMonth || "", // Pre-fill if it exists
-              interestRebateUptoRs: data.interestRebateUptoRs,
-              interestCalculationMethod: data.interestCalculationMethod,
-              flatInterestAmount: data.flatInterestAmount,
-              isFlatInterest: data.isFlatInterest,
-              billDate: data.billDate,
-              billDueDays: data.billDueDays,
-              billFrequency: data.billFrequency,
-            }));
-         } catch (error) {
-           console.log(error);
-         }
-     }
-       fetchInt();
-     }, []);
+        setFormData((prevData) => ({
+          ...prevData,
+          interestRatePerMonth: data.interestRatePerMonth || "", // Pre-fill if it exists
+          interestRebateUptoRs: data.interestRebateUptoRs,
+          interestCalculationMethod: data.interestCalculationMethod,
+          flatInterestAmount: data.flatInterestAmount,
+          isFlatInterest: data.isFlatInterest,
+          billDate: data.billDate,
+          billDueDays: data.billDueDays,
+          billFrequency: data.billFrequency,
+        }));
+      } else {
+        // Handle blank response case
+        console.log("No data found in the API response.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  fetchInt();
+}, []);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
