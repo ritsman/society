@@ -221,6 +221,7 @@ export const postOpeningMember = async (req, res) => {
   console.log("inside post opening member");
   try {
     req.body.map(async (item) => {
+      console.log(item)
       const { flatNo, wingno } = item;
       let isExist = await profile.findOne({ flatNo: flatNo });
       if (isExist) {
@@ -228,8 +229,8 @@ export const postOpeningMember = async (req, res) => {
         isExist.name = item.name;
 
         isExist.email = item.email;
-        isExist.permanentAddress = item.permanentAddress;
-        isExist.registeredMobileNo = item.registeredMobileNo;
+        isExist.permanentAddress = item.address;
+        isExist.registeredMobileNo = item.mobileNo;
         isExist.save();
       }
     });
