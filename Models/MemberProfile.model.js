@@ -12,7 +12,9 @@ const ledgerEntrySchema = new mongoose.Schema({
   dueDate: String,
   head: Array,
   totalAmtDue: String,
+  interest:String,
   billAmt: String,
+  mode:String,
   paidAmt: String,
   balance: String,
 });

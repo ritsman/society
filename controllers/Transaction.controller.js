@@ -118,6 +118,23 @@ export const postCashReceipt = async (req, res) => {
         continue;
       }
 
+
+      let remainingAmount = amountNumber;
+      let newInterest = Number(interest);
+      let newBalance = Number(balance);
+
+      // Subtract from interest first
+      if (remainingAmount <= newInterest) {
+        newInterest -= remainingAmount;
+        remainingAmount = 0;
+      } else {
+        remainingAmount -= newInterest;
+        newInterest = 0;
+      }
+
+      // Subtract the remaining amount from balance
+      newBalance -= remainingAmount;
+
       const obj = {
         date: date || new Date(), // Assuming you want to set the current date if date is null
         amount: amountNumber, // Use the numeric amount
@@ -128,6 +145,7 @@ export const postCashReceipt = async (req, res) => {
         bank: bank,
         branch: branch,
         interest:interest,
+        intAfterPaid : newInterest,
         billNo:billNo,
         billDate:billDate
       };
@@ -136,7 +154,7 @@ export const postCashReceipt = async (req, res) => {
         $set: {
           code: code,
           name: name,
-          balance: Number(balance) - amountNumber,
+          balance: newBalance,
           memberId: memberId,
           narration: narration,
           principle: principle,
