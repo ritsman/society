@@ -1,3 +1,5 @@
+
+
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -8,28 +10,12 @@ const IndividualLedger = () => {
   const [indiMember, setIndiMember] = useState({});
   const [head, setHead] = useState([]);
   const [Ledger, setLedger] = useState({});
+  const [filteredLedger, setFilteredLedger] = useState([]); // State for filtered ledger
 
-  // useEffect(() => {
-  //   let obj = {
-  //     tranId: 1234566,
-  //     billDate: "15-06-2024",
-  //     payDate: "20-06-2024",
-  //     billNo: "B23434",
-  //     dueDate: "22-06-2024",
-  //     head: head.map((row, index) => ({
-  //       heads: row,
-  //       value: 2,
-  //     })),
-  //     totalAmtDue: "2300",
-  //     billAmt: "2300",
-  //     paidAmt: "2100",
-  //     balance: "200",
-  //   };
-  //   setLedger([obj]);
-  // }, [head]);
+  const [startDate, setStartDate] = useState(""); // State for start date
+  const [endDate, setEndDate] = useState(""); // State for end date
 
   useEffect(() => {
-    console.log(member.name);
     setIndiMember(member);
   }, [member]);
 
@@ -40,13 +26,7 @@ const IndividualLedger = () => {
         let res = await axios.get(
           "https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads"
         );
-        console.log(res.data);
-        let tableHead = [];
-
-        res.data.map((item) => {
-          tableHead.push(item);
-        });
-        console.log(tableHead);
+        let tableHead = res.data.map((item) => item);
         setHead(tableHead);
       } catch (error) {
         console.log(error);
@@ -57,16 +37,16 @@ const IndividualLedger = () => {
   }, []);
 
   useEffect(() => {
-    fetch();
+    fetchLedger();
   }, [indiMember]);
 
-  async function fetch() {
+  async function fetchLedger() {
     try {
       let res = await axios.get(
         `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${indiMember._id}`
       );
-      console.log(res.data);
       setLedger(res.data.data);
+      setFilteredLedger(res.data.data.ledger); // Set filtered ledger initially
     } catch (error) {
       console.error(error);
     }
@@ -76,96 +56,107 @@ const IndividualLedger = () => {
     console.log(Ledger);
   }, [Ledger]);
 
+  // Handle filtering based on date range
+  const handleFilter = () => {
+    if (startDate && endDate) {
+      const filtered = Ledger.ledger.filter((transaction) => {
+        const transactionDate = new Date(transaction.date);
+        return (
+          transactionDate >= new Date(startDate) &&
+          transactionDate <= new Date(endDate)
+        );
+      });
+      setFilteredLedger(filtered);
+    } else {
+      setFilteredLedger(Ledger.ledger); // Reset to all transactions if no dates selected
+    }
+  };
+
   return (
     <div className="px-5">
-      <div className="flex justify-end flex-wrap gap-5">
+      <div className="flex justify-between flex-wrap gap-5">
         <div className="flex items-center">
-          <span className="font-semibold mr-2">Member ID:</span>
-          <span>{indiMember._id}</span>
+          <span className="font-semibold mr-2">Member name:</span>
+          <span>{indiMember.name}</span>
         </div>
         <div className="flex items-center">
-          <span className="font-semibold mr-2">Unit:</span>
+          <span className="font-semibold mr-2">Flat No:</span>
           <span>{indiMember.flatNo}</span>
         </div>
+      </div>
+
+      {/* Date range filter */}
+      <div className="mt-5 flex gap-4">
+        <div>
+          <label htmlFor="startDate" className="font-semibold mr-2">
+            Start Date:
+          </label>
+          <input
+            type="date"
+            id="startDate"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+        </div>
+        <div>
+          <label htmlFor="endDate" className="font-semibold mr-2">
+            End Date:
+          </label>
+          <input
+            type="date"
+            id="endDate"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border px-2 py-1 rounded"
+          />
+        </div>
+        <button
+          onClick={handleFilter}
+          className="bg-gray-700 text-white px-3 py-1 rounded"
+        >
+          Filter
+        </button>
       </div>
 
       <div className="overflow-x-auto mt-5">
         <table className="min-w-full bg-white">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-6 py-3  whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Transaction ID
-              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
               </th>
-
-              <th className="px-6 py-3  whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Bill No.
+              <th className="px-6 py-3 whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Reference No
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Due Date
+                Amount
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Payment Mode
-              </th>
-
-              {head.map((item) => (
-                <th className="px-6 py-3  whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {item.billHead}
-                </th>
-              ))}
-              <th className="px-6 py-3  whitespace-nowrap text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Total Amount Due
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Bill Amt
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Paid Amt
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Balance
+                Net Balance
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {Ledger &&
-              Ledger.ledger &&
-              Ledger.ledger.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-900">
-                    {transaction.tranId}
-                  </td>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
+            {filteredLedger &&
+              filteredLedger.map((transaction) => (
+                <tr
+                  key={transaction.id}
+                  className={`${
+                    transaction.mode === "bill" ? "text-blue-800" : "text-black"
+                  }`}
+                >
+                  <td className="px-6 border py-4 whitespace-nowrap text-sm ">
                     {transaction.date}
                   </td>
-
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.billNo}
+                  <td className="px-6 border py-4 whitespace-nowrap text-sm ">
+                    {transaction.tranId}
                   </td>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.dueDate}
+                  <td className="px-6 border py-4 whitespace-nowrap text-sm ">
+                    {Number(transaction.billAmt).toFixed(2)}
                   </td>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.payMode}
-                  </td>
-                  {transaction.head.map((item) => (
-                    <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.value}
-                    </td>
-                  ))}
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.totalAmtDue}
-                  </td>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.billAmt}
-                  </td>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.paidAmt}
-                  </td>
-                  <td className="px-6 border py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.balance}
+                  <td className="px-6 border py-4 whitespace-nowrap text-sm ">
+                    {Number(transaction.balance).toFixed(2)}
                   </td>
                 </tr>
               ))}

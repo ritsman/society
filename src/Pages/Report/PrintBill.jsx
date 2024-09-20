@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
+import { toast } from "react-toastify";
 
 const PrintBill = () => {
   const [filteredTableData, setFilteredTableData] = useState([]);
@@ -18,6 +19,26 @@ const PrintBill = () => {
     memberId: "",
     memberName: "",
   });
+
+  const handleEmail = async(bill) => {
+
+    try {
+      let res = await axios.post(
+        "https://a3.arya-erp.in/api2/socapi/api/report/send-email",
+        {
+          email: bill.email,
+          subject: "hello world",
+          message: "hello....",
+        }
+      );
+      console.log(res)
+      toast.success("email sent")
+    } catch (error) {
+      console.log(error);
+      toast.success("error in sending email")
+    }
+
+  }
 
   const handleSearch = () => {
     const filtered = tableData.filter((bill) => {
@@ -156,10 +177,11 @@ const PrintBill = () => {
             heads: heads,
             billNo: item2.billNo,
             date: item2.billDate,
+            email : arr2[0].data.email,
             flatNo: arr2[0]?.data.flatNo,
             member: item.memberName,
             netAmt: item2.currentBillAmt,
-            interest: item2.interestRate,
+            interest: item2.interest,
             balance: Number(item2.prevBalance) + Number(item2.currentBillAmt),
             prevBalance: Number(item2.prevBalance),
           };
@@ -175,6 +197,156 @@ const PrintBill = () => {
       console.log(error);
     }
   }
+
+ const handleSendEmailToAll = async () => {
+   const sentEmails = new Set(); 
+   let emailsSentCount = 0; 
+   let errorOccurred = false;
+
+   for (let bill of filteredTableData) {
+     if (!sentEmails.has(bill.email)) {
+       try {
+         await axios.post(
+           "https://a3.arya-erp.in/api2/socapi/api/report/send-email",
+           {
+             email: bill.email,
+             subject: "Hello World",
+             message: "Hello...",
+           }
+         );
+         sentEmails.add(bill.email); 
+         emailsSentCount++;
+       } catch (error) {
+         console.log(error);
+         errorOccurred = true; 
+       }
+     }
+   }
+
+   // Trigger the toast only once after all emails have been processed
+   if (emailsSentCount > 0) {
+     toast.success(`${emailsSentCount} emails sent successfully.`);
+   } else if (errorOccurred) {
+     toast.error("Error in sending some emails.");
+   } else {
+     toast.info("No emails were sent.");
+   }
+ };
+
+
+
+  const handlePrintAllBills = () => {
+    const doc = new jsPDF();
+
+    if(filteredTableData.length == 0){
+      alert("No bills are present , Select dates")
+      return;
+    }
+
+    // Set font
+    doc.setFont("helvetica");
+
+    filteredTableData.forEach((bill, index) => {
+      if (index !== 0) {
+        doc.addPage(); // Add a new page for every bill except the first one
+      }
+
+      // Header
+      doc.setFontSize(16);
+      doc.text(`${societyData.societyName}`, 105, 20, {
+        align: "center",
+      });
+      doc.setFontSize(10);
+      doc.text(
+        `${societyData.address},${societyData.city},${societyData.state}`,
+        105,
+        30,
+        {
+          align: "center",
+        }
+      );
+
+      // Bill details
+      doc.setFontSize(10);
+      doc.text(`Bill No. : ${bill.billNo}`, 20, 40);
+      doc.text(`Date : ${bill.date}`, 100, 40);
+      doc.text(`Bill for Period : May-2024`, 160, 40);
+      doc.text(`Flat No. : ${bill.flatNo}`, 20, 45);
+      doc.text(`Due Date : 20-May-24`, 100, 45);
+      doc.text(`Area : 0`, 160, 45);
+
+      // Member name
+      doc.text(`To,`, 20, 55);
+      doc.text(`${bill.member}`, 20, 60);
+
+      // Table header
+      doc.line(20, 65, 190, 65); // Top line of the table
+      doc.text("Particulars", 22, 70);
+      doc.text("Amount", 170, 70); // Moved to the right side
+      doc.line(20, 72, 190, 72); // Bottom line of the header row
+
+      // Table content
+      let startY = 77; // Initial Y position for the table content
+      bill.heads.forEach((item) => {
+        doc.text(item.head, 22, startY);
+        doc.text(Number(item.value).toFixed(2), 180, startY, {
+          align: "right",
+        });
+        startY += 5; // Move to the next line
+      });
+
+      doc.line(20, startY, 190, startY); // Line after the table content
+      startY += 5;
+      doc.setFont("helvetica", "bold");
+      doc.text("Total", 22, startY);
+      doc.text(bill.netAmt.toFixed(2), 180, startY, { align: "right" });
+      doc.setFont("helvetica", "normal");
+
+      startY += 5;
+      doc.text("Previous Balance ", 22, startY);
+      doc.text(bill.prevBalance.toFixed(2), 180, startY, { align: "right" });
+
+      startY += 5;
+      doc.line(20, startY, 190, startY); // Line after the previous balance
+
+      startY += 5;
+      const grandTotal = bill.netAmt + bill.prevBalance;
+      doc.setFont("helvetica", "bold");
+      doc.text("Grand total", 22, startY);
+      doc.text(grandTotal.toFixed(2), 180, startY, { align: "right" });
+      doc.setFont("helvetica", "normal");
+
+      startY += 5;
+
+      // Notes
+      startY += 8;
+      doc.setFontSize(8);
+      doc.text(
+        "Note : 1. Members are requested to make payment before 25th of the Month, failing which interest @21% P.A. will be levied.",
+        22,
+        startY
+      );
+      startY += 4;
+      doc.text(
+        "2. Please mention your Flat No. and Mobile No. on reverse of your Cheque. Receipts of the current month bill will be attached with the next bill.",
+        29,
+        startY
+      );
+
+      // Special note
+      startY += 10;
+      doc.setFontSize(10);
+
+      // Footer
+      doc.text(`${societyData.societyName}`, 190, 180, {
+        align: "right",
+      });
+    });
+
+    // Open PDF in new tab
+    window.open(doc.output("bloburl"), "_blank");
+  };
+
 
   //   print pdf implementation start
   const handleRowClick = (bill) => {
@@ -420,6 +592,20 @@ const PrintBill = () => {
             </div>
           </div>
         </div>
+        <div className="mt-2 text-right flex gap-3 justify-end px-5">
+          <button
+            onClick={handlePrintAllBills}
+            className="border-2  border-black px-2 py-1 rounded-md"
+          >
+            Print Bills
+          </button>
+          <button
+            onClick={handleSendEmailToAll}
+            className="border-2  border-black px-2 py-1 rounded-md"
+          >
+            Send Email
+          </button>
+        </div>
         {/* table view */}
         <div className="mt-5">
           <div className="overflow-x-auto">
@@ -432,30 +618,43 @@ const PrintBill = () => {
                   <th className="py-3 px-6 text-center">Member Name</th>
                   <th className="py-3 px-6 text-center">Outstanding </th>
                   <th className="py-3 px-6 text-center">Interest</th>
+                  <th className="py-3 px-6 text-center">Previous Due</th>
                   <th className="py-3 px-6 text-center">Total Amount</th>
+                  <th className="py-3 px-6 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="text-gray-600 text-sm font-light">
-                {(filteredTableData.length > 0
-                  ? filteredTableData
-                  : []
-                ).map((bill) => (
-                  <tr
-                    onClick={() => handleRowClick(bill)}
-                    key={bill.billNo}
-                    className="border-b cursor-pointer border-gray-200 hover:bg-gray-100"
-                  >
-                    <td className="py-3 px-6 text-left whitespace-nowrap">
-                      {bill.billNo}
-                    </td>
-                    <td className="py-3 px-6 text-center">{bill.date}</td>
-                    <td className="py-3 px-6 text-center">{bill.flatNo}</td>
-                    <td className="py-3 px-6 text-center">{bill.member}</td>
-                    <td className="py-3 px-6 text-center">{bill.netAmt}</td>
-                    <td className="py-3 px-6 text-center">{bill.interest}</td>
-                    <td className="py-3 px-6 text-center">{bill.balance}</td>
-                  </tr>
-                ))}
+                {(filteredTableData.length > 0 ? filteredTableData : []).map(
+                  (bill) => (
+                    <tr
+                      onClick={() => handleRowClick(bill)}
+                      key={bill.billNo}
+                      className="border-b cursor-pointer border-gray-200 hover:bg-gray-100"
+                    >
+                      <td className="py-3 px-6 text-left whitespace-nowrap">
+                        {bill.billNo}
+                      </td>
+                      <td className="py-3 px-6 text-center">{bill.date}</td>
+                      <td className="py-3 px-6 text-center">{bill.flatNo}</td>
+                      <td className="py-3 px-6 text-center">{bill.member}</td>
+                      <td className="py-3 px-6 text-center">{bill.netAmt}</td>
+                      <td className="py-3 px-6 text-center">{bill.interest}</td>
+                      <td className="py-3 px-6 text-center">{bill.prevBalance}</td>
+                      <td className="py-3 px-6 text-center">{bill.balance}</td>
+                      <td className="py-3 px-6 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEmail(bill);
+                          }}
+                          className="border-2 border-black rounded-md px-2 py-2"
+                        >
+                          Send Email
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                )}
               </tbody>
             </table>
           </div>

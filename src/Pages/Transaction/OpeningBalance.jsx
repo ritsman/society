@@ -65,7 +65,7 @@ const OpeningBalance = () => {
   };
 
   //asdflkadsf
-  let tableHeads = ["name", "mobileNo", "email", "address", "flatNo", "wingNo"];
+  let tableHeads = ["name", "mobileNo", "email", "address", "flatNo", "wingNo","principle" , "interest" , "total"];
   let tableHead = [];
 
   useEffect(() => {
@@ -112,7 +112,7 @@ const OpeningBalance = () => {
           tableHead.push(item.Header);
         });
         setHead(tableHead);
-        setColumn([...tableHeads, ...tableHead]);
+        setColumn([...tableHeads]);
       })
       .catch((error) => console.error(error));
   }, []);

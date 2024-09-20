@@ -160,7 +160,7 @@ const MemberList = () => {
         });
 
         setHead(tableHead);
-        setColumn([...tableHeads, ...tableHead]);
+        setColumn([...tableHeads]);
         console.log(column);
       })
       .catch((error) => console.error(error));

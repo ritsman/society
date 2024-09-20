@@ -67,20 +67,20 @@ const MultipleReceipt = () => {
       }
 
       // Filter payments made after the bill date
-      const paymentsAfterBillDate = filteredRec.paid.filter(
-        (payment) => new Date(payment.date) > billDate
-      );
+      // const paymentsAfterBillDate = filteredRec.paid.filter(
+      //   (payment) => new Date(payment.date) > billDate
+      // );
 
       // Calculate the total paid amount after the bill date
-      const totalPaid = paymentsAfterBillDate.reduce(
-        (sum, payment) => sum + payment.amount,
-        0
-      );
+      // const totalPaid = paymentsAfterBillDate.reduce(
+      //   (sum, payment) => sum + payment.amount,
+      //   0
+      // );
 
       // Calculate the outstanding amount
-      const outstandingAmount = bill.currentBillAmt - totalPaid;
+      // const outstandingAmount = bill.currentBillAmt - totalPaid;
 
-      return outstandingAmount;
+      return (Number(filteredRec.balance)).toFixed(2);
     }
 
 
@@ -144,6 +144,10 @@ const MultipleReceipt = () => {
             intMethod: intMethod,
             flatInt: flatInt,
             isFlatInt: isFlatInt,
+           intAfterPaid: filteredRec?.[0]?.paid?.length 
+  ? filteredRec[0].paid[filteredRec[0].paid.length - 1].intAfterPaid 
+  : 0,
+
             billDate:
               filteredBillGenerated[0]?.billDetails.length > 0
                 ? filteredBillGenerated[0].billDetails[
@@ -156,12 +160,21 @@ const MultipleReceipt = () => {
                     filteredBillGenerated[0].billDetails.length - 1
                   ].billNo
                 : null,
-            interestAfter:
-              filteredBillGenerated[0]?.billDetails.length > 0
-                ? filteredBillGenerated[0].billDetails[
-                    filteredBillGenerated[0].billDetails.length - 1
-                  ].dueDate
-                : null,
+            // interestAfter:
+            //   filteredBillGenerated[0]?.billDetails.length > 0
+            //     ? filteredBillGenerated[0].billDetails[
+            //         filteredBillGenerated[0].billDetails.length - 1
+            //       ].dueDate
+            //     : null,
+      interestAfter:
+  filteredRec?.[0]?.paid?.length
+    ? filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
+      filteredBillGenerated?.[0]?.billDetails?.[filteredBillGenerated[0].billDetails.length - 1]?.dueDate
+      ? filteredRec[0].paid[filteredRec[0].paid.length - 1].date
+      : filteredBillGenerated[0].billDetails[filteredBillGenerated[0].billDetails.length - 1].dueDate
+    : filteredBillGenerated?.[0]?.billDetails?.[filteredBillGenerated[0].billDetails.length - 1]?.dueDate || null,
+
+
 
             intApplOn: item.data.intAppliedAmt,
             balance: calculateOutstanding(

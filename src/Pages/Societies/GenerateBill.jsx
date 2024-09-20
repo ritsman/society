@@ -190,6 +190,7 @@ const GenerateBill = () => {
             id: index,
             memberId: item._id,
             wingNo: item.wingNo,
+            email: item.email,
             flatNo: item.flatNo,
             ownerName: item.name,
             prevDue: billObj && billObj.data ? billObj.data.prevDue : 0,
@@ -424,7 +425,7 @@ const GenerateBill = () => {
         0
       );
       console.log(row.prevDue, "previous dueeeee");
-      return total + row.prevDue;
+      return (Number(total) + Number(row.prevDue)).toFixed(2);
     }
   };
 

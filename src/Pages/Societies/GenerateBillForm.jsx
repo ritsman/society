@@ -16,10 +16,37 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     billDueDate: "",
   });
   const [interestData, setIntData] = useState({});
+  const [billGenerated , setBillGenerated] = useState([])
+   const [interstRate, setInterstRate] = useState(0);
+   const [intRebate, setIntRebate] = useState(0);
+   const [intMethod, setIntMethod] = useState("");
+   const [flatInt, setFlatInt] = useState(0);
+   const [isFlatInt, setIsFlatInt] = useState(0);
 
   function generateShortUUID() {
     return uuidv4().replace(/-/g, "").slice(0, 8);
   }
+
+
+     useEffect(() => {
+       async function fetchInt() {
+         try {
+           let res = await axios.get(
+             "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+           );
+           setInterstRate(res.data[0].interestRatePerMonth);
+           setIntRebate(res.data[0].interestRebateUptoRs);
+           setIntMethod(res.data[0].interestCalculationMethod);
+           setFlatInt(res.data[0].flatInterestAmount);
+           setIsFlatInt(res.data[0].isFlatInterest);
+         } catch (error) {
+           console.log(error);
+         }
+
+         // calculate interest amount
+       }
+       fetchInt();
+     }, []);
 
   useEffect(() => {
     async function fetchInt() {
@@ -103,6 +130,82 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     }
   };
 
+  useEffect(()=>{
+    fetchGenBill();
+  },[])
+
+  const fetchGenBill = async() =>{
+           try {
+             let result = await axios.get(
+               "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
+             );
+             console.log(result);
+             setBillGenerated(result.data.data);
+           } catch (error) {
+             console.log(error);
+           }
+  }
+const intCalculator = (GenData, currBillDate, receiptData, bill) => {
+  if (!GenData || !GenData.billDetails || GenData.billDetails.length === 0) {
+    return 0;
+  }
+
+  let intPerDay = (bill.data.intAppliedAmt * (interstRate / 100)) / 30;
+  let intPerMonth = bill.data.intAppliedAmt * (interstRate / 100);
+
+  const lastBillDate = new Date(
+    GenData.billDetails[GenData.billDetails.length - 1].billDate
+  );
+  let intAfterDate;
+
+  if (!receiptData || !receiptData.paid || receiptData.paid.length === 0) {
+    // If receiptData doesn't exist, use lastBillDate
+    intAfterDate = lastBillDate;
+  } else {
+    const lastPaidDate = new Date(
+      receiptData.paid[receiptData.paid.length - 1].date
+    );
+    // Determine which date to use
+    if (lastBillDate > lastPaidDate) {
+      intAfterDate = lastBillDate;
+    } else {
+      intAfterDate = lastPaidDate;
+    }
+  }
+    let currentBillDate = new Date(currBillDate);
+  const differenceBtwDays = Math.floor(
+    (new Date(currBillDate) - intAfterDate) / (1000 * 60 * 60 * 24)
+  ); // convert milliseconds to days
+  console.log("Difference in days: ", differenceBtwDays);
+
+   const yearDiff = currentBillDate.getFullYear() - intAfterDate.getFullYear();
+   const monthDiff = currentBillDate.getMonth() - intAfterDate.getMonth();
+   let differenceBtwMonths = yearDiff * 12 + monthDiff;
+
+    let interest = 0;
+    if (isFlatInt && flatInt > 0) {
+      console.log(" if condition");
+
+      interest = differenceBtwDays > 0 ? Number(flatInt) : 0;
+    } else if (
+      intMethod == "as per bill days" &&
+      !isFlatInt &&
+      Number(intRebate) < Number(bill.data.prevDue)
+    ) {
+      console.log("else if condition", differenceBtwDays);
+
+      interest = differenceBtwDays > 0 ? differenceBtwDays * intPerDay : 0;
+      console.log(interest, "interest");
+    } else {
+      interest = differenceBtwDays > 0 ? intPerMonth * differenceBtwMonths : 0;
+      console.log("else condition", interest);
+    }
+    console.log(interest , "interestttt")
+  return interest.toFixed(2);
+};
+
+
+
   const handleGenerate = async () => {
     if (selectedItems.length == 0) {
       alert("Select atleast one member");
@@ -120,8 +223,10 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
       await Promise.all(
         selectedItems.map(async (row) => {
           let arr = items.filter((item) => item.data.memberId === row);
+          let GenData = billGenerated.filter(item=>item.memberId == row);
           let filterReceipt = receiptData.filter((a) => a.memberId === row);
           let uniqueBill = generateShortUUID();
+          console.log(GenData);
 
           // First API call to generate the bill
           try {
@@ -137,7 +242,12 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
                     billDate: formData.billDate,
                     dueDate: billData.billDueDate,
                     currentBillAmt: arr[0].data.total,
-                    interestAfter: formData.interestAfter,
+                    interest: intCalculator(
+                      GenData[0],
+                      formData.billDate,
+                      filterReceipt[0],
+                      arr[0]
+                    ),
                     prevBalance:
                       filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
                   },
@@ -158,20 +268,20 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
                 memberId: row,
                 ledger: [
                   {
-                    tranId: uniqueId,
+                    tranId: `BL/24/${uniqueBill}`,
                     payMode: "",
                     date: billData.billDate,
-                    billNo: "",
-                    dueDate: billData.billDueDate,
-                    head: arr[0].data.head,
-                    totalAmtDue: filterReceipt[0]?.balance,
+                    billNo: `BL/24/${uniqueBill}`,
+                    mode: "bill",
                     billAmt: arr[0].data.total,
+                    interest: intCalculator(
+                      GenData[0],
+                      formData.billDate,
+                      filterReceipt[0],
+                      arr[0]
+                    ),
                     paidAmt: "",
-                    balance:
-                      filterReceipt.length > 0
-                        ? Number(filterReceipt[0].balance) +
-                          Number(arr[0].data.total)
-                        : arr[0].data.total,
+                    balance: arr[0].data.total,
                   },
                 ],
               }
@@ -213,6 +323,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
 
           // First API call to generate the bill
           try {
+            console.log("hello world")
             await axios.post(
               "https://a3.arya-erp.in/api2/socapi/api/society/generateBill",
               {
@@ -242,6 +353,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
           // Second API call to update the ledger
           let uniqueId = generateShortUUID();
           try {
+            console.log(`BL/24/${uniqueBill}`,"bill no");
             await axios.post(
               `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row}`,
               {
@@ -251,7 +363,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
                     tranId: uniqueId,
                     payMode: "",
                     date: billData.billDate,
-                    billNo: "",
+                    billNo: `BL/24/${uniqueBill}`,
                     dueDate: billData.billDueDate,
                     head: arr[0].data.head,
                     totalAmtDue: filterReceipt[0]?.balance,
@@ -271,7 +383,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
             success = false;
           }
 
-          //third api call to update reciept 
+         
 
            try {
              let res = await axios.post(
