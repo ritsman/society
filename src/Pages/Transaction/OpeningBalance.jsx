@@ -73,7 +73,7 @@ const OpeningBalance = () => {
     { data: "flatNo", title: "Flat No", readOnly: true },
     { data: "wingNo", title: "Wing No", readOnly: true },
     { data: "principal", title: "Principal", readOnly: false },
-    { data: "interest", title: "Interest", readOnly: true },
+    { data: "interest", title: "Interest", readOnly: false },
     { data: "total", title: "Total", readOnly: true },
   ];
 
