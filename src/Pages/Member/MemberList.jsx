@@ -32,12 +32,12 @@ const template = [
   "systemId",
 ];
 const tableHeads = [
-  { data: "name", title: "Name", readOnly: true },
-  { data: "registeredMobileNo", title: " Mobile No", readOnly: true },
-  { data: "email", title: "Email", readOnly: true },
-  { data: "permanentAddress", title: " Address", readOnly: true },
-  { data: "flatNo", title: "Flat No", readOnly: true },
-  { data: "wingNo", title: "Wing No", readOnly: true },
+  { data: "name", title: "Name", readOnly: false },
+  { data: "registeredMobileNo", title: " Mobile No", readOnly: false },
+  { data: "email", title: "Email", readOnly: false },
+  { data: "permanentAddress", title: " Address", readOnly: false },
+  { data: "flatNo", title: "Flat No", readOnly: false },
+  { data: "wingNo", title: "Wing No", readOnly: false },
 ];
 let tableHead = [];
 
