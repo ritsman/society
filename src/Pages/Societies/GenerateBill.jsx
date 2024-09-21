@@ -261,7 +261,7 @@ const GenerateBill = () => {
                   : "0", // Default to "0" if not found
             })),
             total:
-              billObj && billObj.data.total ? calculateTotal(billObj.data) : 0, // Calculate total if bill data exists
+              billObj && billObj.data.total ? calculateTotal2(billObj.data) : 0, // Calculate total if bill data exists
           };
           arr.push(obj);
         });
@@ -406,6 +406,8 @@ const GenerateBill = () => {
     );
   };
 
+
+
   const calculateIntAppliedAmtAndTotal = () => {
     return new Promise((resolve) => {
       const updatedData = filteredData.map((item) => {
@@ -415,15 +417,15 @@ const GenerateBill = () => {
           .reduce((acc, headItem) => acc + parseFloat(headItem.value || 0), 0);
 
         // Calculate total based on all heads' values
-        const total = item.head.reduce(
-          (acc, headItem) => acc + parseFloat(headItem.value || 0),
-          0
-        );
+        // const total = item.head.reduce(
+        //   (acc, headItem) => acc + parseFloat(headItem.value || 0),
+        //   0
+        // );
 
         // Return updated item with calculated values
         console.log("calculate int applied function", intAppliedAmt);
 
-        return { ...item, intAppliedAmt, total };
+        return { ...item, intAppliedAmt };
       });
 
       // Update the state with the new data
@@ -469,7 +471,8 @@ const GenerateBill = () => {
     }
   };
 
-  const calculateTotal = (row) => {
+
+  const calculateTotal2 = (row) => {
     console.log(row);
     if (row && row.head && Array.isArray(row.head)) {
       let total = row.head.reduce(
@@ -480,6 +483,44 @@ const GenerateBill = () => {
       return (Number(total) + Number(row.prevDue)).toFixed(2);
     }
   };
+
+const calculateTotal = (row) => {
+  console.log("calculateTotal invoked");
+  console.log("Row data:", row);
+
+  const excludeKeys = [
+    "isSelected",
+    "id",
+    "memberId",
+    "wingNo",
+    "email",
+    "flatNo",
+    "ownerName",
+    "total",
+    "intAppliedAmt",
+  ];
+
+  let total = Object.keys(row).reduce((accumulatedTotal, key) => {
+    if (!excludeKeys.includes(key)) {
+      const value = Number(row[key]);
+      console.log(
+        `Processing key: ${key}, Value: ${row[key]}, Parsed: ${value}`
+      ); // Log each key and its value
+
+      // Check if value is a number and not NaN
+      if (!isNaN(value)) {
+        return accumulatedTotal + value; // Add only valid numbers
+      }
+    }
+    return accumulatedTotal; // Skip excluded keys or invalid numbers
+  }, 0);
+
+  const formattedTotal = total.toFixed(2); // Format total to two decimal places
+  console.log("Total calculated:", formattedTotal);
+  return formattedTotal;
+};
+
+
 
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectedColumn, setSelectedColumn] = useState(null);
@@ -550,16 +591,26 @@ const GenerateBill = () => {
       }
       return item.isSelected;
     };
+
+    const updateTotal = (item) => {
+        const newHeads = secondArrayMap.get(item.id);
+      if (newHeads) {
+        return newHeads.total;
+      }
+      return item.total;
+    }
     // Replace heads in the first array
     const updatedFirstArray = filteredData.map((item) => ({
       ...item,
       isSelected: updateSelect(item),
+      total:updateTotal(item),
       head: mapHeadsFromSecondArray(item),
     }));
 
     console.log(updatedFirstArray);
     setFilteredData(updatedFirstArray);
   }, [isEdited]);
+
 
   const handleTick = (rowIndex, isChecked) => {
     const updatedRows = [...tableRows];
@@ -596,8 +647,19 @@ const GenerateBill = () => {
 
       // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
       if (hasChanges) {
+         console.log("value changed", tableRows);
+        const updatedRows = tableRows.map((row, index) => {
+          // Use rowIndex from changes instead of row
+          const changedRow = changes.find(([rowIndex]) => rowIndex === index);
+          if (changedRow) {
+            return { ...row, total: calculateTotal(row) }; // Recalculate total for the modified row
+          }
+          return row;
+        });
+          console.log("calculate total function called",updatedRows)
+          setTableRows(updatedRows)
         setIsEdited(tableRows);
-        console.log("value changed", tableRows);
+       
       }
     }
   };
