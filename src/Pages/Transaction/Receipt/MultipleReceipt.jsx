@@ -318,7 +318,8 @@ const MultipleReceipt = () => {
             <ReceiptCashMode
               receiptData={cashReceiptData}
               setReceiptData={setCashReceiptData}
-              paymentMethod={paymentMethod}
+              paymentMethod={account}
+              pay = {paymentMethod}
             />
           )}
 

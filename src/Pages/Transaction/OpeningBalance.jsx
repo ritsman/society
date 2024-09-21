@@ -19,7 +19,7 @@ const OpeningBalance = () => {
   const [tableRow, setTableRow] = useState([]);
   const [data, setData] = useState([]);
   const [head, setHead] = useState([]);
-  const [list, setList] = useState([]);
+  const [lists, setList] = useState([]);
   const [column, setColumn] = useState([]);
 
   const [column1, setColumn1] = useState([]);
@@ -65,18 +65,36 @@ const OpeningBalance = () => {
   };
 
   //asdflkadsf
-  let tableHeads = ["name", "mobileNo", "email", "address", "flatNo", "wingNo","principle" , "interest" , "total"];
+  const tableHeads = [
+    { data: "name", title: "Name", readOnly: true },
+    { data: "mobileNo", title: "Mobile No", readOnly: true },
+    { data: "email", title: "Email", readOnly: true },
+    { data: "address", title: "Address", readOnly: true },
+    { data: "flatNo", title: "Flat No", readOnly: true },
+    { data: "wingNo", title: "Wing No", readOnly: true },
+    { data: "principal", title: "Principal", readOnly: false },
+    { data: "interest", title: "Interest", readOnly: true },
+    { data: "total", title: "Total", readOnly: true },
+  ];
+
   let tableHead = [];
 
   useEffect(() => {
     try {
-      fetch("https://a3.arya-erp.in/api2/socapi/api/member/getOpeningMember")
+      fetch(
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/getOpeningBalance"
+      )
         .then((response) => response.json())
         .then((data) => setList(data))
         .catch((error) => console.error(error));
-    } catch (error) {}
+    } catch (error) {
+      console.log(error)
+    }
 
     let arr = data.map((item) => {
+      let list = lists.filter(item2=>item2.id == item._id);
+      console.log(list)
+           
       return {
         name: item.name,
         id:item._id,
@@ -85,6 +103,9 @@ const OpeningBalance = () => {
         address: item.permanentAddress,
         flatNo: item.flatNo,
         wingNo: item.wingNo,
+        principal: list[0]?.principal || 0,
+        interest : list[0]?.interest || 0,
+        total :list[0]?.total || 0,
         head: head.map((row, index) => ({
           heads: row,
           value: item.head?.[index]?.value || 0,
@@ -131,7 +152,7 @@ const OpeningBalance = () => {
     console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/member/postOpeningMember",
+        "https://a3.arya-erp.in/api2/socapi/api/transaction/postOpeningBalance",
         tableRow
       );
       console.log(res);
@@ -166,6 +187,7 @@ const OpeningBalance = () => {
     setColumn1(col);
     console.log(col);
   }, [column]);
+
   let arr = [];
   useEffect(() => {
     tableRow.forEach((item) => {
@@ -185,62 +207,89 @@ const OpeningBalance = () => {
     setTableRow1(arr);
   }, [tableRow]);
 
-    const handleAfterChange = (changes, source) => {
-      if (source === "loadData") return; // Skip on data load
+  const handleAfterChange = (changes, source) => {
+    if (source === "loadData") return; // Skip on data load
 
-      // Ensure changes is not empty
-      if (changes) {
-        // Only update `isEdited` if there are changes
-        const hasChanges = changes.some(
-          ([row, prop, oldValue, newValue]) => oldValue !== newValue
-        );
+    if (changes) {
+      // Loop through the changes
+      changes.forEach(([rowIndex, prop, oldValue, newValue]) => {
+        // Check if the changed property is "principal"
+        if (prop === "principal" && oldValue !== newValue) {
+          // Get the current row data
+          const updatedRow = { ...tableRow[rowIndex] };
 
-        // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
-        if (hasChanges) {
-          setIsEdited(tableRow1);
-          console.log("value changed");
+          // Calculate the new total
+          updatedRow.total =
+            parseFloat(newValue) + parseFloat(updatedRow.interest);
+
+          // Update the table row with the new total
+          setTableRow((prevTableRow) =>
+            prevTableRow.map((row, index) =>
+              index === rowIndex ? updatedRow : row
+            )
+          );
         }
-      }
-    };
-
-  useEffect(() => {
-    if (tableRow1.length === 0 || tableRow.length === 0) return; // Ensure arrays are populated
-
-    // Create a map for the second array (tableRow1)
-    console.log("hereeee")
-    const secondArrayMap = new Map();
-    tableRow1.forEach((item) => {
-      const { id, ...heads } = item; // Destructure to extract 'id' and the heads
-      secondArrayMap.set(id, heads); // Map by 'id'
-    });
-
-    // Function to map heads from the second array into the first array
-    function mapHeadsFromSecondArray(item) {
-      console.log(item)
-      const newHeads = secondArrayMap.get(item.id); // Get matching heads for this item
-
-      if (newHeads) {
-        // If new heads exist for the item
-        return item.head.map((h) => {
-          // Replace heads only if there is a value in newHeads
-          return {
-            ...h,
-            value: newHeads[h.heads] || h.value, // Keep the current value if new one doesn't exist
-          };
-        });
-      }
-      return item.head; // Return existing heads if no match found
+      });
     }
+  };
 
-    // Replace heads in the first array with mapped heads from the second array
-    const updatedFirstArray = tableRow.map((item) => ({
-      ...item,
-      head: mapHeadsFromSecondArray(item), // Update the head based on the second array
-    }));
 
-    console.log("Updated First Array:", updatedFirstArray);
-    setTableRow(updatedFirstArray); // Set the updated first array into state
-  }, [isEdited]); // Add all dependencies
+    // const handleAfterChange = (changes, source) => {
+    //   if (source === "loadData") return; // Skip on data load
+
+    //   // Ensure changes is not empty
+    //   if (changes) {
+    //     // Only update `isEdited` if there are changes
+    //     const hasChanges = changes.some(
+    //       ([row, prop, oldValue, newValue]) => oldValue !== newValue
+    //     );
+
+    //     // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
+    //     if (hasChanges) {
+    //       // setIsEdited(tableRow1);
+    //       console.log("value changed");
+    //     }
+    //   }
+    // };
+
+  // useEffect(() => {
+  //   if (tableRow1.length === 0 || tableRow.length === 0) return; // Ensure arrays are populated
+
+  //   // Create a map for the second array (tableRow1)
+  //   console.log("hereeee")
+  //   const secondArrayMap = new Map();
+  //   tableRow1.forEach((item) => {
+  //     const { id, ...heads } = item; // Destructure to extract 'id' and the heads
+  //     secondArrayMap.set(id, heads); // Map by 'id'
+  //   });
+
+  //   // Function to map heads from the second array into the first array
+  //   function mapHeadsFromSecondArray(item) {
+  //     console.log(item)
+  //     const newHeads = secondArrayMap.get(item.id); // Get matching heads for this item
+
+  //     if (newHeads) {
+  //       // If new heads exist for the item
+  //       return item.head.map((h) => {
+  //         // Replace heads only if there is a value in newHeads
+  //         return {
+  //           ...h,
+  //           value: newHeads[h.heads] || h.value, // Keep the current value if new one doesn't exist
+  //         };
+  //       });
+  //     }
+  //     return item.head; // Return existing heads if no match found
+  //   }
+
+  //   // Replace heads in the first array with mapped heads from the second array
+  //   const updatedFirstArray = tableRow.map((item) => ({
+  //     ...item,
+  //     head: mapHeadsFromSecondArray(item), // Update the head based on the second array
+  //   }));
+
+  //   console.log("Updated First Array:", updatedFirstArray);
+  //   setTableRow(updatedFirstArray); // Set the updated first array into state
+  // }, [isEdited]); // Add all dependencies
 
   return (
     <div>
@@ -320,8 +369,8 @@ const OpeningBalance = () => {
           {tableRow1.length > 0 && column1.length > 0 ? (
             <HotTable
               ref={hotTableRef}
-              data={tableRow1}
-              columns={column1}
+              data={tableRow}
+              columns={column}
               colHeaders={true}
               rowHeaders={true}
               height="400px" // Set a specific height to ensure the table renders visibly

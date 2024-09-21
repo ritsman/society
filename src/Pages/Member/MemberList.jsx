@@ -31,13 +31,13 @@ const template = [
   "memberSince",
   "systemId",
 ];
-let tableHeads = [
-  "name",
-  "mobileNo",
-  "email",
-  "address",
-  "flatNo",
-  "wingNo",
+const tableHeads = [
+  { data: "name", title: "Name", readOnly: true },
+  { data: "registeredMobileNo", title: " Mobile No", readOnly: true },
+  { data: "email", title: "Email", readOnly: true },
+  { data: "permanentAddress", title: " Address", readOnly: true },
+  { data: "flatNo", title: "Flat No", readOnly: true },
+  { data: "wingNo", title: "Wing No", readOnly: true },
 ];
 let tableHead = [];
 
@@ -126,10 +126,10 @@ const MemberList = () => {
     let arr = data.map((item) => {
       return {
         name: item.name,
-        id:item._id,
-        mobileNo: item.registeredMobileNo,
+        id: item._id,
+        registeredMobileNo: item.registeredMobileNo,
         email: item.email,
-        address: item.permanentAddress,
+        permanentAddress: item.permanentAddress,
         flatNo: item.flatNo,
         wingNo: item.wingNo,
         head: head.map((row, index) => ({
@@ -241,7 +241,7 @@ const MemberList = () => {
     console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/member/postOpeningMember",
+        "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
         tableRow
       );
       console.log(res);
@@ -347,19 +347,19 @@ const MemberList = () => {
 
      // Replace heads in the first array
      const updatedFirstArray = tableRow.map((item) => ({
-      ...item,
+       ...item,
        name: otherValues(item, "name", item.name),
 
-       mobileNo: otherValues(
+       registeredMobileNo: otherValues(
          item,
-         "mobileNo",
-         item.mobileNo
+         "registeredMobileNo",
+         item.registeredMobileNo
        ),
        email: otherValues(item, "email", item.email),
-       address: otherValues(
+       permanentAddress: otherValues(
          item,
-         "address",
-         item.address
+         "permanentAddress",
+         item.permanentAddress
        ),
        flatNo: otherValues(item, "flatNo", item.flatNo),
        wingNo: otherValues(item, "wingNo", item.wingNo),
@@ -453,7 +453,7 @@ const MemberList = () => {
                     <HotTable
                       ref={hotTableRef}
                       data={tableRow1}
-                      columns={column1}
+                      columns={tableHeads}
                       colHeaders={true}
                       rowHeaders={true}
                       height="400px" // Set a specific height to ensure the table renders visibly
@@ -462,7 +462,6 @@ const MemberList = () => {
                       multiColumnSorting={true}
                       filters={true}
                       afterChange={handleAfterChange}
-                      
                       dropdownMenu={true}
                       contextMenu={true}
                       autoWrapRow={true}

@@ -9,7 +9,7 @@ import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 import { registerAllModules } from "handsontable/registry";
 
-const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
+const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => {
   const [head, setHead] = useState([]);
   const [headValues, setHeadValues] = useState([]);
   const [tableRow , setTableRow] = useState([]);
@@ -132,22 +132,33 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
       for (const row of receiptData) {
         if (Number(row.amount) !== 0) {
           let uniqueId = generateShortUUID();
-          
-      let remainingAmount = Number(row.amount);
-      let newInterest = Number(row.interest);
-      let newBalance = Number(row.balance);
 
-      // Subtract from interest first
-      if (remainingAmount <= newInterest) {
-        newInterest -= remainingAmount;
-        remainingAmount = 0;
-      } else {
-        remainingAmount -= newInterest;
-        newInterest = 0;
-      }
+          let remainingAmount = Number(row.amount);
+          let newInterest = Number(row.interest);
+          let newBalance = Number(row.balance);
 
-      // Subtract the remaining amount from balance
-      newBalance -= remainingAmount;
+          // Subtract from interest first
+          if (remainingAmount <= newInterest) {
+            newInterest -= remainingAmount;
+            remainingAmount = 0;
+          } else {
+            remainingAmount -= newInterest;
+            newInterest = 0;
+          }
+
+          // Subtract the remaining amount from balance
+          newBalance -= remainingAmount;
+
+          // Function to generate tranId based on payment method
+          const generateTranId = (pay, uniqueId) => {
+            if (pay === "cash") {
+              return `CR/24/${uniqueId}`; // Cash transaction
+            } else if (pay === "bank") {
+              return `BR/24/${uniqueId}`; // Bank transaction
+            }
+            return `TR/24/${uniqueId}`; // Default (if pay isn't cash or bank)
+          };
+
           try {
             let res = await axios.post(
               `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row.memberId}`,
@@ -155,9 +166,12 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod }) => {
                 memberId: row.memberId,
                 ledger: [
                   {
-                    tranId: `CR/24/${uniqueId}`,
-                    payMode: paymentMethod,
+                    tranId: generateTranId(pay, uniqueId),
+                    ref: paymentMethod,
                     date: row.date,
+                    particulars: "",
+                    debit: "",
+                    credit: row.amount,
                     billNo: "",
                     mode: "pay",
                     interest: row.interest,

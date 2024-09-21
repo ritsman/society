@@ -120,6 +120,13 @@ const GenerateBill = () => {
     console.log(arr);
     setSelectedItems(arr);
   };
+ let headerss = [
+   { data: "email", title: "Email", width: 150, readOnly: true },
+   { data: "flatNo", title: "Flat No", width: 150, readOnly: true },
+   { data: "wingNo", title: "Wing No", width: 150, readOnly: true },
+   { data: "ownerName", title: "Owner Name", width: 150, readOnly: true },
+   { data: "prevDue", title: "Prev. Due", width: 150, readOnly: true },
+ ];
 
   useEffect(() => {
     let col = [
@@ -134,25 +141,70 @@ const GenerateBill = () => {
                 let obj = {
                   data: item.head,
                   title: item.head,
-                  width: 100,
+                  width: 150,
                   readOnly: false,
                 };
                 col.push(obj);
               }
             });
-          } else {
-            let obj = {
-              data: key,
-              title: key,
-              width: 130,
-              readOnly: true,
-            };
-            col.push(obj);
+          }
+           else {
+            if(key == "email"){
+                 let obj = {
+                   data: key,
+                   title: "Email",
+                   width: 150,
+                   readOnly: true,
+                 };
+                 col.push(obj);
+            }else if (key == "wingNo"){
+                  let obj = {
+                    data: key,
+                    title: "Wing No",
+                    width: 150,
+                    readOnly: true,
+                  };
+                  col.push(obj);
+            }else if(key == "flatNo"){
+               let obj = {
+                 data: key,
+                 title: "Flat No",
+                 width: 150,
+                 readOnly: true,
+               };
+               col.push(obj);
+            }else if(key == "ownerName"){
+                 let obj = {
+                   data: key,
+                   title: "Owner Name",
+                   width: 150,
+                   readOnly: true,
+                 };
+                 col.push(obj);
+            }else if(key == "total"){
+               let obj = {
+                 data: key,
+                 title: "Total",
+                 width: 150,
+                 readOnly: true,
+               };
+               col.push(obj);
+            }else if(key == "prevDue"){
+                 let obj = {
+                   data: key,
+                   title: "Prev. Due",
+                   width: 150,
+                   readOnly: true,
+                 };
+                 col.push(obj);
+            }
+           
           }
       });
     }
 
     console.log(col);
+
     setColumn(col);
     let arr = [];
     filteredData.forEach((item) => {

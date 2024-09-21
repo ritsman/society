@@ -259,6 +259,15 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
             success = false;
           }
 
+          function getParticular(dateStr) {
+            const date = new Date(dateStr);
+
+            const year = date.getFullYear();
+            const month = date.toLocaleString("default", { month: "short" });
+            const result = `Bill for ${month}-${year}`;
+            return result;
+          }
+
           // Second API call to update the ledger
           let uniqueId = generateShortUUID();
           try {
@@ -273,7 +282,11 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
                     date: billData.billDate,
                     billNo: `BL/24/${uniqueBill}`,
                     mode: "bill",
+                    ref: "",
                     billAmt: arr[0].data.total,
+                    particulars: getParticular(billData.billDate),
+                    debit: arr[0].data.total,
+                    credit: "",
                     interest: intCalculator(
                       GenData[0],
                       formData.billDate,
