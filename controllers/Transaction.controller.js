@@ -191,16 +191,20 @@ export const postOpeningBalance = async (req, res) => {
   console.log("inside post Opening Balance controller");
   try {
     req.body.map(async (item) => {
-      const { unitNo, ownerName } = item;
+      const { flatNo, name } = item;
       const update = {
-        seqNo: item.seqNo,
-        ownerName: item.ownerName,
-        unitNo: item.unitNo,
-        principle: item.principle,
+        name: item.name,
+        id:item.id,
+        mobileNo: item.mobileNo,
+        email: item.email,
+        address: item.address,
+        flatNo: item.flatNo,
+        wingNo: item.wingNo,
+        principal: item.principal,
         interest: item.interest,
         total: item.total,
       };
-      await OpeningBalance.findOneAndUpdate({ unitNo, ownerName }, update, {
+      await OpeningBalance.findOneAndUpdate({ flatNo, name }, update, {
         upsert: true,
         new: true,
       });
