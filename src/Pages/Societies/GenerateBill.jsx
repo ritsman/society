@@ -51,8 +51,7 @@ const GenerateBill = () => {
         gridRow.filter(
           (row) =>
             row.ownerName.toLowerCase().includes(trimmedSearchTerm) ||
-            row.flatNo.toString().includes(trimmedSearchTerm) ||
-            row.wingNo.toLowerCase().includes(trimmedSearchTerm)
+            row.flatNo.toString().includes(trimmedSearchTerm) 
         )
       );
     } else {
