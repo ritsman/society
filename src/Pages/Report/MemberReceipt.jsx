@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
+import config from "../../config";
 
 const PrintBill = () => {
   const [receiptData, setReceiptData] = useState([]);
@@ -72,7 +73,7 @@ const PrintBill = () => {
   async function fetchData() {
     try {
       let res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
+        `${config.API_URL}/api/transaction/getCashReceipt`
       );
       const mappedData = res.data.flatMap((item) =>
         item.paid.map((paidEntry) => ({

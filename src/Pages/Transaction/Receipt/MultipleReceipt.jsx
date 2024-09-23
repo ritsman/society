@@ -4,6 +4,7 @@ import axios from "axios";
 import ReceiptBankMode from "./Receipt-BankMode";
 import ReceiptCashMode from "./Receipt-CashMode";
 import { isEqual } from "date-fns";
+import config from "../../../config";
 
 const MultipleReceipt = () => {
   const [cashReceiptData, setCashReceiptData] = useState([]);
@@ -24,7 +25,7 @@ const MultipleReceipt = () => {
        async function fetchInt(){
             try {
                 let res = await axios.get(
-                  "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+                  `${config.API_URL}/api/master/getBillMaster`
                 );
                 setInterstRate(res.data[0].interestRatePerMonth);
                 setIntRebate(res.data[0].interestRebateUptoRs)
@@ -90,7 +91,7 @@ const MultipleReceipt = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
+          `${config.API_URL}/api/society/getBills`
         );
         console.log(res.data);
         const updatedReceiptData = res.data.map((item) => {
@@ -107,7 +108,7 @@ const MultipleReceipt = () => {
           async function updateDue(){
                try {
                 let res = await axios.put(
-                  "https://a3.arya-erp.in/api2/socapi/api/society/update-prev-due",
+                  `${config.API_URL}/api/society/update-prev-due`,
                   {
                     billId: item._id,
                     prevDue: calculateOutstanding(
@@ -215,7 +216,7 @@ const MultipleReceipt = () => {
       // }
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
+          `${config.API_URL}/api/society/getGeneratedBills`
         );
         console.log(result);
         setBillGenerated(result.data.data);
@@ -225,7 +226,7 @@ const MultipleReceipt = () => {
 
       try {
         let result = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
+          `${config.API_URL}/api/transaction/getCashReceipt`
         );
         setData2(result.data);
       } catch (error) {

@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import config from "../../config";
 
 const ViewBills = () => {
   const [names, setNames] = useState([]);
@@ -121,7 +122,7 @@ const ViewBills = () => {
   const [headers, setHeaders] = useState([]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
+    fetch(`${config.API_URL}/api/society/getBills`)
       .then((response) => response.json())
       .then((data) => {
         setData(data);

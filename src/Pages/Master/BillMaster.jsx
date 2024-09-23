@@ -1,6 +1,8 @@
 import React, { useState,useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import config from "../../config";
+
 
 const BillMaster = () => {
   const [formData, setFormData] = useState({
@@ -20,7 +22,7 @@ useEffect(() => {
   async function fetchInt() {
     try {
       let res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+        `${config.API_URL}/api/master/getBillMaster`
       );
 
       // Check if the response has data and if the first element exists
@@ -65,7 +67,7 @@ useEffect(() => {
     console.log(formData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postBillMaster",
+        `${config.API_URL}/api/master/postBillMaster`,
         formData
       );
       toast.success("successfully data saved");

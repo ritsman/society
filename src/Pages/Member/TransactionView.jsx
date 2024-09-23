@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../../config";
 const TransactionView = () => {
   const [members, setMembers] = useState([]);
 
@@ -10,7 +11,7 @@ const TransactionView = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/member/getMemberList"
+          `${config.API_URL}/api/member/getMemberList`
         );
         console.log(res);
         setMembers(res.data);

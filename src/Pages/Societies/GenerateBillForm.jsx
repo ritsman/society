@@ -2,8 +2,14 @@ import axios from "axios";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
+import config from "../../config";
 
-const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
+const GenerateBillForm = ({
+  allMemberId,
+  selectedItems,
+  isSave,
+  handleBillSave,
+}) => {
   const [receiptData, setReceiptData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -16,43 +22,42 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     billDueDate: "",
   });
   const [interestData, setIntData] = useState({});
-  const [billGenerated , setBillGenerated] = useState([])
-   const [interstRate, setInterstRate] = useState(0);
-   const [intRebate, setIntRebate] = useState(0);
-   const [intMethod, setIntMethod] = useState("");
-   const [flatInt, setFlatInt] = useState(0);
-   const [isFlatInt, setIsFlatInt] = useState(0);
+  const [billGenerated, setBillGenerated] = useState([]);
+  const [interstRate, setInterstRate] = useState(0);
+  const [intRebate, setIntRebate] = useState(0);
+  const [intMethod, setIntMethod] = useState("");
+  const [flatInt, setFlatInt] = useState(0);
+  const [isFlatInt, setIsFlatInt] = useState(0);
 
   function generateShortUUID() {
     return uuidv4().replace(/-/g, "").slice(0, 8);
   }
 
+  useEffect(() => {
+    async function fetchInt() {
+      try {
+        let res = await axios.get(
+          `${config.API_URL}/api/master/getBillMaster`
+        );
+        setInterstRate(res.data[0].interestRatePerMonth);
+        setIntRebate(res.data[0].interestRebateUptoRs);
+        setIntMethod(res.data[0].interestCalculationMethod);
+        setFlatInt(res.data[0].flatInterestAmount);
+        setIsFlatInt(res.data[0].isFlatInterest);
+      } catch (error) {
+        console.log(error);
+      }
 
-     useEffect(() => {
-       async function fetchInt() {
-         try {
-           let res = await axios.get(
-             "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
-           );
-           setInterstRate(res.data[0].interestRatePerMonth);
-           setIntRebate(res.data[0].interestRebateUptoRs);
-           setIntMethod(res.data[0].interestCalculationMethod);
-           setFlatInt(res.data[0].flatInterestAmount);
-           setIsFlatInt(res.data[0].isFlatInterest);
-         } catch (error) {
-           console.log(error);
-         }
-
-         // calculate interest amount
-       }
-       fetchInt();
-     }, []);
+      // calculate interest amount
+    }
+    fetchInt();
+  }, []);
 
   useEffect(() => {
     async function fetchInt() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getBillMaster"
+          `${config.API_URL}/api/master/getBillMaster`
         );
         setIntData(res.data[0]);
         console.log(res.data[0]);
@@ -118,9 +123,7 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
-      );
+      const res = await axios.get(`${config.API_URL}/api/society/getBills`);
       setItems(res.data);
     } catch (error) {
       console.log(error);
@@ -130,57 +133,57 @@ const GenerateBillForm = ({ allMemberId,selectedItems, isSave }) => {
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchGenBill();
-  },[])
+  }, []);
 
-  const fetchGenBill = async() =>{
-           try {
-             let result = await axios.get(
-               "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
-             );
-             console.log(result);
-             setBillGenerated(result.data.data);
-           } catch (error) {
-             console.log(error);
-           }
-  }
-const intCalculator = (GenData, currBillDate, receiptData, bill) => {
-  if (!GenData || !GenData.billDetails || GenData.billDetails.length === 0) {
-    return 0;
-  }
+  const fetchGenBill = async () => {
+    try {
+      let result = await axios.get(
+        `${config.API_URL}/api/society/getGeneratedBills`
+      );
+      console.log(result);
+      setBillGenerated(result.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const intCalculator = (GenData, currBillDate, receiptData, bill) => {
+    if (!GenData || !GenData.billDetails || GenData.billDetails.length === 0) {
+      return 0;
+    }
 
-  let intPerDay = (bill.data.intAppliedAmt * (interstRate / 100)) / 30;
-  let intPerMonth = bill.data.intAppliedAmt * (interstRate / 100);
+    let intPerDay = (bill.data.intAppliedAmt * (interstRate / 100)) / 30;
+    let intPerMonth = bill.data.intAppliedAmt * (interstRate / 100);
 
-  const lastBillDate = new Date(
-    GenData.billDetails[GenData.billDetails.length - 1].billDate
-  );
-  let intAfterDate;
-
-  if (!receiptData || !receiptData.paid || receiptData.paid.length === 0) {
-    // If receiptData doesn't exist, use lastBillDate
-    intAfterDate = lastBillDate;
-  } else {
-    const lastPaidDate = new Date(
-      receiptData.paid[receiptData.paid.length - 1].date
+    const lastBillDate = new Date(
+      GenData.billDetails[GenData.billDetails.length - 1].billDate
     );
-    // Determine which date to use
-    if (lastBillDate > lastPaidDate) {
+    let intAfterDate;
+
+    if (!receiptData || !receiptData.paid || receiptData.paid.length === 0) {
+      // If receiptData doesn't exist, use lastBillDate
       intAfterDate = lastBillDate;
     } else {
-      intAfterDate = lastPaidDate;
+      const lastPaidDate = new Date(
+        receiptData.paid[receiptData.paid.length - 1].date
+      );
+      // Determine which date to use
+      if (lastBillDate > lastPaidDate) {
+        intAfterDate = lastBillDate;
+      } else {
+        intAfterDate = lastPaidDate;
+      }
     }
-  }
     let currentBillDate = new Date(currBillDate);
-  const differenceBtwDays = Math.floor(
-    (new Date(currBillDate) - intAfterDate) / (1000 * 60 * 60 * 24)
-  ); // convert milliseconds to days
-  console.log("Difference in days: ", differenceBtwDays);
+    const differenceBtwDays = Math.floor(
+      (new Date(currBillDate) - intAfterDate) / (1000 * 60 * 60 * 24)
+    ); // convert milliseconds to days
+    console.log("Difference in days: ", differenceBtwDays);
 
-   const yearDiff = currentBillDate.getFullYear() - intAfterDate.getFullYear();
-   const monthDiff = currentBillDate.getMonth() - intAfterDate.getMonth();
-   let differenceBtwMonths = yearDiff * 12 + monthDiff;
+    const yearDiff = currentBillDate.getFullYear() - intAfterDate.getFullYear();
+    const monthDiff = currentBillDate.getMonth() - intAfterDate.getMonth();
+    let differenceBtwMonths = yearDiff * 12 + monthDiff;
 
     let interest = 0;
     if (isFlatInt && flatInt > 0) {
@@ -200,17 +203,18 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
       interest = differenceBtwDays > 0 ? intPerMonth * differenceBtwMonths : 0;
       console.log("else condition", interest);
     }
-    console.log(interest , "interestttt")
-  return interest.toFixed(2);
-};
-
-
+    console.log(interest, "interestttt");
+    return interest.toFixed(2);
+  };
 
   const handleGenerate = async () => {
     if (selectedItems.length == 0) {
       alert("Select atleast one member");
       return;
     }
+
+    // handleBillSave();
+
     const billData = {
       ...formData,
       member: selectedItems,
@@ -223,37 +227,34 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
       await Promise.all(
         selectedItems.map(async (row) => {
           let arr = items.filter((item) => item.data.memberId === row);
-          let GenData = billGenerated.filter(item=>item.memberId == row);
+          let GenData = billGenerated.filter((item) => item.memberId == row);
           let filterReceipt = receiptData.filter((a) => a.memberId === row);
           let uniqueBill = generateShortUUID();
           console.log(GenData);
 
           // First API call to generate the bill
           try {
-            await axios.post(
-              "https://a3.arya-erp.in/api2/socapi/api/society/generateBill",
-              {
-                memberId: row,
-                memberName: arr[0].data.ownerName,
-                billDetails: [
-                  {
-                    billNo: `BL/24/${uniqueBill}`,
-                    type: formData.type,
-                    billDate: formData.billDate,
-                    dueDate: billData.billDueDate,
-                    currentBillAmt: arr[0].data.total,
-                    interest: intCalculator(
-                      GenData[0],
-                      formData.billDate,
-                      filterReceipt[0],
-                      arr[0]
-                    ),
-                    prevBalance:
-                      filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
-                  },
-                ],
-              }
-            );
+            await axios.post(`${config.API_URL}/api/society/generateBill`, {
+              memberId: row,
+              memberName: arr[0].data.ownerName,
+              billDetails: [
+                {
+                  billNo: `BL/24/${uniqueBill}`,
+                  type: formData.type,
+                  billDate: formData.billDate,
+                  dueDate: billData.billDueDate,
+                  currentBillAmt: arr[0].data.total,
+                  interest: intCalculator(
+                    GenData[0],
+                    formData.billDate,
+                    filterReceipt[0],
+                    arr[0]
+                  ),
+                  prevBalance:
+                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
+                },
+              ],
+            });
           } catch (error) {
             console.log("Error generating bill for memberId:", row, error);
             success = false;
@@ -271,34 +272,31 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
           // Second API call to update the ledger
           let uniqueId = generateShortUUID();
           try {
-            await axios.post(
-              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row}`,
-              {
-                memberId: row,
-                ledger: [
-                  {
-                    tranId: `BL/24/${uniqueBill}`,
-                    payMode: "",
-                    date: billData.billDate,
-                    billNo: `BL/24/${uniqueBill}`,
-                    mode: "bill",
-                    ref: "",
-                    billAmt: arr[0].data.total,
-                    particulars: getParticular(billData.billDate),
-                    debit: arr[0].data.total,
-                    credit: "",
-                    interest: intCalculator(
-                      GenData[0],
-                      formData.billDate,
-                      filterReceipt[0],
-                      arr[0]
-                    ),
-                    paidAmt: "",
-                    balance: arr[0].data.total,
-                  },
-                ],
-              }
-            );
+            await axios.post(`${config.API_URL}/api/member/Ledger/${row}`, {
+              memberId: row,
+              ledger: [
+                {
+                  tranId: `BL/24/${uniqueBill}`,
+                  payMode: "",
+                  date: billData.billDate,
+                  billNo: `BL/24/${uniqueBill}`,
+                  mode: "bill",
+                  ref: "",
+                  billAmt: arr[0].data.total,
+                  particulars: getParticular(billData.billDate),
+                  debit: arr[0].data.total,
+                  credit: "",
+                  interest: intCalculator(
+                    GenData[0],
+                    formData.billDate,
+                    filterReceipt[0],
+                    arr[0]
+                  ),
+                  paidAmt: "",
+                  balance: arr[0].data.total,
+                },
+              ],
+            });
           } catch (error) {
             console.log("Error updating ledger for memberId:", row, error);
             success = false;
@@ -336,79 +334,69 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
 
           // First API call to generate the bill
           try {
-            console.log("hello world")
-            await axios.post(
-              "https://a3.arya-erp.in/api2/socapi/api/society/generateBill",
-              {
-                memberId: row,
-                memberName: arr[0].data.ownerName,
-                billDetails: [
-                  {
-                    billNo: `BL/24/${uniqueBill}`,
-                    type: formData.type,
-                    billDate: formData.billDate,
-                    dueDate: billData.billDueDate,
-                    currentBillAmt: arr[0].data.total,
-                    interestAfter: formData.interestAfter,
-                    prevBalance:
-                      filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
-                  },
-                ],
-              }
-            );
+            console.log("hello world");
+            await axios.post(`${config.API_URL}/api/society/generateBill`, {
+              memberId: row,
+              memberName: arr[0].data.ownerName,
+              billDetails: [
+                {
+                  billNo: `BL/24/${uniqueBill}`,
+                  type: formData.type,
+                  billDate: formData.billDate,
+                  dueDate: billData.billDueDate,
+                  currentBillAmt: arr[0].data.total,
+                  interestAfter: formData.interestAfter,
+                  prevBalance:
+                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
+                },
+              ],
+            });
           } catch (error) {
             console.log("Error generating bill for memberId:", row, error);
             success = false;
-          
-          
           }
 
           // Second API call to update the ledger
           let uniqueId = generateShortUUID();
           try {
-            console.log(`BL/24/${uniqueBill}`,"bill no");
-            await axios.post(
-              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row}`,
-              {
-                memberId: row,
-                ledger: [
-                  {
-                    tranId: uniqueId,
-                    payMode: "",
-                    date: billData.billDate,
-                    billNo: `BL/24/${uniqueBill}`,
-                    dueDate: billData.billDueDate,
-                    head: arr[0].data.head,
-                    totalAmtDue: filterReceipt[0]?.balance,
-                    billAmt: arr[0].data.total,
-                    paidAmt: "",
-                    balance:
-                      filterReceipt.length > 0
-                        ? Number(filterReceipt[0].balance) +
-                          Number(arr[0].data.total)
-                        : arr[0].data.total,
-                  },
-                ],
-              }
-            );
+            console.log(`BL/24/${uniqueBill}`, "bill no");
+            await axios.post(`${config.API_URL}/api/member/Ledger/${row}`, {
+              memberId: row,
+              ledger: [
+                {
+                  tranId: uniqueId,
+                  payMode: "",
+                  date: billData.billDate,
+                  billNo: `BL/24/${uniqueBill}`,
+                  dueDate: billData.billDueDate,
+                  head: arr[0].data.head,
+                  totalAmtDue: filterReceipt[0]?.balance,
+                  billAmt: arr[0].data.total,
+                  paidAmt: "",
+                  balance:
+                    filterReceipt.length > 0
+                      ? Number(filterReceipt[0].balance) +
+                        Number(arr[0].data.total)
+                      : arr[0].data.total,
+                },
+              ],
+            });
           } catch (error) {
             console.log("Error updating ledger for memberId:", row, error);
             success = false;
           }
 
-         
-
-           try {
-             let res = await axios.post(
-               "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashReceipt",
-               receiptData
-             );
-             console.log(res);
-             toast.success("successfully saved data");
-           } catch (error) {
-             console.log(error);
-             toast.error("error in storing data");
-           }
+          try {
+            let res = await axios.post(
+              `${config.API_URL}/api/transaction/postCashReceipt`,
+              receiptData
+            );
+            console.log(res);
+            toast.success("successfully saved data");
+          } catch (error) {
+            console.log(error);
+            toast.error("error in storing data");
+          }
         })
       );
 
@@ -431,7 +419,7 @@ const intCalculator = (GenData, currBillDate, receiptData, bill) => {
   async function fetchReciept() {
     try {
       let result = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/getCashReceipt"
+        `${config.API_URL}/api/transaction/getCashReceipt`
       );
       setReceiptData(result.data);
     } catch (error) {

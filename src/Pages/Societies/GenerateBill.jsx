@@ -7,6 +7,8 @@ import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 // import "./BillView.css";
 import { registerAllModules } from "handsontable/registry";
+import config from "../../config";
+
 
 // const headers = [
 //   { key: "wing No", name: "Wing No" },
@@ -227,7 +229,7 @@ const GenerateBill = () => {
   }, [filteredData]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+    fetch(`${config.API_URL}/api/member/getMemberList`)
       .then((response) => response.json())
       .then((data) => {
         setMembers(data);
@@ -271,7 +273,7 @@ const GenerateBill = () => {
   }, [heads, billData]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
+    fetch(`${config.API_URL}/api/master/getBillHeads`)
       .then((response) => response.json())
       .then((data) => {
         let arr = [];
@@ -291,7 +293,7 @@ const GenerateBill = () => {
 
     // fetch bills table data
 
-    fetch("https://a3.arya-erp.in/api2/socapi/api/society/getBills")
+    fetch(`${config.API_URL}/api/society/getBills`)
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
@@ -458,7 +460,7 @@ const GenerateBill = () => {
   const handleSaveToAPI = async () => {
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/society/postBills",
+        `${config.API_URL}/api/society/postBills`,
         filteredData
       );
       console.log("API response:", res);
@@ -693,6 +695,7 @@ const calculateTotal = (row) => {
           allMemberId={allMemberId}
           selectedItems={selectedItems}
           isSave={isSave}
+          handleBillSave = {handleSave}
         />
       </div>
       <div

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../../config";
 
 const MHeadList = () => {
   const [chkstat2, setChkStat2] = useState({});
@@ -9,7 +10,7 @@ const MHeadList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(" https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch( `${config.API_URL}/api/master/getHead`)
       .then((response) => response.json())
       .then((data) => setHeadData(data));
   }, []);

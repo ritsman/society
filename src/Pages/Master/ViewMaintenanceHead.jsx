@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Popup from "reactjs-popup";
+import config from "../../config";
 
 const ViewMaintenanceHead = () => {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ const ViewMaintenanceHead = () => {
   const [mmData, setMMData] = useState([]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch( `${config.API_URL}/api/master/getHead`)
       .then((response) => response.json())
       .then((data) => setMMData(data));
   }, []);
@@ -30,7 +31,7 @@ const ViewMaintenanceHead = () => {
   const handleDelete = async (id, close) => {
     try {
       const res = await axios.delete(
-        `https://a3.arya-erp.in/api2/socapi/api/master/deleteHead/${id}`
+        `${config.API_URL}/api/master/deleteHead/${id}`
       );
       console.log(res);
       close();

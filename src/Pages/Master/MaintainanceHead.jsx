@@ -222,6 +222,7 @@ import Handsontable from "handsontable";
 import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 import { registerAllModules } from "handsontable/registry";
+import config from "../../config";
 
 // Define headers for Handsontable
 const header = [
@@ -251,14 +252,14 @@ const MaintenanceHead = () => {
 
   // Fetch bill heads data
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads")
+    fetch(`${config.API_URL}/api/master/getBillHeads`)
       .then((response) => response.json())
       .then((data) => setBillHeadData(data));
   }, []);
 
   // Fetch mmData and map to appropriate format
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch(`${config.API_URL}/api/master/getHead`)
       .then((response) => response.json())
       .then((data) => {
         const arr = data.map((item, index) => {
@@ -313,7 +314,7 @@ const MaintenanceHead = () => {
   const handleSubmit = async () => {
     try {
       await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postBillHeads",
+        `${config.API_URL}/api/master/postBillHeads`,
         mmData
       );
       toast.success("Successfully saved data");

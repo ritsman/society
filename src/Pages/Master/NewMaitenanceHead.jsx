@@ -5,6 +5,7 @@ import UploadedData from "../../components/UploadedData";
 import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
+import config from "../../config";
 
 const NewMaintenanceHead = () => {
   const options = [
@@ -46,7 +47,7 @@ const NewMaintenanceHead = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getgroup"
+           `${config.API_URL}/api/master/getgroup`
         );
         let a = res.data.map((item) => item.GroupName);
 
@@ -77,7 +78,7 @@ const NewMaintenanceHead = () => {
 
     try {
       let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/masterHead",
+         `${config.API_URL}/api/master/masterHead`,
         [{ Header: headers, Under: selectedValue }]
       );
       console.log(result);
@@ -104,7 +105,7 @@ const NewMaintenanceHead = () => {
     e.preventDefault();
     try {
       let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/masterHead",
+         `${config.API_URL}/api/master/masterHead`,
 
         excelData
       );

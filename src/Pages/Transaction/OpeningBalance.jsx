@@ -6,6 +6,7 @@ import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 import { registerAllModules } from "handsontable/registry";
 import Handsontable from "handsontable";
+import config from "../../config";
 
 const OpeningBalance = () => {
   const [opBalanceType, setOpBalanceType] = useState("Members");
@@ -82,7 +83,7 @@ const OpeningBalance = () => {
   useEffect(() => {
     try {
       fetch(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/getOpeningBalance"
+        `${config.API_URL}/api/transaction/getOpeningBalance`
       )
         .then((response) => response.json())
         .then((data) => setList(data))
@@ -117,14 +118,14 @@ const OpeningBalance = () => {
   }, [head, data]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+    fetch(`${config.API_URL}/api/member/getMemberList`)
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error(error));
 
     // fetch maintenance head
 
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch(`${config.API_URL}/api/master/getHead`)
       .then((response) => response.json())
       .then((data) => {
         tableHead = [];
@@ -152,7 +153,7 @@ const OpeningBalance = () => {
     console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/postOpeningBalance",
+        `${config.API_URL}/api/transaction/postOpeningBalance`,
         tableRow
       );
       console.log(res);

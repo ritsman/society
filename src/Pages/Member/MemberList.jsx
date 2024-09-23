@@ -9,6 +9,7 @@ import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 import { registerAllModules } from "handsontable/registry";
 import Handsontable from "handsontable";
+import config from "../../config";
 
 
 const template = [
@@ -100,7 +101,7 @@ const MemberList = () => {
       e.preventDefault();
       try {
         let result = await axios.post(
-          "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
+          `${config.API_URL}/api/member/postProfile`,
 
           excelData
         );
@@ -143,14 +144,14 @@ const MemberList = () => {
   }, [head, data]);
 
   useEffect(() => {
-    fetch("https://a3.arya-erp.in/api2/socapi/api/member/getMemberList")
+    fetch(`${config.API_URL}/api/member/getMemberList`)
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error(error));
 
     // fetch maintenance head
 
-    fetch("https://a3.arya-erp.in/api2/socapi/api/master/getHead")
+    fetch(`${config.API_URL}/api/master/getHead`)
       .then((response) => response.json())
       .then((data) => {
         tableHead = [];
@@ -241,7 +242,7 @@ const MemberList = () => {
     console.log(tableRow, "table Head");
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
+        `${config.API_URL}/api/member/postProfile`,
         tableRow
       );
       console.log(res);

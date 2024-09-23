@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { HotTable } from "@handsontable/react";
 import "handsontable/dist/handsontable.full.css";
 import { registerAllModules } from "handsontable/registry";
+import config from "../../../config";
 
 const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => {
   const [head, setHead] = useState([]);
@@ -86,7 +87,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getHead"
+         `${config.API_URL}/api/master/getHead`
         );
         console.log(res.data);
         let tableHead = [];
@@ -118,7 +119,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
     console.log(receiptData);
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/transaction/postCashReceipt",
+        `${config.API_URL}/api/transaction/postCashReceipt`,
         receiptData
       );
       console.log(res);
@@ -161,7 +162,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
 
           try {
             let res = await axios.post(
-              `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${row.memberId}`,
+              `${config.API_URL}/api/member/Ledger/${row.memberId}`,
               {
                 memberId: row.memberId,
                 ledger: [
@@ -196,7 +197,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
             console.log("inside cash ledger condition");
             try {
               let res = await axios.post(
-                "https://a3.arya-erp.in/api2/socapi/api/master/postCashAccLedger",
+                `${config.API_URL}/api/master/postCashAccLedger`,
                 {
                   tranId: uniqueId,
                   date: row.date,
@@ -216,7 +217,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
           if (paymentMethod == "bank") {
             try {
               let res = await axios.post(
-                "https://a3.arya-erp.in/api2/socapi/api/master/postBankAccLedger",
+                `${config.API_URL}/api/master/postBankAccLedger`,
                 {
                   tranId: uniqueId,
                   date: row.date,

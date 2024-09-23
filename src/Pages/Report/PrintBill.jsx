@@ -2,6 +2,9 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import { toast } from "react-toastify";
+import config from "../../config";
+import Popup from "reactjs-popup";
+
 
 const PrintBill = () => {
   const [filteredTableData, setFilteredTableData] = useState([]);
@@ -24,7 +27,7 @@ const PrintBill = () => {
 
     try {
       let res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/report/send-email",
+        `${config.API_URL}/api/report/send-email`,
         {
           email: bill.email,
           subject: "hello world",
@@ -69,7 +72,7 @@ const PrintBill = () => {
    const fetchData1 = async () => {
      try {
        const res = await axios.get(
-         "https://a3.arya-erp.in/api2/socapi/api/society/getSocProfile"
+        `${config.API_URL}/api/society/getSocProfile`
        );
           setSocietyData(res.data[0]) 
      } catch (error) {
@@ -137,7 +140,7 @@ const PrintBill = () => {
     setError(null);
     try {
       const res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
+        `${config.API_URL}/api/society/getBills`
       );
       console.log(res.data);
       setItems(res.data);
@@ -165,7 +168,7 @@ const PrintBill = () => {
   async function fetchGeneratedBill() {
     try {
       let res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getGeneratedBills"
+        `${config.API_URL}/api/society/getGeneratedBills`
       );
       console.log(res.data.data);
       let arr = res.data.data.flatMap((item) => {
@@ -175,6 +178,7 @@ const PrintBill = () => {
         return item.billDetails.map((item2) => {
           return {
             heads: heads,
+            memberId : item.memberId,
             billNo: item2.billNo,
             date: item2.billDate,
             email : arr2[0].data.email,
@@ -207,7 +211,7 @@ const PrintBill = () => {
      if (!sentEmails.has(bill.email)) {
        try {
          await axios.post(
-           "https://a3.arya-erp.in/api2/socapi/api/report/send-email",
+           `${config.API_URL}/api/report/send-email`,
            {
              email: bill.email,
              subject: "Hello World",
@@ -503,6 +507,27 @@ const PrintBill = () => {
     return numberToWordsHelper(num).trim();
   };
   //   print pdf implementation end
+
+
+  const handleDeleteBill = async(bill)=>{
+    try {
+       let res = await axios.delete(
+         `${config.API_URL}/api/society/delete-GenBill`,
+         {
+           data: {
+             // Use the `data` field to send the payload in DELETE requests
+             memberId: bill.memberId,
+             billNo: bill.billNo,
+           },
+         }
+       );
+       console.log(res);
+      toast.success("bill deleted successfully")    
+    } catch (error) {
+      console.log(error)
+      toast.error("error in deleting bill")
+    }
+  }
   return (
     <div>
       <div className="p-4">
@@ -639,18 +664,68 @@ const PrintBill = () => {
                       <td className="py-3 px-6 text-center">{bill.member}</td>
                       <td className="py-3 px-6 text-center">{bill.netAmt}</td>
                       <td className="py-3 px-6 text-center">{bill.interest}</td>
-                      <td className="py-3 px-6 text-center">{bill.prevBalance}</td>
-                      <td className="py-3 px-6 text-center">{bill.balance}</td>
                       <td className="py-3 px-6 text-center">
+                        {bill.prevBalance}
+                      </td>
+                      <td className="py-3 px-6 text-center">{bill.balance}</td>
+                      <td className="py-3 px-6 flex gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEmail(bill);
                           }}
-                          className="border-2 border-black rounded-md px-2 py-2"
+                          className="bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
                         >
                           Send Email
                         </button>
+                        <Popup
+                          trigger={
+                            <button className=" bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                              Delete bill
+                            </button>
+                          }
+                          position="center"
+                          contentStyle={{
+                            width: "400px",
+                            background: "white",
+                            borderRadius: "0.5rem",
+                            padding: "1rem",
+                            boxShadow: "0 0 10px rgba(0, 0, 0, 0.2)",
+                          }}
+                          overlayStyle={{
+                            background: "rgba(0, 0, 0, 0.5)",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                          modal
+                        >
+                          {(close) => (
+                            <div className="text-center ">
+                              <div className="text-xl text-black font-bold mb-4">
+                                Are you Sure, You want to Delete ?
+                              </div>
+                              <div className="flex justify-center space-x-4">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteBill(bill);
+                                    close();
+                                  }}
+                                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                                >
+                                  Delete
+                                </button>
+                                <button
+                                  className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
+                                  onClick={close}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </Popup>
                       </td>
                     </tr>
                   )

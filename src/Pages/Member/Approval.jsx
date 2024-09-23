@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import config from "../../config";
 
 const Approval = () => {
   const [users, setUsers] = useState([]);
@@ -13,7 +14,7 @@ const Approval = () => {
   const fetchUsers = async () => {
     try {
       const response = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/auth/getAllUsers",
+        `${config.API_URL}/api/auth/getAllUsers`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
@@ -39,7 +40,7 @@ const Approval = () => {
 
     try {
       await axios.post(
-        `https://a3.arya-erp.in/api2/socapi/api/auth/approve-user/${userId}`,
+        `${config.API_URL}/api/auth/approve-user/${userId}`,
         { role: selectedRole },
         {
           headers: {
@@ -56,14 +57,11 @@ const Approval = () => {
 
   const handleRemove = async (userId) => {
     try {
-      await axios.delete(
-        `https://a3.arya-erp.in/api2/socapi/api/auth/remove-user/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
-          },
-        }
-      );
+      await axios.delete(`${config.API_URL}/api/auth/remove-user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
       toast.success("User removed successfully");
       fetchUsers();
     } catch (error) {

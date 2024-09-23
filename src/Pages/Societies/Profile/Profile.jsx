@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import AutoComplete from "../../../components/Autocomplete";
+import config from "../../../config";
 
 const SocietyForm = () => {
   const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ const SocietyForm = () => {
     
       try {
         const res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/society/getBills"
+          `${config.API_URL}/api/society/getBills`
         );
         let filtered = res.data.map((item) => item.data.ownerName);
         setItems(filtered);
@@ -67,7 +68,7 @@ const SocietyForm = () => {
   const fetchData = async () => {
     try {
       const res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/society/getSocProfile"
+       `${config.API_URL}/api/society/getSocProfile`
       );
       if (res.data.length > 0) {
         const { _id, __v, ...filteredData } = res.data[0];
@@ -103,7 +104,7 @@ const SocietyForm = () => {
     console.log(formData)
     try {
       const res = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/society/postSocProfile",
+        `${config.API_URL}/api/society/postSocProfile`,
         updatedFormData
       );
       console.log(res);
@@ -118,7 +119,7 @@ const SocietyForm = () => {
   const handleDelete = async () => {
     try {
       await axios.delete(
-        `https://a3.arya-erp.in/api2/socapi/api/society/deleteSocProfile/${formData.registrationNumber}`
+        `${config.API_URL}/api/society/deleteSocProfile/${formData.registrationNumber}`
       );
       console.log("Profile Deleted");
       setFormData({

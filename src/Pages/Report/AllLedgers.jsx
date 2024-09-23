@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import config from "../../config";
 
 const AllLedgers = () => {
   const [bankLedger, setBankLedger] = useState([]);
@@ -26,7 +27,7 @@ const AllLedgers = () => {
   async function fetchBankACLedger() {
     try {
       let res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/master/getBankAccLedger"
+        `${config.API_URL}/api/master/getBankAccLedger`
       );
       console.log(res);
       setBankLedger(res.data);
@@ -38,7 +39,7 @@ const AllLedgers = () => {
   async function fetchCashACLedger() {
     try {
       let res = await axios.get(
-        "https://a3.arya-erp.in/api2/socapi/api/master/getCashAccLedger"
+        `${config.API_URL}/api/master/getCashAccLedger`
       );
       console.log(res);
       setCashLedger(res.data);

@@ -216,6 +216,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import config from "../../config";
 
 const IndividualLedger = () => {
   const location = useLocation();
@@ -235,7 +236,7 @@ const IndividualLedger = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getBillHeads"
+          `${config.API_URL}/api/master/getBillHeads`
         );
         let tableHead = res.data.map((item) => item);
         setHead(tableHead);
@@ -253,7 +254,7 @@ const IndividualLedger = () => {
   async function fetchLedger() {
     try {
       let res = await axios.get(
-        `https://a3.arya-erp.in/api2/socapi/api/member/Ledger/${indiMember._id}`
+        `${config.API_URL}/api/member/Ledger/${indiMember._id}`
       );
       setLedger(res.data.data);
       setFilteredLedger(res.data.data.ledger);

@@ -6,6 +6,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
+import config from "../../config";
 
 const UpdateMHead = () => {
   const options = [
@@ -56,7 +57,7 @@ const UpdateMHead = () => {
     async function fetch() {
       try {
         let res = await axios.get(
-          "https://a3.arya-erp.in/api2/socapi/api/master/getgroup"
+           `${config.API_URL}/api/master/getgroup`
         );
         let a = res.data.map((item) => item.GroupName);
 
@@ -87,7 +88,7 @@ const UpdateMHead = () => {
 
     try {
       let result = await axios.put(
-        `https://a3.arya-erp.in/api2/socapi/api/master/updateHead/${row._id}`,
+        `${config.API_URL}/api/master/updateHead/${row._id}`,
         { Header: headers, Under: selectedValue }
       );
       console.log(result);
@@ -116,7 +117,7 @@ const UpdateMHead = () => {
     e.preventDefault();
     try {
       let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/masterHead",
+         `${config.API_URL}/api/master/masterHead`,
 
         excelData
       );
