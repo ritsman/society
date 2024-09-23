@@ -190,3 +190,52 @@ export const getGeneratedBills = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+import { MemberLedger } from "../Models/MemberProfile.model.js";
+
+// Controller function to remove a billDetails entry by billNo
+export const deleteBill = async (req, res) => {
+  console.log("inside delete bills");
+  try {
+    const { memberId, billNo } = req.body; // get memberId and billNo from the request body
+      console.log("inside delete bills",req.body);
+
+
+    // Find the document with the memberId and remove the billDetails entry
+    const result = await billGenerate.updateOne(
+      { memberId }, // filter by memberId
+      {
+        $pull: { billDetails: { billNo } }, // pull the specific billDetails entry with the given billNo
+      }
+    );
+
+     const result2 = await MemberLedger.updateOne(
+       { memberId }, // filter by memberId
+       {
+         $pull: { ledger: { billNo } }, // pull the specific billDetails entry with the given billNo
+       }
+     );
+           if (result2.matchedCount === 0) {
+            console.log("member not found")
+           }
+
+           if (result2.modifiedCount === 0) {
+            console.log("ledger not found")
+           }
+    if (result.modifiedCount > 0) {
+      return res
+        .status(200)
+        .json({ message: "Bill details deleted successfully." });
+    } else {
+      return res
+        .status(404)
+        .json({ message: "No bill found with the given billNo." });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+

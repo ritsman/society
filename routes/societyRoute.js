@@ -4,6 +4,7 @@ const router = express.Router();
 
 import {
   BillAmounts,
+  deleteBill,
   deleteSocProfile,
   generateBills,
   getBill,
@@ -22,6 +23,7 @@ router.get("/getBillNo", getBillno);
 
 router.post("/generateBill", generateBills);
 router.get("/getGeneratedBills", getGeneratedBills);
+router.delete("/delete-GenBill",deleteBill);
 
 
 // society profile routes start
