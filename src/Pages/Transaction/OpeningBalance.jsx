@@ -215,7 +215,26 @@ const OpeningBalance = () => {
       // Loop through the changes
       changes.forEach(([rowIndex, prop, oldValue, newValue]) => {
         // Check if the changed property is "principal"
-        if (prop === "principal" && oldValue !== newValue) {
+
+             if (prop === "interest" && oldValue !== newValue) {
+               // Get the current row data
+               const updatedRow = { ...tableRow[rowIndex] };
+
+               // Calculate the new total
+               updatedRow.total =
+                 parseFloat(newValue) + parseFloat(updatedRow.principal);
+
+               // Update the table row with the new total
+               setTableRow((prevTableRow) =>
+                 prevTableRow.map((row, index) =>
+                   index === rowIndex ? updatedRow : row
+                 )
+               );
+             }
+        if (
+          (prop === "principal" && oldValue !== newValue) 
+          
+        ) {
           // Get the current row data
           const updatedRow = { ...tableRow[rowIndex] };
 
