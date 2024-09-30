@@ -1,4 +1,5 @@
-import BillHeads from "../Models/BillHeads.model.js";
+// import BillHeads from "../Models/BillHeads.model.js";
+import {BillHeads} from "../controllers/User.controller.js"
 
 export const postBillHeads = async (req, res) => {
   console.log("insdie post bill Heads",req.body);

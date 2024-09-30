@@ -3,6 +3,33 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../Models/User.models.js";
+// import { User } from "./SuperAdmin/admin.controller.js";
+import { createSocietyDbConnection } from "../mongodb/config.js";
+
+
+//kjhj
+
+export let SocProfile;
+export let BillHeads;
+export let BillMaster;
+export let Bills;
+export let billGenerate;
+export let groups;
+export let PartyLedger;
+export let AccLedger;
+export let CashAccLedger;
+export let BankAccLedger;
+export let MasterHead;
+export let MemberLedger;
+export let profile;
+export let OpeningMember;
+export let OpeningBalance;
+export let BankPayment;
+export let CashPayment;
+export let BankReceipt;
+export let CashReceipt;
+
+//lklk
 
 const generateJWTSecret = () => {
   return crypto.randomBytes(32).toString("hex");
@@ -12,57 +39,124 @@ export const login = async (req, res) => {
   console.log("inside login controller", req.body);
 
   const jwtSecret = generateJWTSecret();
+      const {superAdmin,societyId} = req.body;
+       try {
+         if (superAdmin) {
+             const society = await User.findOne({ societyId });
+             if (!society) {
+               return res.status(404).json({ error: "Society not found" });
+             }
+               ({
+                 SocProfile,
+                 BillHeads,
+                 BillMaster,
+                 Bills,
+                 billGenerate,
+                 groups,
+                 PartyLedger,
+                 AccLedger,
+                 CashAccLedger,
+                 BankAccLedger,
+                 MasterHead,
+                 MemberLedger,
+                 profile,
+                 OpeningMember,
+                 OpeningBalance,
+                 BankPayment,
+                 CashPayment,
+                 BankReceipt,
+                 CashReceipt,
+               } = createSocietyDbConnection(
+                 society.dbConnection,
+                 society.societyName
+               ));
+                
+               res.status(200).json({ message: "successfully login in" });
 
-  try {
-    const { user, password } = req.body;
-    let role = "";
-    if (user == "admin@gmail.com") {
-      role = "admin";
-    } else {
-      role = "user";
-    }
-    const users = await User.findOne({ user });
-    if (!users) {
-      return res.status(400).send("Invalid email or password");
-    } else {
-      const validPassword = await bcrypt.compare(password, users.password);
-      if (!validPassword) {
-        return res.status(400).send("Invalid email or password");
-      } else {
-          if (users.status == "pending") {
+         } else {
+              const { user, password } = req.body;
+              let role = "";
 
-            return res.status(403).json({
-              message: "Account not approved. Please wait for admin approval.",
-            });
-          }
+              const users = await User.findOne({ user });
+              if (!users) {
+                return res.status(400).send("Invalid email or password");
+              } else {
+                if (user == "admin@gmail.com") {
+                  role = "admin";
+                } else if (user == "supadmin@gmail.com") {
+                  role = "superAdmin";
+                } else {
+                  role = users.role;
+                }
+                const validPassword = await bcrypt.compare(
+                  password,
+                  users.password
+                );
+                if (!validPassword) {
+                  return res.status(400).send("Invalid email or password");
+                } else {
+                  if (users.status == "pending") {
+                    return res.status(403).json({
+                      message:
+                        "Account not approved. Please wait for admin approval.",
+                    });
+                  }
 
+                  ({
+                    SocProfile,
+                    BillHeads,
+                    BillMaster,
+                    Bills,
+                    billGenerate,
+                    groups,
+                    PartyLedger,
+                    AccLedger,
+                    CashAccLedger,
+                    BankAccLedger,
+                    MasterHead,
+                    MemberLedger,
+                    profile,
+                    OpeningMember,
+                    OpeningBalance,
+                    BankPayment,
+                    CashPayment,
+                    BankReceipt,
+                    CashReceipt,
+                  } = createSocietyDbConnection(
+                    users.dbConnection,
+                    users.societyName
+                  ));
 
-        const token = jwt.sign(
-          {
-            _id: users._id,
-            role: role,
-            name: users.name,
-            user: users.user,
-          },
-          jwtSecret,
-          {
-            expiresIn: "2d",
-          }
-        );
-        res.send(token);
-      }
-    }
-  } catch (error) {
-    console.error(error);
- return res.status(500).json({
-   message: "Internal Server Error",
- });  }
+                  const token = jwt.sign(
+                    {
+                      _id: users._id,
+                      role: role,
+                      name: users.name,
+                      user: users.user,
+                    },
+                    jwtSecret,
+                    {
+                      expiresIn: "2d",
+                    }
+                  );
+                  res.send(token);
+                }
+              }
+         }
+
+        
+       } catch (error) {
+         console.error(error);
+         return res.status(500).json({
+           message: "Internal Server Error",
+         });
+       }
 };
 
 export const register = async (req, res) => {
   console.log(req.body);
   try {
-    const { name, user, password } = req.body;
+    const { name, user, password,societyId,societyName } = req.body;
 
     const existingUser = await User.findOne({ user });
     if (existingUser) {
@@ -70,10 +164,16 @@ export const register = async (req, res) => {
       return res.status(400).send("User already exists");
     }
 
+const sanitizedSocietyName = societyId.replace(/\s+/g, "_"); 
+const dbConnection = `mongodb://0.0.0.0:27017/${sanitizedSocietyName}_db`;
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const users = new User({
       name,
       user,
+      societyId,
+      societyName,
+      dbConnection,
       password: hashedPassword,
       status: "pending",
     });
@@ -168,7 +268,7 @@ export const approveUser = async (req,res) =>{
     const role = req.body.role;
      const user = await User.findByIdAndUpdate(
        req.params.userId,
-       { status: "active" },
+       { status: "active", role: role },
        { new: true }
      );
      if (!user) {

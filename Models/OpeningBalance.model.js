@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const mySchema = new mongoose.Schema(
+export const mySchemas = new mongoose.Schema(
   {
     name: String,
     id :String,
@@ -18,6 +18,6 @@ const mySchema = new mongoose.Schema(
   }
 );
 
-const OpeningBalance = mongoose.model("OpeningBalance", mySchema);
+// const OpeningBalance = mongoose.model("OpeningBalance", mySchemas);
 
-export default OpeningBalance;
+// export default OpeningBalance;

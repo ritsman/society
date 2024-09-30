@@ -1,7 +1,7 @@
 // models/Society.js
 import mongoose from "mongoose";
 
-const SocietySchema = new mongoose.Schema({
+export const SocietySchema = new mongoose.Schema({
   societyName: {
     type: String,
     required: true,
@@ -40,6 +40,6 @@ const SocietySchema = new mongoose.Schema({
   },
 });
 
-const SocProfile =  mongoose.model("Society_profile", SocietySchema);
+// const SocProfile =  mongoose.model("Society_profile", SocietySchema);
 
-export default SocProfile;
+// export default SocProfile;

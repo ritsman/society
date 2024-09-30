@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const GroupSchema = new mongoose.Schema(
+export const GroupSchema = new mongoose.Schema(
   {
     group: {
       type: String,

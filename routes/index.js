@@ -7,7 +7,9 @@ import societyRoute from "./societyRoute.js";
 import AuthRoute from "./AuthRoute.js";
 import reportRoute from "./reportRoute.js";
 import transactionRoute from "./transactionRoute.js";
+import SuperAdmin from "./SuperAdmin.js"
 
+router.use("/api/superAdmin",SuperAdmin);
 router.use("/api/master", masterRoute);
 router.use("/api/member", memberRoute);
 router.use("/api/society", societyRoute);

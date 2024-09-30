@@ -1,6 +1,9 @@
-import profile from "../Models/MemberProfile.model.js";
-import { OpeningMember } from "../Models/MemberProfile.model.js";
-import { MemberLedger } from "../Models/MemberProfile.model.js";
+// import profile from "../Models/MemberProfile.model.js";
+import { profile } from "./User.controller.js";
+// import { OpeningMember } from "../Models/MemberProfile.model.js";
+import { OpeningBalance } from "./User.controller.js";
+// import { MemberLedger } from "../Models/MemberProfile.model.js";
+import { MemberLedger } from "./User.controller.js";
 import fs from "fs";
 
 export const Profile = async (req, res) => {

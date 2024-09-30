@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const BillHeadSchema = new mongoose.Schema(
+export const BillHeadSchema = new mongoose.Schema(
   {
     GhCode: {
       type: String,
@@ -37,6 +37,6 @@ const BillHeadSchema = new mongoose.Schema(
   }
 );
 
-const BillHeads = mongoose.model("Bill-Heads", BillHeadSchema);
+// const BillHeads = mongoose.model("Bill-Heads", BillHeadSchema);
 
-export default BillHeads;
+// export default BillHeads;

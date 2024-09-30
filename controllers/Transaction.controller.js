@@ -1,6 +1,11 @@
-import { BankReceipt, CashReceipt } from "../Models/Receipt.model.js";
-import OpeningBalance from "../Models/OpeningBalance.model.js";
-import { BankPayment, CashPayment } from "../Models/Payment.model.js";
+// import { BankReceipt, CashReceipt } from "../Models/Receipt.model.js";
+import { BankReceipt, OpeningBalance } from "./User.controller.js";
+import { CashReceipt } from "./User.controller.js";
+
+// import OpeningBalance from "../Models/OpeningBalance.model.js";
+// import { BankPayment, CashPayment } from "../Models/Payment.model.js";
+import { BankPayment } from "./User.controller.js";
+import { CashPayment } from "./User.controller.js";
 
 // Bank controller
 

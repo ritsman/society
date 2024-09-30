@@ -1,7 +1,8 @@
-import Bills from "../Models/Bills.models.js";
-import SocProfile from "../Models/Society/SocProfile.model.js";
+// import Bills from "../Models/Bills.models.js";
+import { Bills,SocProfile,billGenerate,MemberLedger } from "./User.controller.js";
+// import SocProfile from "../Models/Society/SocProfile.model.js";
 
-import { billGenerate } from "../Models/Bills.models.js";
+// import { billGenerate } from "../Models/Bills.models.js";
 
 // start of society profile
 export const postSocProfile = async (req, res) => {
@@ -192,7 +193,7 @@ export const getGeneratedBills = async (req, res) => {
 };
 
 
-import { MemberLedger } from "../Models/MemberProfile.model.js";
+// import { MemberLedger } from "../Models/MemberProfile.model.js";
 
 // Controller function to remove a billDetails entry by billNo
 export const deleteBill = async (req, res) => {

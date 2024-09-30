@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const GroupSchema = new mongoose.Schema(
+export const GroupSchema = new mongoose.Schema(
   {
     GroupName: {
       type: String,
@@ -17,6 +17,6 @@ const GroupSchema = new mongoose.Schema(
   }
 );
 
-const groups = mongoose.model("Groups", GroupSchema);
+// const groups = mongoose.model("Groups", GroupSchema);
 
-export default groups;
+// export default groups;

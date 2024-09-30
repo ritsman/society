@@ -1,4 +1,5 @@
-import BillMaster from "../Models/BillMaster.model.js";
+// import BillMaster from "../Models/BillMaster.model.js";
+import { BillMaster } from "./User.controller.js";
 
 export const postBillMaster = async (req, res) => {
   console.log("Inside postBillMaster controller");

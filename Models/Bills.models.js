@@ -1,11 +1,8 @@
 import mongoose from "mongoose";
 
-const billSchema = new mongoose.Schema(
+export const billSchema = new mongoose.Schema(
   { 
-    prevDue:{
-       type:Number,
-       default:0
-  },
+    
     data: {
       type: Object,
     },
@@ -15,11 +12,11 @@ const billSchema = new mongoose.Schema(
   }
 );
 
-const Bills = mongoose.model("bills", billSchema);
+// const Bills = mongoose.model("bills", billSchema);
 
-export default Bills;
+// export default Bills;
 
-const generateBillSchema = new mongoose.Schema(
+export const generateBillSchema = new mongoose.Schema(
   {
     memberId: String,
     memberName: String,
@@ -30,4 +27,4 @@ const generateBillSchema = new mongoose.Schema(
   }
 );
 
-export const billGenerate = mongoose.model("billGenerate", generateBillSchema);
+// export const billGenerate = mongoose.model("billGenerate", generateBillSchema);

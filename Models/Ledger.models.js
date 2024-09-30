@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const partyLedgerSchema = new mongoose.Schema(
+export const partyLedgerSchema = new mongoose.Schema(
   {
     data: {
       type: Object,
@@ -11,11 +11,11 @@ const partyLedgerSchema = new mongoose.Schema(
   }
 );
 
-const PartyLedger = mongoose.model("Ledger", partyLedgerSchema);
+// const PartyLedger = mongoose.model("Ledger", partyLedgerSchema);
 
-export default PartyLedger;
+// export default PartyLedger;
 
-const accountLedger = new mongoose.Schema(
+export const accountLedger = new mongoose.Schema(
   {
     name: String,
     shortName: String,
@@ -27,9 +27,9 @@ const accountLedger = new mongoose.Schema(
   }
 );
 
-export const AccLedger = mongoose.model("AccLedger", accountLedger);
+// export const AccLedger = mongoose.model("AccLedger", accountLedger);
 
-const CashAccountLedger = new mongoose.Schema(
+export const CashAccountLedger = new mongoose.Schema(
   {
     tranId: String,
     date: String,
@@ -47,9 +47,9 @@ const CashAccountLedger = new mongoose.Schema(
   }
 );
 
-export const CashAccLedger = mongoose.model("CashAccLedger", CashAccountLedger);
+// export const CashAccLedger = mongoose.model("CashAccLedger", CashAccountLedger);
 
-const BankAccountLedger = new mongoose.Schema(
+export const BankAccountLedger = new mongoose.Schema(
   {
     tranId: String,
     date: String,
@@ -67,4 +67,4 @@ const BankAccountLedger = new mongoose.Schema(
   }
 );
 
-export const BankAccLedger = mongoose.model("BankAccLedger", BankAccountLedger);
+// export const BankAccLedger = mongoose.model("BankAccLedger", BankAccountLedger);

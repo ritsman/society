@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const HeadSchema = new mongoose.Schema(
+export const HeadSchema = new mongoose.Schema(
   {
     Header: {
       type: String,
@@ -14,7 +14,7 @@ const HeadSchema = new mongoose.Schema(
   }
 );
 
-const MasterHead = mongoose.model("masterHead", HeadSchema);
+// const MasterHead = mongoose.model("masterHead", HeadSchema);
 
 const unitHeadSchema = new mongoose.Schema(
   {
@@ -26,4 +26,4 @@ const unitHeadSchema = new mongoose.Schema(
 
 export const UnitHead = mongoose.model("UnitHead", unitHeadSchema);
 
-export default MasterHead;
+// export default MasterHead;

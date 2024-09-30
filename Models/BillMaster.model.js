@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const billMasterSchema = new mongoose.Schema(
+export const billMasterSchema = new mongoose.Schema(
   {
     type: { type: String, default: "maintenance bill" },
     code: { type: String },
@@ -19,6 +19,6 @@ const billMasterSchema = new mongoose.Schema(
   }
 );
 
-const BillMaster = mongoose.model("Bill-Master", billMasterSchema);
+// const BillMaster = mongoose.model("Bill-Master", billMasterSchema);
 
-export default BillMaster;
+// export default BillMaster;

@@ -1,11 +1,21 @@
-import MasterHead from "../Models/MasterHead.models.js";
-import PartyLedger from "../Models/Ledger.models.js";
-import groups from "../Models/Group.models.js";
+// import MasterHead from "../Models/MasterHead.models.js";
+import { MasterHead } from "./User.controller.js";
+// import PartyLedger from "../Models/Ledger.models.js";
+import { PartyLedger } from "./User.controller.js";
+// import groups from "../Models/Group.models.js";
+import { groups } from "./User.controller.js";
+
 import groupList from "../Models/GroupList.models.js";
+
 import { UnitHead } from "../Models/MasterHead.models.js";
-import { AccLedger } from "../Models/Ledger.models.js";
-import { CashAccLedger } from "../Models/Ledger.models.js";
-import { BankAccLedger } from "../Models/Ledger.models.js";
+
+// import { AccLedger } from "../Models/Ledger.models.js";
+import { AccLedger } from "./User.controller.js";
+
+// import { CashAccLedger } from "../Models/Ledger.models.js";
+import { CashAccLedger } from "./User.controller.js";
+// import { BankAccLedger } from "../Models/Ledger.models.js";
+import { BankAccLedger } from "./User.controller.js";
 
 // maintenance head crud operation
 

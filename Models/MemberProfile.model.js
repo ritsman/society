@@ -23,7 +23,7 @@ const ledgerEntrySchema = new mongoose.Schema({
   balance: String,
 });
 
-const LedgerSchema = new mongoose.Schema({
+export const LedgerSchema = new mongoose.Schema({
   memberId: {
     type: String,
   },
@@ -33,9 +33,9 @@ const LedgerSchema = new mongoose.Schema({
   },
 });
 
-export const MemberLedger = mongoose.model("memberLedger", LedgerSchema);
+// export const MemberLedger = mongoose.model("memberLedger", LedgerSchema);
 
-const profileSchema = new mongoose.Schema(
+export const profileSchema = new mongoose.Schema(
   {
     name: String,
 
@@ -64,9 +64,9 @@ const profileSchema = new mongoose.Schema(
   }
 );
 
-const profile = mongoose.model("MemberProfile", profileSchema);
+// const profile = mongoose.model("MemberProfile", profileSchema);
 
-const mySchema = new mongoose.Schema(
+export const mySchema = new mongoose.Schema(
   {
     data: Object,
   },
@@ -75,6 +75,6 @@ const mySchema = new mongoose.Schema(
   }
 );
 
-export const OpeningMember = mongoose.model("OpeningMember", mySchema);
+// export const OpeningMember = mongoose.model("OpeningMember", mySchema);
 
-export default profile;
+// export default profile;

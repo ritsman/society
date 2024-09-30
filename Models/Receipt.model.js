@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const bankSchema = new mongoose.Schema({
+export const bankSchemas = new mongoose.Schema({
   amount: {
     type: String,
   },
@@ -48,9 +48,9 @@ const bankSchema = new mongoose.Schema({
   },
 });
 
-export const BankReceipt = mongoose.model("BankReceipt", bankSchema);
+// export const BankReceipt = mongoose.model("BankReceipt", bankSchemas);
 
-const cashSchema = new mongoose.Schema({
+export const cashSchemas = new mongoose.Schema({
   paid: {
     type: Array,
   },
@@ -109,4 +109,4 @@ const cashSchema = new mongoose.Schema({
   },
 });
 
-export const CashReceipt = mongoose.model("CashReceipt", cashSchema);
+// export const CashReceipt = mongoose.model("CashReceipt", cashSchemas);
