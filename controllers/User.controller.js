@@ -101,7 +101,7 @@ export const login = async (req, res) => {
                         "Account not approved. Please wait for admin approval.",
                     });
                   }
-
+               if(users.dbConnection && users.societyName){
                   ({
                     SocProfile,
                     BillHeads,
@@ -126,6 +126,7 @@ export const login = async (req, res) => {
                     users.dbConnection,
                     users.societyName
                   ));
+                }
 
                   const token = jwt.sign(
                     {

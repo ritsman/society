@@ -1,5 +1,8 @@
-import AdminUser from "../../Models/SuperAdminModel/user.model.js";
+// import AdminUser from "../../Models/SuperAdminModel/user.model.js";
 import bcrypt from "bcrypt";
+import AdminUser from "../../Models/SuperAdminModel/Users.model.js";
+
+import User from "../../Models/User.models.js";
 
 
 export const adminLogin = async(req,res)=>{
@@ -37,7 +40,7 @@ export const adminLogin = async(req,res)=>{
           }
 }
 
-import { Society } from "../../Models/SuperAdminModel/user.model.js";
+import { Society } from "../../Models/SuperAdminModel/Users.model.js";
 
 
 export const createSociety = async (req, res) => {
@@ -83,7 +86,7 @@ export const getSociety = async (req,res)=>{
 }
 
 import { createSocietyDbConnection } from "../../mongodb/config.js";
-import User from "../../Models/User.models.js";
+
     
 
 export const societyLogin = async (req, res) => {
