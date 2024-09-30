@@ -30,6 +30,7 @@ const GenerateBill = () => {
   const [columns, setColumn] = useState([]);
   const [tableRows, setTableRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [openingBal , setOpeningBal] = useState([]);
 
   const hotTableRef = useRef(null);
   registerAllModules();
@@ -51,8 +52,7 @@ const GenerateBill = () => {
         gridRow.filter(
           (row) =>
             row.ownerName.toLowerCase().includes(trimmedSearchTerm) ||
-            row.flatNo.toString().includes(trimmedSearchTerm) ||
-            row.wingNo.toLowerCase().includes(trimmedSearchTerm)
+            row.flatNo.toString().includes(trimmedSearchTerm) 
         )
       );
     } else {
@@ -228,6 +228,17 @@ const GenerateBill = () => {
     setTableRows(arr);
   }, [filteredData]);
 
+    useEffect(() => {
+    try {
+      fetch(`${config.API_URL}/api/transaction/getOpeningBalance`)
+        .then((response) => response.json())
+        .then((data) => setOpeningBal(data))
+        .catch((error) => console.error(error));
+    } catch (error) {
+      console.log(error)
+    }
+  },[])
+
   useEffect(() => {
     fetch(`${config.API_URL}/api/member/getMemberList`)
       .then((response) => response.json())
@@ -235,10 +246,37 @@ const GenerateBill = () => {
         setMembers(data);
         let arr = [];
         data.forEach((item, index) => {
+          let openBal = openingBal.filter((ele)=>ele.id == item._id);
+
           let billObj = billData.find(
             (row) =>
               row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
           );
+          console.log(billObj)
+
+       const getPrevDue = () => {
+         if (openBal[0]?.total === 0) {
+           if(billObj.data.ownerName == "Vaibhav dwivedi"){
+            console.log(billData)
+           }
+           return billObj?.data?.prevDue || 0;
+         }
+
+         if (billObj?.data) {
+           if (billObj.data.total === 0) {
+             // If billObj[0].data.total is 0, check openBal
+             return openBal[0]?.total || 0;
+           } else {
+             // Return billObj[0].data.prevDue if total is not 0
+             return billObj.data.prevDue;
+           }
+         }
+
+         // If billObj or billObj[0].data is not available, check openBal
+         return openBal[0]?.total || 0;
+       };
+
+
 
           let obj = {
             id: index,
@@ -247,7 +285,7 @@ const GenerateBill = () => {
             email: item.email,
             flatNo: item.flatNo,
             ownerName: item.name,
-            prevDue: billObj && billObj.data ? billObj.data.prevDue : 0,
+            prevDue: getPrevDue(),
             // Fixed intAppliedAmt calculation
             intAppliedAmt: 0,
 

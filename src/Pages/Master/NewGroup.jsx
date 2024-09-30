@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AutoComplete from "../../components/Autocomplete";
 import axios from "axios";
 import { toast } from "react-toastify";
+import config from "../../config";
 
 const NewGroup = () => {
   const options = [
@@ -219,7 +220,7 @@ const NewGroup = () => {
 
     try {
       let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/master/postGroup",
+         `${config.API_URL}/api/master/postGroup`,
         {
           code: generateCode(selectedValue),
           groupName: groupName,

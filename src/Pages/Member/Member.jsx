@@ -10,9 +10,9 @@ const Member = () => {
     { name: "Profile", path: "/member/profile" },
     { name: "Transactions", path: "/member/memTransactions" },
     { name: "Member List", path: "/member/member-list" },
-    ...(userDetails.role === "admin"
-      ? [{ name: "Approval", path: "/member/approval" }]
-      : []),
+    // ...(userDetails.role === "superAdmin"
+    //   ? [{ name: "Approval", path: "/member/approval" }]
+    //   : []),
   ];
 
   return (

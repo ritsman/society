@@ -20,6 +20,7 @@ const MultipleReceipt = () => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [flatInt , setFlatInt] = useState(0);
   const [isFlatInt , setIsFlatInt] = useState(0);
+  const [openingBal , setOpeningBal] = useState([])
  
    useEffect(()=>{
        async function fetchInt(){
@@ -48,41 +49,57 @@ const MultipleReceipt = () => {
 
     const formatDate = (date) => date.toISOString().split("T")[0];
 
-    function calculateOutstanding(filteredRec, filteredBillGenerated) {
-     if (
-       !filteredBillGenerated ||
-       Object.keys(filteredBillGenerated).length === 0
-     ) {
+ function calculateOutstanding(
+   filteredRec,
+   filteredBillGenerated,
+   openBal
+ ) {
+   // Check if filteredBillGenerated is empty or undefined
+   if (
+     !filteredBillGenerated ||
+     Object.keys(filteredBillGenerated).length === 0
+   ) {
+       if(openBal && openBal.total != 0){
+        return openBal.total;
+       }
+       console.log(openBal,"openBal")
        return 0;
-     }
+   }
 
-      const bill =
-        filteredBillGenerated.billDetails[
-          filteredBillGenerated.billDetails.length - 1
-        ];
-      const billDate = new Date(bill.billDate);
+   // Get the last bill from filteredBillGenerated.billDetails
+   const bill =
+     filteredBillGenerated?.billDetails?.[
+       filteredBillGenerated.billDetails.length - 1
+     ];
 
-      // If filteredRec is empty, return the current bill amount
-      if (!filteredRec || !filteredRec.paid || filteredRec.paid.length === 0) {
-        return bill.currentBillAmt;
-      }
+   if (!bill) {
+     // Return 0 if no bill is found
+     return 0;
+   }
 
-      // Filter payments made after the bill date
-      // const paymentsAfterBillDate = filteredRec.paid.filter(
-      //   (payment) => new Date(payment.date) > billDate
-      // );
+   const billDate = new Date(bill.billDate);
 
-      // Calculate the total paid amount after the bill date
-      // const totalPaid = paymentsAfterBillDate.reduce(
-      //   (sum, payment) => sum + payment.amount,
-      //   0
-      // );
+   // If filteredRec is empty, return the current bill amount
+   if (!filteredRec || !filteredRec.paid || filteredRec.paid.length === 0) {
+     console.log("bill", bill);
+     return bill.currentBillAmt;
+   }
 
-      // Calculate the outstanding amount
-      // const outstandingAmount = bill.currentBillAmt - totalPaid;
+   // Return the outstanding balance, fixed to 2 decimal places
+   return Number(filteredRec.balance).toFixed(2);
+ }
 
-      return (Number(filteredRec.balance)).toFixed(2);
-    }
+       
+       useEffect(() => {
+         try {
+           fetch(`${config.API_URL}/api/transaction/getOpeningBalance`)
+             .then((response) => response.json())
+             .then((data) => setOpeningBal(data))
+             .catch((error) => console.error(error));
+         } catch (error) {
+           console.log(error);
+         }
+       }, []);
 
 
   useEffect(() => {
@@ -101,6 +118,9 @@ const MultipleReceipt = () => {
           let filteredBillGenerated = billGenerated.filter(
             (a) => a.memberId == item.data.memberId
           );
+            
+          let openBal = openingBal.filter((ele)=> ele.id == item.data.memberId);
+          console.log(openBal,openingBal);
           console.log(filteredBillGenerated);
 
           // update previous due 
@@ -113,7 +133,8 @@ const MultipleReceipt = () => {
                     billId: item._id,
                     prevDue: calculateOutstanding(
                       filteredRec[0],
-                      filteredBillGenerated[0]
+                      filteredBillGenerated[0],
+                      openBal[0]
                     ),
                   }
                 );
@@ -180,7 +201,9 @@ const MultipleReceipt = () => {
             intApplOn: item.data.intAppliedAmt,
             balance: calculateOutstanding(
               filteredRec[0],
-              filteredBillGenerated[0]
+              filteredBillGenerated[0],
+              openBal[0]
+
             ),
             // filteredRec.length > 0
             //   ? filteredRec[0].balance

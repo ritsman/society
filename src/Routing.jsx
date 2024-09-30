@@ -50,6 +50,19 @@ import Approval from "./Pages/Member/Approval";
 import SocietyForm from "./Pages/Societies/Profile/Profile";
 import PrintBills from "./Pages/Report/PrintBills";
 import MemberReceipt from "./Pages/Report/MemberReceipt"
+import AdminPage from "./SuperAdmin/AdminPage";
+import { useAuth } from "./hooks/useAuth";
+
+import { Navigate } from "react-router-dom";
+
+const ProtectedRoute = ({ allowedRole, children }) => {
+  const { userDetails } = useAuth();
+  console.log(userDetails,"user Details")
+   if (userDetails && userDetails.role !== allowedRole) {
+     return <Navigate to="/" />; // Redirect if role doesn't match
+   }
+  return userDetails ? children : null;
+};
 
 const router = createBrowserRouter([
   {
@@ -63,6 +76,22 @@ const router = createBrowserRouter([
   {
     path: "/reset-password/:token",
     element: <ResetPassword />,
+  },
+  {
+    path: "/adminPage",
+    element: (
+      <ProtectedRoute allowedRole="superAdmin">
+        <AdminPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/adminPage/approval",
+    element: (
+      <ProtectedRoute allowedRole="superAdmin">
+        <Approval />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/",
@@ -84,10 +113,7 @@ const router = createBrowserRouter([
         path: "/member/profile",
         element: <Profile />,
       },
-      {
-        path: "/member/approval",
-        element: <Approval />,
-      },
+        
       {
         path: "/member/memTransactions",
         element: <MemberTrasaction />,

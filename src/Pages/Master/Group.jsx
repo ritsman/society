@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import config from "../../config";
 
 const header = ["Code", "Group", "Under"];
 const Group = () => {
@@ -126,7 +127,7 @@ const Group = () => {
 
   const [groupData, setGroupData] = useState([]);
   useEffect(() => {
-    fetch(" https://a3.arya-erp.in/api2/socapi/api/master/getgroup")
+    fetch( `${config.API_URL}/api/master/getgroup`)
       .then((response) => response.json())
       .then((data) => setGroupData(data));
   }, []);

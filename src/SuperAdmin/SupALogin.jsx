@@ -1,93 +1,34 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {  useState } from "react";
+import {useNavigate} from "react-router-dom"
 import axios from "axios";
-import { useAuth } from "../../../hooks/useAuth.js";
-import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { Loader } from "semantic-ui-react";
-import config from "../../../config.jsx";
 
-const isValidToken = (token) => {
-  try {
-    const decoded = jwtDecode(token);
-    const currentTime = Date.now() / 1000;
-    return decoded.exp > currentTime; // Check if token is expired
-  } catch (error) {
-    return false;
-  }
-};
-
-export const getCurrentUser = () => {
-  const token = localStorage.getItem("SocToken");
-  if (token && isValidToken(token)) {
-    console.log("valid token");
-    return token;
-  }
-  return null;
-};
-
-const LoginPage = () => {
-  const [email, setEmail] = useState("");
+const SupLogin = () => {
+  const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-
-  const { userDetails, setUserDetails, setIsAuthenticated, setIsAdmin } =
-    useAuth();
-
   const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log(userDetails);
-  }, [userDetails]);
-
-  function setLocalStorage(token, name) {
-    localStorage.setItem("SocToken", token);
-    localStorage.setItem("SocUser", name);
-  }
-
-  async function handleSubmit(e) {
+async function handleSubmit(e) {
     e.preventDefault();
     console.log({
-      user: email,
+      user,
       password,
     });
     try {
       let response = await axios.post(
-        `${config.API_URL}/api/auth/login`,
+        "http://localhost:3001/api/superAdmin/login",
         {
-          user: email,
+          user,
           password,
-          superAdmin:false,
         }
       );
 
       console.log(response.data);
-      const authToken = response.data;
-      const decodedToken = parseJwt(authToken);
 
-      if (decodedToken.role == "admin") {
-        setIsAdmin(true);
-      } else {
-        setIsAdmin(false);
-      }
-
-      setUserDetails({
-        name: decodedToken.name,
-        userName: decodedToken.user,
-        id: decodedToken._id,
-        role: decodedToken.role,
-      });
-      console.log(decodedToken);
-      setIsAuthenticated(true);
-      setLocalStorage(authToken, decodedToken.name);
-     
-      toast.success("successfully Logged In");
-      if(decodedToken.role == "superAdmin"){
-        navigate("/adminPage")
-      }else{
-      navigate("/adminPage");
-
-      }
+       toast.success("successfully Logged In");
+       navigate("/adminPage")
+    
     } catch (error) {
       console.log("login error", error);
       if (error.response) {
@@ -98,24 +39,18 @@ const LoginPage = () => {
     }
   }
 
-  const parseJwt = (token) => {
-    try {
-      return JSON.parse(atob(token.split(".")[1]));
-    } catch (error) {
-      return {};
-    }
-  };
 
-  function handleSignup() {
-    navigate("signup");
-  }
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gray-600">
       <div className="w-full md:pt-24  pb-0 max-w-md">
         <div className="bg-gray-800 shadow-md rounded-xl md:px-8 px-4  pb-10 mb-4">
+          <h1 className="text-2xl  py-5 font-extrabold text-gray-100 text-center mb-6 tracking-wide">
+            Super Admin Login
+          </h1>
+
           <form onSubmit={handleSubmit}>
-            <div className=" flex items-center justify-center pt-10">
+            <div className=" flex items-center justify-center pt-2">
               <div className="bg-gray-900 rounded-lg shadow-lg p-8">
                 <div className="flex items-center justify-center mb-6">
                   <div className="bg-gray-700 rounded-full w-20 h-20 flex items-center justify-center">
@@ -154,9 +89,9 @@ const LoginPage = () => {
                       </svg>
                       <input
                         type="text"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value.toLowerCase())}
+                        placeholder="User "
+                        value={user}
+                        onChange={(e) => setUser(e.target.value.toLowerCase())}
                         className="bg-gray-800 text-gray-400 placeholder-gray-500 focus:outline-none w-full"
                       />
                     </div>
@@ -186,23 +121,7 @@ const LoginPage = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="form-checkbox text-gray-600 h-3 w-3"
-                      />
-                      <label className="ml-2 text-gray-400 text-sm">
-                        Remember me
-                      </label>
-                    </div>
-                    <Link
-                      to="/forgot-password"
-                      className="text-gray-500 text-sm hover:text-gray-400"
-                    >
-                      Forgot Password?
-                    </Link>
-                  </div>
+
                   <button className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full">
                     LOGIN
                   </button>
@@ -210,19 +129,10 @@ const LoginPage = () => {
               </div>
             </div>
           </form>
-          <div className=" text-center">
-            <span className="text-gray-600">Don't have an account?</span>{" "}
-            <Link
-              to="/signup"
-              className="text-indigo-500 hover:text-indigo-700 font-semibold"
-            >
-              Register here
-            </Link>
-          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default SupLogin;

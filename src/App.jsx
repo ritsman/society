@@ -8,6 +8,7 @@ import Sidebar from "./Pages/SideBar/SideBar.jsx";
 import Breadcrumbs from "./components/BreadCrumps.jsx";
 import { useAuth } from "./hooks/useAuth.js";
 import LoginPage, { getCurrentUser } from "./Pages/Authentication/Login/Login";
+import SupLogin from "../src/SuperAdmin/SupALogin.jsx"
 
 function App() {
   const [activeItem, setActiveItem] = useState("dashboard");
@@ -98,8 +99,8 @@ function App() {
 export default App;
 
 export const Logged = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, } = useAuth();
   let logged = getCurrentUser();
 
-  return <>{logged ? <App /> : <LoginPage />}</>;
+  return <>{logged ? <App /> :<LoginPage/>}</>;
 };

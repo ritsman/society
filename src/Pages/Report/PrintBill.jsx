@@ -303,7 +303,7 @@ const PrintBill = () => {
       startY += 5;
       doc.setFont("helvetica", "bold");
       doc.text("Total", 22, startY);
-      doc.text(bill.netAmt.toFixed(2), 180, startY, { align: "right" });
+      doc.text(Number(bill.netAmt).toFixed(2), 180, startY, { align: "right" });
       doc.setFont("helvetica", "normal");
 
       startY += 5;
@@ -317,7 +317,7 @@ const PrintBill = () => {
       const grandTotal = bill.netAmt + bill.prevBalance;
       doc.setFont("helvetica", "bold");
       doc.text("Grand total", 22, startY);
-      doc.text(grandTotal.toFixed(2), 180, startY, { align: "right" });
+      doc.text(Number(grandTotal).toFixed(2), 180, startY, { align: "right" });
       doc.setFont("helvetica", "normal");
 
       startY += 5;
@@ -401,7 +401,7 @@ const PrintBill = () => {
     startY += 5;
     doc.setFont("helvetica", "bold");
     doc.text("Total", 22, startY);
-    doc.text(bill.netAmt.toFixed(2), 180, startY, { align: "right" });
+    doc.text(Number(bill.netAmt).toFixed(2), 180, startY, { align: "right" });
     doc.setFont("helvetica", "normal");
 
     startY += 5;
@@ -415,7 +415,7 @@ const PrintBill = () => {
     const grandTotal = bill.netAmt + bill.prevBalance;
     doc.setFont("helvetica", "bold");
     doc.text("Grand total", 22, startY);
-    doc.text(grandTotal.toFixed(2), 180, startY, { align: "right" });
+    doc.text(Number(grandTotal).toFixed(2), 180, startY, { align: "right" });
     doc.setFont("helvetica", "normal");
 
     startY += 5;

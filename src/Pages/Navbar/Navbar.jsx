@@ -15,6 +15,7 @@ const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
     let token = parseJwt(tkn);
     let userName = localStorage.getItem("SocUser");
     setUser(userName);
+    console.log(token)
     setUserDetails(token);
   }, [user]);
 
@@ -33,7 +34,7 @@ const NavBar = ({ activeItem, setVisible, visible, handleItemClick }) => {
     setIsAuthenticated(false);
     localStorage.removeItem("SocToken");
     localStorage.removeItem("SocToken");
-    // toast.success("User Logged Out");
+    toast.success("User Logged Out");
     navigate("/");
   }
 

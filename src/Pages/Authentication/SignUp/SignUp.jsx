@@ -3,10 +3,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import config from "../../../config";
 
 const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [societyName , setSocietyName] = useState("");
+  const [societyId , setSocietyId] = useState("")
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -28,10 +31,12 @@ const SignUp = () => {
     } else {
       try {
         let response = await axios.post(
-          "http://localhost:3001/api/auth/register",
+          `${config.API_URL}/api/auth/register`,
           {
             name: name,
             user: email,
+            societyId : societyId,
+            societyName : societyName,
             password: password,
           }
         );
@@ -119,7 +124,53 @@ const SignUp = () => {
                   />
                 </div>
               </div>
-              <div className="mb-4">
+              <div className="mb-4 flex flex-col gap-4">
+                <div className="flex items-center bg-gray-800 rounded-md px-3 py-2">
+                  <svg
+                    className="text-gray-400 w-5 h-5 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    value={societyName}
+                    onChange={(e) => setSocietyName(e.target.value)}
+                    placeholder="Society Name"
+                    className="bg-gray-800 text-gray-400 placeholder-gray-500 focus:outline-none w-full"
+                  />
+                </div>
+                <div className="flex items-center bg-gray-800 rounded-md px-3 py-2">
+                  <svg
+                    className="text-gray-400 w-5 h-5 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    value={societyId}
+                    onChange={(e) => setSocietyId(e.target.value)}
+                    placeholder="Society Id"
+                    className="bg-gray-800 text-gray-400 placeholder-gray-500 focus:outline-none w-full"
+                  />
+                </div>
                 <div className="flex items-center bg-gray-800 rounded-md px-3 py-2">
                   <svg
                     className="text-gray-400 w-5 h-5 mr-2"

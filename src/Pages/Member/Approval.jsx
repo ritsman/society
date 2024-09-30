@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import config from "../../config";
+import { Link } from "react-router-dom";
 
 const Approval = () => {
   const [users, setUsers] = useState([]);
@@ -22,7 +23,7 @@ const Approval = () => {
         }
       );
       const filteredActiveUsers = response.data.data.filter(
-        (user) => user.user !== "admin@gmail.com"
+        (user) => user.user !== "supadmin@gmail.com"
       );
       setUsers(filteredActiveUsers);
     } catch (error) {
@@ -37,7 +38,7 @@ const Approval = () => {
       toast.error("Please select a role before approving.");
       return;
     }
-
+      console.log(selectedRole,"selected role")
     try {
       await axios.post(
         `${config.API_URL}/api/auth/approve-user/${userId}`,
@@ -79,7 +80,14 @@ const Approval = () => {
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Admin Dashboard</h1>
+      <div className="flex justify-between">
+        <p className="text-3xl font-bold mb-4">Approval Dashboard</p>
+        <Link to="/adminPage">
+          <button className=" border-2 px-3 py-2 bg-gray-300 rounded-md font-bold">
+            Back
+          </button>
+        </Link>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
@@ -87,6 +95,7 @@ const Approval = () => {
             <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
               <th className="py-3 px-6 text-left">Username</th>
               <th className="py-3 px-6 text-left">Email</th>
+              <th className="py-3 px-6 text-left">Society</th>
               <th className="py-3 px-6 text-center">Status</th>
               <th className="py-3 px-6 text-center">Role</th>
               <th className="py-3 px-6 text-center">Actions</th>
@@ -106,6 +115,9 @@ const Approval = () => {
                   </td>
                   <td className="py-3 px-6 text-left">
                     <span>{user.user}</span>
+                  </td>
+                  <td className="py-3 px-6 text-left">
+                    <span>{user.societyName}</span>
                   </td>
                   <td className="py-3 px-6 text-center">
                     <span
