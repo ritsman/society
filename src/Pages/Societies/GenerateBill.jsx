@@ -255,25 +255,28 @@ const GenerateBill = () => {
           console.log(billObj)
 
        const getPrevDue = () => {
-         if (openBal[0]?.total === 0) {
-           if(billObj.data.ownerName == "Vaibhav dwivedi"){
-            console.log(billData)
-           }
+        console.log(openBal[0]?.total)
+         if (openBal[0]?.total == 0) {
+           console.log("line no 259")
            return billObj?.data?.prevDue || 0;
          }
 
          if (billObj?.data) {
-           if (billObj.data.total === 0) {
+          console.log("line no 264")
+           if (billObj.data.prevDue == 0) {
+            console.log("line no 266")
              // If billObj[0].data.total is 0, check openBal
              return openBal[0]?.total || 0;
            } else {
+            console.log("line no 270")
              // Return billObj[0].data.prevDue if total is not 0
              return billObj.data.prevDue;
            }
          }
 
          // If billObj or billObj[0].data is not available, check openBal
-         return openBal[0]?.total || 0;
+         console.log("line no 277")
+         return openBal[0]?.total != 0 ? openBal[0]?.total : 0;
        };
 
 
@@ -286,6 +289,7 @@ const GenerateBill = () => {
             flatNo: item.flatNo,
             ownerName: item.name,
             prevDue: getPrevDue(),
+
             // Fixed intAppliedAmt calculation
             intAppliedAmt: 0,
 
@@ -301,14 +305,21 @@ const GenerateBill = () => {
                   : "0", // Default to "0" if not found
             })),
             total:
-              billObj && billObj.data.total ? calculateTotal2(billObj.data) : 0, // Calculate total if bill data exists
+              billObj && billObj.data
+                ? calculateTotal2(billObj.data, getPrevDue())
+                : 0, // Calculate total if bill data exists
           };
-          arr.push(obj);
+          arr.push(obj);                        
         });
         setGridRow(arr);
         setFilteredData(arr);
       });
-  }, [heads, billData]);
+  }, [heads, billData,openingBal]);
+
+
+  useEffect(()=>{
+       
+  },[billData])
 
   useEffect(() => {
     fetch(`${config.API_URL}/api/master/getBillHeads`)
@@ -512,7 +523,7 @@ const GenerateBill = () => {
   };
 
 
-  const calculateTotal2 = (row) => {
+  const calculateTotal2 = (row,prevDue) => {
     console.log(row);
     if (row && row.head && Array.isArray(row.head)) {
       let total = row.head.reduce(
@@ -520,7 +531,7 @@ const GenerateBill = () => {
         0
       );
       console.log(row.prevDue, "previous dueeeee");
-      return (Number(total) + Number(row.prevDue)).toFixed(2);
+      return (Number(total) + Number(prevDue)).toFixed(2);
     }
   };
 
