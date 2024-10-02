@@ -186,7 +186,7 @@ const PrintBill = () => {
             member: item.memberName,
             netAmt: item2.currentBillAmt,
             interest: item2.interest,
-            balance: Number(item2.prevBalance) + Number(item2.currentBillAmt),
+            balance:  Number(item2.currentBillAmt),
             prevBalance: Number(item2.prevBalance),
           };
         });
