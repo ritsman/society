@@ -14,6 +14,8 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
   const [head, setHead] = useState([]);
   const [headValues, setHeadValues] = useState([]);
   const [tableRow , setTableRow] = useState([]);
+  const [openingBal, setOpeningBal] = useState([]);
+
 
   function generateShortUUID() {
     return uuidv4().replace(/-/g, "").slice(0, 8);
@@ -26,51 +28,59 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
   const calculateInterest = (data) => {
     return data.map((item) => {
       console.log(item.date)
+       let openBal = openingBal.filter(e=>e.id == item.memberId);
+
        console.log(item.interestAfter);
       if (item.interestAfter) {
-        const date = item.date ? new Date(item.date) : new Date();
-        console.log(date);
-        console.log(item.interestAfter);
-        const interestAfter = new Date(item.interestAfter);
-                console.log(interestAfter);
+        console.log(item.billDate, "billDate");
 
+        const date = item.date ? new Date(item.date) : new Date();
+        const interestAfter = new Date(item.interestAfter);
+        const billDate = new Date(item.billDate)
         const differenceInTime = date.getTime() - interestAfter.getTime();
+        const differenceInTimes = date.getTime() - billDate.getTime();
         const differenceInDays = Math.ceil(
           differenceInTime / (1000 * 3600 * 24)
         );
-        console.log(differenceInDays ,item.intRebate , item.balance , item.isFlatInt, "diff in dayssssss")
+       const differenceInDay = Math.ceil(
+         differenceInTimes / (1000 * 3600 * 24)
+       );
         const differenceInMonths =
           (date.getFullYear() - interestAfter.getFullYear()) * 12 +
           (date.getMonth() - interestAfter.getMonth());
         let interest = 0;
         if (item.isFlatInt && item.flatInt > 0) {
-                              console.log(" if condition");
+                             
 
           interest = differenceInDays > 0 ? Number(item.flatInt) : 0;
         } else if (
-          item.intMethod == "as per bill days" &&
+          item.intMethod == "as per due date" &&
           !item.isFlatInt &&
           Number(item.intRebate) < Number(item.balance)
         ) {
-                    console.log("else if condition",differenceInDays);
-
-          interest =
-            differenceInDays > 0 ? differenceInDays * item.intPerDay : 0;
-            console.log(interest , "interest")
+             interest = differenceInDays > 0 ? differenceInDays * item.intPerDay : 0;
+            
+        }else if (
+          item.intMethod == "as per bill date" &&
+          !item.isFlatInt &&
+          Number(item.intRebate) < Number(item.balance)
+        ) {
+           interest =
+             differenceInDay > 0 ? differenceInDay * item.intPerDay : 0;
         } else {
           interest =
-            differenceInDays > 0 ? item.intPerMonth * differenceInMonths : 0;
-                      console.log("else condition",interest);
-
+            differenceInMonths > 0 ? item.intPerMonth * differenceInMonths : 0;
         }
-
+          console.log(interest)
         return {
           ...item,
-          interest: Number(interest) + Number(item.intAfterPaid),
+          interest:Number(interest) +Number(item.billInterest)
+             
         };
       } else {
         console.log("due date not exist")
-        return { ...item, interest: 0 };
+        return { ...item, interest: openBal.length > 0
+              ? Number(openBal[0].interest) :0 };
       }
     });
   };
@@ -80,7 +90,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
       const updatedData = calculateInterest(receiptData);
       setReceiptData(updatedData);
     }
-  }, []);
+  }, [openingBal]);
 
   useEffect(() => {
     // fetch maintenance head
@@ -171,7 +181,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
                     ref: paymentMethod,
                     date: row.date,
                     particulars: "",
-                    debit: "",
+                    debit: "-",
                     credit: row.amount,
                     billNo: "",
                     mode: "pay",
@@ -278,19 +288,34 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
  }
   }
 
+    useEffect(() => {
+      try {
+        fetch(`${config.API_URL}/api/transaction/getOpeningBalance`)
+          .then((response) => response.json())
+          .then((data) => setOpeningBal(data))
+          .catch((error) => console.error(error));
+      } catch (error) {
+        console.log(error);
+      }
+    }, []);
+
   useEffect(()=>{
       let arr = []
 
       receiptData.forEach((item)=>{
+
         let obj = {
           date: item.date,
           code: item.code,
           name: item.name,
           balance: item.balance,
-          intApplOn: item.balance > 0 ? item.intApplOn : 0,
-          pWithInterest:item.balance > 0 ?  (
-            parseFloat(item.balance) - parseFloat(item.intApplOn)
-          ).toFixed(2) : 0,
+          intApplOn: item.isBillGenerated ? item.intApplOn : 0,
+          pWithoutInterest:
+            item.isBillGenerated
+              ? (parseFloat(item.balance) - parseFloat(item.intApplOn)).toFixed(
+                  2
+                )
+              : 0,
           interest: item.interest.toFixed(2),
           total: (Number(item.balance) + Number(item.interest)).toFixed(2),
           amount: item.amount,
@@ -336,7 +361,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
           { data: "name", width: 150 },
           { data: "balance", readOnly: true, width: 100 },
           { data: "intApplOn", readOnly: true, width: 150 },
-          { data: "pWithInterest", readOnly: true, width: 170 },
+          { data: "pWithoutInterest", readOnly: true, width: 170 },
           { data: "interest", readOnly: true, width: 100 },
           { data: "total", readOnly: true, width: 150 },
           { data: "amount", type: "numeric", width: 100 },

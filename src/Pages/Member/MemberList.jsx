@@ -33,6 +33,7 @@ const template = [
   "systemId",
 ];
 const tableHeads = [
+  { data: "select", type: "checkbox", title: "Select" },
   { data: "name", title: "Name", readOnly: false },
   { data: "registeredMobileNo", title: " Mobile No", readOnly: false },
   { data: "email", title: "Email", readOnly: false },
@@ -47,6 +48,36 @@ const MemberList = () => {
   const [excelFile, setExcelFile] = useState(null);
   const [typeError, setTypeError] = useState(null);
   const [excelData, setExcelData] = useState(null);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [gridRow , setGridRow] = useState([])
+    const [tableRow, setTableRow] = useState([]);
+    const [data, setData] = useState([]);
+    const [head, setHead] = useState([]);
+    const [list, setList] = useState([]);
+    const [column, setColumn] = useState([]);
+    const [column1, setColumn1] = useState([]);
+    const [tableRow1, setTableRow1] = useState([]);
+    const [isEdited, setIsEdited] = useState([]);
+
+     const handleSearch = (event) => {
+       const trimmedSearchTerm = event.target.value.toLowerCase();
+       setSearchTerm(trimmedSearchTerm);
+
+       if (trimmedSearchTerm) {
+         setTableRow(
+           gridRow.filter(
+             (row) =>
+               row.name.toLowerCase().includes(trimmedSearchTerm) ||
+               row.flatNo.toString().includes(trimmedSearchTerm)
+           )
+         );
+       } else {
+         setTableRow(gridRow);
+       }
+     };
+
+
 
   const handleUpload = () => {
     setUpload(true);
@@ -103,7 +134,7 @@ const MemberList = () => {
         let result = await axios.post(
           `${config.API_URL}/api/member/postProfile`,
 
-          excelData
+          data
         );
         console.log(result);
         toast.success("successfully data saved");
@@ -113,19 +144,13 @@ const MemberList = () => {
       }
     }
   };
-  console.log(excelData);
-  const [tableRow, setTableRow] = useState([]);
-  const [data, setData] = useState([]);
-  const [head, setHead] = useState([]);
-  const [list, setList] = useState([]);
-  const [column , setColumn] = useState([]);
-  const [column1 , setColumn1] = useState([])
-  const [tableRow1 , setTableRow1] = useState([]);
-  const [isEdited , setIsEdited] = useState([])
+  
+  
 
   useEffect(() => {
     let arr = data.map((item) => {
       return {
+        select: false,
         name: item.name,
         id: item._id,
         registeredMobileNo: item.registeredMobileNo,
@@ -140,6 +165,7 @@ const MemberList = () => {
       };
     });
       console.log(arr)
+      setGridRow(arr)
     setTableRow(arr);
   }, [head, data]);
 
@@ -151,23 +177,24 @@ const MemberList = () => {
 
     // fetch maintenance head
 
-    fetch(`${config.API_URL}/api/master/getHead`)
-      .then((response) => response.json())
-      .then((data) => {
-        tableHead = [];
+   fetch(`${config.API_URL}/api/master/getHead`)
+     .then((response) => response.json())
+     .then((data) => {
+       let tableHead = [];
 
-        data.map((item) => {
-          tableHead.push(item.Header);
-        });
+       if (data.length > 0) {
+         data.map((item) => {
+           tableHead.push(item.Header);
+         });
+       }
 
-        setHead(tableHead);
-        setColumn([...tableHeads]);
-        console.log(column);
-      })
-      .catch((error) => console.error(error));
+       setHead(tableHead);
+       setColumn([...tableHeads]);
+       console.log(column);
+     })
+     .catch((error) => console.error(error));
   }, []);
-  console.log(data);
-  console.log(head);
+
 
   const exportData = data.length > 0 ? data.map((item) => item) : [];
 
@@ -281,6 +308,7 @@ const MemberList = () => {
            
          });
        } else {
+        
          obj[key] = item[key];
        }
      });
@@ -291,13 +319,32 @@ const MemberList = () => {
   },[tableRow])
 
    const handleAfterChange = (changes, source) => {
+  
+    console.log("inside handle after change")
      if (source === "loadData") return; // Skip on data load
 
      // Ensure changes is not empty
      if (changes) {
+
+         changes.forEach(([row, prop, oldValue, newValue]) => {
+           if (prop === "select" && newValue !== oldValue) {
+                         console.log(row);
+
+             const memberId = tableRow1[row].id;
+             setSelectedMembers((prev) =>
+               newValue
+                 ? [...prev, memberId]
+                 : prev.filter((id) => id !== memberId)
+             );
+           }
+         });
        // Only update `isEdited` if there are changes
        const hasChanges = changes.some(
-         ([row, prop, oldValue, newValue]) => oldValue !== newValue
+         
+         ([row, prop, oldValue, newValue]) => {  
+                 console.log("changes has made",newValue);
+
+          return oldValue !== newValue}
        );
 
        // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
@@ -312,12 +359,13 @@ const MemberList = () => {
 
 
    useEffect(() => {
+    console.log(tableRow1)
      const secondArrayMap = new Map();
      tableRow1.forEach((item) => {
        const { id,...heads } = item;
        secondArrayMap.set(id,heads);
      });
-
+       console.log(secondArrayMap)
      // Function to map heads from the second array
      function mapHeadsFromSecondArray(item) {
        const newHeads = secondArrayMap.get(item.id);
@@ -346,9 +394,23 @@ const MemberList = () => {
           return value
      }
 
+  function selectOpt(item, itemName, value) {
+    console.log("selectOpt triggered");
+    const newHeads = secondArrayMap.get(item.id);
+
+    // Ensure that you only update if necessary
+    if (newHeads && newHeads[`${itemName}`] !== value) {
+      return newHeads[`${itemName}`];
+    }
+
+    return value;
+  }
+
+
      // Replace heads in the first array
      const updatedFirstArray = tableRow.map((item) => ({
        ...item,
+       select:selectOpt(item,"select",item.select),
        name: otherValues(item, "name", item.name),
 
        registeredMobileNo: otherValues(
@@ -370,6 +432,76 @@ const MemberList = () => {
      console.log(updatedFirstArray);
      setTableRow(updatedFirstArray);
    }, [isEdited]);
+
+
+    //  const handleAfterSelection = (row, col, row2, col2) => {
+    //    const selectedData = hotTableRef.current.hotInstance.getDataAtRow(row);
+    //          console.log("inside hanlde after selection",selectedData);
+
+    //    const isSelected = selectedData[0];
+    //    const memberId = tableRow1[row].id;
+
+    //    if (isSelected) {
+    //     console.log("is selected")
+    //      setSelectedMembers((prev) => [...prev, { id: memberId }]);
+    //    } else {
+    //     console.log("not selected")
+    //      setSelectedMembers((prev) =>
+    //        prev.filter((member) => member.id !== memberId)
+    //      );
+    //    }
+    //  };
+
+    const handleDelete = async () => {
+      console.log(selectedMembers)
+      try {
+        const response = await axios.post(
+          `${config.API_URL}/api/member/deleteMembers`,
+          {
+            memberIds: selectedMembers,
+          }
+        );
+
+        if (response.status === 200) {
+          toast.success("Successfully deleted selected members");
+
+          // Update frontend by filtering out deleted members from the table
+          const updatedData = data.filter(
+            (member) => !selectedMembers.includes(member.id)
+          );
+          setData(updatedData); // Update the table data
+          setSelectedMembers([]); // Clear selected members after deletion
+
+          // If using Handsontable, reload data into the table
+          if (hotTableRef.current) {
+            hotTableRef.current.hotInstance.loadData(updatedData);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Error deleting members");
+      }
+    };
+
+
+        const handleTick = (rowIndex, isChecked) => {
+          console.log("handle tick called")
+          const updatedRows = [...tableRow1];
+          updatedRows[rowIndex].select = isChecked;
+
+          // const updatedSelectedItems = isChecked
+          //   ? [...selectedItems, filteredData[rowIndex].memberId]
+          //   : selectedItems.filter(
+          //       (id) => id !== filteredData[rowIndex].memberId
+          //     );
+
+          setTableRow1(updatedRows);
+          // setSelectedItems(updatedSelectedItems);
+
+          if (hotTableRef.current) {
+            hotTableRef.current.hotInstance.loadData(updatedRows);
+          }
+        };
 
   return (
     <>
@@ -441,12 +573,34 @@ const MemberList = () => {
         ) : (
           <>
             <div className="px-10">
-              <button
-                onClick={handleSave}
-                className="px-4 py-2 bg-gray-600 rounded-md text-white mb-3"
-              >
-                Save
-              </button>
+              <div className="flex gap-10">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Search by Name and flat no"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className=" w-[300px] px-4 py-1 border rounded"
+                  />
+                </div>
+                <div>
+                  <button
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-gray-600 rounded-md text-white mb-3"
+                  >
+                    Save
+                  </button>
+                </div>
+                <div>
+                  <button
+                    onClick={handleDelete}
+                    className="border border-red-600 hover:bg-gray-600  hover:text-white px-4 py-2 rounded-md "
+                    disabled={selectedMembers.length === 0} // Disable button if no members selected
+                  >
+                    Delete Selected Members
+                  </button>
+                </div>
+              </div>
 
               <div className=" ">
                 <div className="w-full h-full mt-5">
@@ -463,13 +617,15 @@ const MemberList = () => {
                       multiColumnSorting={true}
                       filters={true}
                       afterChange={handleAfterChange}
+                      // afterSelection={handleAfterSelection}
                       dropdownMenu={true}
                       contextMenu={true}
                       autoWrapRow={true}
                       autoWrapCol={true}
+                      observeChanges={true}
                     />
                   ) : (
-                    "loading.."
+                    "No data found !"
                   )}
                 </div>
               </div>

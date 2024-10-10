@@ -85,7 +85,8 @@ const PrintBill = () => {
           billNo:paidEntry.billNo,
           mode:paidEntry.mode,
           billDate:paidEntry.billDate,
-          interest:paidEntry.interest
+          interest:Number(paidEntry.interest1).toFixed(2),
+          balance : Number(item.balance).toFixed(2)
         }))
       );
       setReceiptData(mappedData);
@@ -290,7 +291,10 @@ const generatePDF = (receipt) => {
               <th className="py-3 px-6 text-left">Bill Date</th>
 
               <th className="py-3 px-6 text-left"> Amount</th>
+              <th className="py-3 px-6 text-left"> Interest</th>
               <th className="py-3 px-6 text-left">Paid</th>
+              <th className="py-3 px-6 text-left">Balance</th>
+
               <th className="py-3 px-6 text-left">Mode</th>
               <th className="py-3 px-6 text-left">Paid Date</th>
             </tr>
@@ -312,7 +316,11 @@ const generatePDF = (receipt) => {
                 <td className="py-3 px-6 text-left">{receipt.billDate}</td>
 
                 <td className="py-3 px-6 text-left">{receipt.onBillAmt}</td>
+                <td className="py-3 px-6 text-left">{receipt.interest}</td>
+
                 <td className="py-3 px-6 text-left">{receipt.paid}</td>
+                <td className="py-3 px-6 text-left">{receipt.balance}</td>
+
                 <td className="py-3 px-6 text-left">{receipt.mode}</td>
 
                 <td className="py-3 px-6 text-left">{receipt.date}</td>

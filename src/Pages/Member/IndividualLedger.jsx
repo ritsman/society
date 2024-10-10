@@ -227,8 +227,11 @@ const IndividualLedger = () => {
   const [filteredLedger, setFilteredLedger] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [openingBal, setOpeningBal] = useState([]);
+
 
   useEffect(() => {
+    console.log(member,"member")
     setIndiMember(member);
   }, [member]);
 
@@ -246,6 +249,25 @@ const IndividualLedger = () => {
     }
     fetch();
   }, []);
+
+
+     useEffect(() => {
+       try {
+         fetch(`${config.API_URL}/api/transaction/getOpeningBalance`)
+           .then((response) => response.json())
+           .then((data) => {
+             let openBal = data.filter((e) => e.id == indiMember._id);
+             setOpeningBal(openBal);
+           })
+           .catch((error) => console.error(error));
+       } catch (error) {
+         console.log(error);
+       }
+     }, [indiMember._id]);
+
+     useEffect(()=>{
+       console.log(openingBal)
+     },[openingBal])
 
   useEffect(() => {
     fetchLedger();
@@ -391,11 +413,22 @@ const generateAndOpenPDF = () => {
                 Credit
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                 Balance
+                Balance
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
+            <tr>
+              <td className="border px-4 py-2">-</td>
+              <td className="border px-4 py-2">-</td>
+              <td className="border px-4 py-2 text-sm">OPENING BALANCE B/F</td>
+              <td className="border px-4 py-2 "></td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2"></td>
+              <td className="border px-4 py-2 text-sm">
+                {openingBal.length > 0 ? Number(openingBal[0].total) : 0}
+              </td>
+            </tr>
             {filteredLedger &&
               filteredLedger.map((transaction) => (
                 <tr
@@ -417,16 +450,17 @@ const generateAndOpenPDF = () => {
                     {transaction.particulars}
                   </td>
                   <td className="px-6 border py-4 whitespace-nowrap text-sm ">
-                    {Number(transaction.debit).toFixed(2)}
+                    {transaction.debit}
                   </td>
                   <td className="px-6 border py-4 whitespace-nowrap text-sm ">
-                    {Number(transaction.credit).toFixed(2)}
+                    {transaction.credit}
                   </td>
                   <td className="px-6 border py-4 whitespace-nowrap text-sm ">
                     {Number(transaction.balance).toFixed(2)}
                   </td>
                 </tr>
               ))}
+         
           </tbody>
         </table>
       </div>

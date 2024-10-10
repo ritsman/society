@@ -31,6 +31,7 @@ const GenerateBill = () => {
   const [tableRows, setTableRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [openingBal , setOpeningBal] = useState([]);
+  const [billGenerated , setBillGenerated] = useState([])
 
   const hotTableRef = useRef(null);
   registerAllModules();
@@ -39,12 +40,12 @@ const GenerateBill = () => {
     setFilteredData(gridRow);
   }, []);
 
-  useEffect(() => {
-    console.log(filteredData);
-  }, [filteredData, searchTerm]);
+  // useEffect(() => {
+  //   console.log(filteredData);
+  // }, [filteredData, searchTerm]);
 
   const handleSearch = (event) => {
-    const trimmedSearchTerm = event.target.value.trim().toLowerCase();
+    const trimmedSearchTerm = event.target.value.toLowerCase();
     setSearchTerm(trimmedSearchTerm);
 
     if (trimmedSearchTerm) {
@@ -102,7 +103,6 @@ const GenerateBill = () => {
         arr.push(key);
       }
     });
-    console.log(arr);
     setSelectedItems(arr);
   };
 
@@ -119,7 +119,6 @@ const GenerateBill = () => {
         arr.push(key);
       }
     });
-    console.log(arr);
     setSelectedItems(arr);
   };
  let headerss = [
@@ -151,61 +150,68 @@ const GenerateBill = () => {
             });
           }
            else {
-            if(key == "email"){
-                 let obj = {
-                   data: key,
-                   title: "Email",
-                   width: 150,
-                   readOnly: true,
-                 };
-                 col.push(obj);
-            }else if (key == "wingNo"){
-                  let obj = {
-                    data: key,
-                    title: "Wing No",
-                    width: 150,
-                    readOnly: true,
-                  };
-                  col.push(obj);
-            }else if(key == "flatNo"){
-               let obj = {
-                 data: key,
-                 title: "Flat No",
-                 width: 150,
-                 readOnly: true,
-               };
-               col.push(obj);
-            }else if(key == "ownerName"){
-                 let obj = {
-                   data: key,
-                   title: "Owner Name",
-                   width: 150,
-                   readOnly: true,
-                 };
-                 col.push(obj);
-            }else if(key == "total"){
-               let obj = {
-                 data: key,
-                 title: "Total",
-                 width: 150,
-                 readOnly: true,
-               };
-               col.push(obj);
-            }else if(key == "prevDue"){
-                 let obj = {
-                   data: key,
-                   title: "Prev. Due",
-                   width: 150,
-                   readOnly: true,
-                 };
-                 col.push(obj);
+            if (key == "email") {
+              let obj = {
+                data: key,
+                title: "Email",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
+            } else if (key == "wingNo") {
+              let obj = {
+                data: key,
+                title: "Wing No",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
+            } else if (key == "flatNo") {
+              let obj = {
+                data: key,
+                title: "Flat No",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
+            } else if (key == "ownerName") {
+              let obj = {
+                data: key,
+                title: "Owner Name",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
+            } else if (key == "total") {
+              let obj = {
+                data: key,
+                title: "Total",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
+            } else if (key == "prevDue") {
+              let obj = {
+                data: key,
+                title: "Prev. Due",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
+            } else if (key == "interest") {
+              let obj = {
+                data: key,
+                title: "Interest",
+                width: 150,
+                readOnly: true,
+              };
+              col.push(obj);
             }
            
           }
       });
     }
 
-    console.log(col);
 
     setColumn(col);
     let arr = [];
@@ -224,7 +230,6 @@ const GenerateBill = () => {
       });
       arr.push(obj);
     });
-    console.log(arr);
     setTableRows(arr);
   }, [filteredData]);
 
@@ -239,6 +244,21 @@ const GenerateBill = () => {
     }
   },[])
 
+   useEffect(() => {
+     fetchGenBill();
+   }, []);
+
+   const fetchGenBill = async () => {
+     try {
+       let result = await axios.get(
+         `${config.API_URL}/api/society/getGeneratedBills`
+       );
+       setBillGenerated(result.data.data);
+     } catch (error) {
+       console.log(error);
+     }
+   };
+
   useEffect(() => {
     fetch(`${config.API_URL}/api/member/getMemberList`)
       .then((response) => response.json())
@@ -247,36 +267,33 @@ const GenerateBill = () => {
         let arr = [];
         data.forEach((item, index) => {
           let openBal = openingBal.filter((ele)=>ele.id == item._id);
+          let billGen = billGenerated.filter((ele)=>ele.memberId == item._id)
 
           let billObj = billData.find(
             (row) =>
               row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
           );
-          console.log(billObj)
 
        const getPrevDue = () => {
-        console.log(openBal[0]?.total)
-         if (openBal[0]?.total == 0) {
-           console.log("line no 259")
+         if (openBal[0]?.total === 0) {
+           if(billObj.data.ownerName == "Vaibhav dwivedi"){
+            console.log(billData)
+           }
            return billObj?.data?.prevDue || 0;
          }
 
          if (billObj?.data) {
-          console.log("line no 264")
-           if (billObj.data.prevDue == 0) {
-            console.log("line no 266")
+           if (billObj.data.total === 0) {
              // If billObj[0].data.total is 0, check openBal
              return openBal[0]?.total || 0;
            } else {
-            console.log("line no 270")
              // Return billObj[0].data.prevDue if total is not 0
              return billObj.data.prevDue;
            }
          }
 
          // If billObj or billObj[0].data is not available, check openBal
-         console.log("line no 277")
-         return openBal[0]?.total != 0 ? openBal[0]?.total : 0;
+         return openBal[0]?.total || 0;
        };
 
 
@@ -289,7 +306,6 @@ const GenerateBill = () => {
             flatNo: item.flatNo,
             ownerName: item.name,
             prevDue: getPrevDue(),
-
             // Fixed intAppliedAmt calculation
             intAppliedAmt: 0,
 
@@ -304,22 +320,17 @@ const GenerateBill = () => {
                       ?.value
                   : "0", // Default to "0" if not found
             })),
+            currentBillAmt: 0,
+
             total:
-              billObj && billObj.data
-                ? calculateTotal2(billObj.data, getPrevDue())
-                : 0, // Calculate total if bill data exists
+              billObj && billObj.data.total ? calculateTotal2(billObj.data) : 0, // Calculate total if bill data exists
           };
           arr.push(obj);                        
         });
         setGridRow(arr);
         setFilteredData(arr);
       });
-  }, [heads, billData,openingBal]);
-
-
-  useEffect(()=>{
-       
-  },[billData])
+  }, [heads, billData]);
 
   useEffect(() => {
     fetch(`${config.API_URL}/api/master/getBillHeads`)
@@ -474,7 +485,6 @@ const GenerateBill = () => {
         // );
 
         // Return updated item with calculated values
-        console.log("calculate int applied function", intAppliedAmt);
 
         return { ...item, intAppliedAmt };
       });
@@ -489,21 +499,24 @@ const GenerateBill = () => {
 
   useEffect(() => {
     if (isSave) {
-      console.log("Filtered data after state update:", filteredData);
       handleSaveToAPI();
     }
   }, [filteredData, isSave]); // Dependency on both filteredData and isSave
 
   // Function to handle saving the data
-  const handleSave = async () => {
-    try {
-      await calculateIntAppliedAmtAndTotal();
-      setIsSave(true); // This will trigger the useEffect to call the API after state update
-    } catch (error) {
-      console.error("Error in calculation:", error);
-      toast.error("Error in saving data");
-    }
-  };
+ const handleSave = async () => {
+   try {
+     const intAppliedAmtResult = await calculateIntAppliedAmtAndTotal();
+     console.log("intAppliedAmtResult:", intAppliedAmtResult); // Check what is being returned
+     const headsResult = await calculateHeads2(intAppliedAmtResult);
+     console.log("headsResult:", headsResult); // Check the second function return value
+     setIsSave(true); // This will trigger the useEffect to call the API after state update
+   } catch (error) {
+     console.error("Error in calculation:", error);
+     toast.error("Error in saving data");
+   }
+ };
+
 
   // Function to handle the API call
   const handleSaveToAPI = async () => {
@@ -513,8 +526,12 @@ const GenerateBill = () => {
         filteredData
       );
       console.log("API response:", res);
-      toast.success("Data Successfully Saved");
       setIsSave(false); // Reset save flag
+      toast.success("Data Successfully Saved");
+         setTimeout(() => {
+           window.location.reload();
+         }, 1000);
+
     } catch (error) {
       console.error("API error:", error);
       toast.error("Error in saving data");
@@ -523,7 +540,7 @@ const GenerateBill = () => {
   };
 
 
-  const calculateTotal2 = (row,prevDue) => {
+  const calculateTotal2 = (row) => {
     console.log(row);
     if (row && row.head && Array.isArray(row.head)) {
       let total = row.head.reduce(
@@ -531,13 +548,12 @@ const GenerateBill = () => {
         0
       );
       console.log(row.prevDue, "previous dueeeee");
-      return (Number(total) + Number(prevDue)).toFixed(2);
+      return (Number(total) + Number(row.prevDue)).toFixed(2);
     }
   };
 
 const calculateTotal = (row) => {
   console.log("calculateTotal invoked");
-  console.log("Row data:", row);
 
   const excludeKeys = [
     "isSelected",
@@ -549,14 +565,12 @@ const calculateTotal = (row) => {
     "ownerName",
     "total",
     "intAppliedAmt",
+    "currentBillAmt",
   ];
 
   let total = Object.keys(row).reduce((accumulatedTotal, key) => {
     if (!excludeKeys.includes(key)) {
       const value = Number(row[key]);
-      console.log(
-        `Processing key: ${key}, Value: ${row[key]}, Parsed: ${value}`
-      ); // Log each key and its value
 
       // Check if value is a number and not NaN
       if (!isNaN(value)) {
@@ -567,7 +581,6 @@ const calculateTotal = (row) => {
   }, 0);
 
   const formattedTotal = total.toFixed(2); // Format total to two decimal places
-  console.log("Total calculated:", formattedTotal);
   return formattedTotal;
 };
 
@@ -650,15 +663,26 @@ const calculateTotal = (row) => {
       }
       return item.total;
     }
+
+    const updateCurrBill = (item) =>{
+      const newHeads = secondArrayMap.get(item.id);
+              console.log(newHeads, "newHeads");
+
+      if (newHeads) {
+        console.log(newHeads,"newHeads")
+      return newHeads.currentBillAmt;
+      }
+       return item.currentBillAmt;
+    }
     // Replace heads in the first array
     const updatedFirstArray = filteredData.map((item) => ({
       ...item,
+      currentBillAmt: updateCurrBill(item),
       isSelected: updateSelect(item),
-      total:updateTotal(item),
+      total: updateTotal(item),
       head: mapHeadsFromSecondArray(item),
     }));
 
-    console.log(updatedFirstArray);
     setFilteredData(updatedFirstArray);
   }, [isEdited]);
 
@@ -698,16 +722,17 @@ const calculateTotal = (row) => {
 
       // Update `isEdited` if the source is 'edit' or 'paste' and there are changes
       if (hasChanges) {
-         console.log("value changed", tableRows);
         const updatedRows = tableRows.map((row, index) => {
           // Use rowIndex from changes instead of row
           const changedRow = changes.find(([rowIndex]) => rowIndex === index);
           if (changedRow) {
-            return { ...row, total: calculateTotal(row) }; // Recalculate total for the modified row
+            let curr = calculateHeads(row) 
+            console.log("curyyy",curr)
+            return { ...row, total: calculateTotal(row), currentBillAmt: curr }; // Recalculate total for the modified row
           }
           return row;
         });
-          console.log("calculate total function called",updatedRows)
+        console.log(updatedRows,"updated rowwsss")
           setTableRows(updatedRows)
         setIsEdited(tableRows);
        
@@ -745,6 +770,8 @@ const calculateTotal = (row) => {
           selectedItems={selectedItems}
           isSave={isSave}
           handleBillSave = {handleSave}
+          setFilteredData = {setFilteredData}
+          filteredData = {filteredData}
         />
       </div>
       <div
@@ -760,11 +787,11 @@ const calculateTotal = (row) => {
                 placeholder="Search by Owner Name"
                 value={searchTerm}
                 onChange={handleSearch}
-                className="w-[40%] px-4 py-1 border rounded"
+                className="w-[40%] px-4 py-1 border  rounded"
               />
               <button
                 onClick={handleSave}
-                className=" px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-600"
+                className=" px-4 py-2  bg-gray-800 text-white rounded hover:bg-gray-600"
               >
                 Save
               </button>

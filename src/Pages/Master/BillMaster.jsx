@@ -216,7 +216,8 @@ useEffect(() => {
             }`}
           >
             <option value=""></option>
-            <option value="as per bill days">As per bill days</option>
+            <option value="as per bill date">As per bill date</option>
+            <option value="as per due date">As per due date</option>
             <option value="as per bill month">As per bill month</option>
           </select>
         </div>

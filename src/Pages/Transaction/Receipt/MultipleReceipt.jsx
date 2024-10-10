@@ -60,7 +60,7 @@ const MultipleReceipt = () => {
      Object.keys(filteredBillGenerated).length === 0
    ) {
        if(openBal && openBal.total != 0){
-        return openBal.total;
+        return openBal.principal;
        }
        console.log(openBal,"openBal")
        return 0;
@@ -74,6 +74,7 @@ const MultipleReceipt = () => {
 
    if (!bill) {
      // Return 0 if no bill is found
+     console.log("here",bill)
      return 0;
    }
 
@@ -82,11 +83,19 @@ const MultipleReceipt = () => {
    // If filteredRec is empty, return the current bill amount
    if (!filteredRec || !filteredRec.paid || filteredRec.paid.length === 0) {
      console.log("bill", bill);
-     return bill.currentBillAmt;
+     return  Number(bill.outstandingBal) + Number(bill.openingPrincipal);
+       
+   }
+
+   if(bill.billDate > filteredRec.paid[filteredRec.paid.length-1].date){
+         return Number(bill.outstandingBal) + Number(bill.openingPrincipal);
+
+   }else{
+            return Number(filteredRec.balance).toFixed(2);
+
    }
 
    // Return the outstanding balance, fixed to 2 decimal places
-   return Number(filteredRec.balance).toFixed(2);
  }
 
        
@@ -145,6 +154,56 @@ const MultipleReceipt = () => {
           }
           updateDue();
 
+          const calBillDate = ()=>{
+              if (filteredRec.length > 0) {
+                if (
+                  filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
+                  filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].billDate
+                ) {
+                  return filteredRec[0].paid[filteredRec[0].paid.length - 1]
+                    .date;
+                } else {
+                  return filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].billDate;
+                }
+              } else {
+                if (filteredBillGenerated.length > 0) {
+                  return filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].billDate;
+                } else {
+                  return null;
+                }
+              }
+          }
+
+          const calInterestAfter = ()=>{
+             if( filteredRec.length > 0 ){
+                if(filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
+                  filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].dueDate){
+                    return filteredRec[0].paid[filteredRec[0].paid.length - 1]
+                      .date
+                  }else{
+                  return  filteredBillGenerated[0].billDetails[
+                      filteredBillGenerated[0].billDetails.length - 1
+                    ].dueDate;
+                  }
+             }else{
+              if(filteredBillGenerated.length > 0){
+                   return filteredBillGenerated[0].billDetails[
+                     filteredBillGenerated[0].billDetails.length - 1
+                   ].dueDate;
+              }else{
+                return null
+              }
+             }
+          }
+
           // end of update previous due
 
           console.log(filteredRec);
@@ -160,22 +219,25 @@ const MultipleReceipt = () => {
             chequeDate: null,
             bank: null,
             branch: null,
+            billInterest:
+              filteredBillGenerated.length > 0 &&
+              filteredBillGenerated[0].billDetails &&
+              filteredBillGenerated[0].billDetails.length > 0
+                ? filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].interest
+                : 0,
             intRebate: intRebate,
             intPerDay: (item.data.intAppliedAmt * (interstRate / 100)) / 30,
             intPerMonth: item.data.intAppliedAmt * (interstRate / 100),
             intMethod: intMethod,
             flatInt: flatInt,
             isFlatInt: isFlatInt,
-           intAfterPaid: filteredRec?.[0]?.paid?.length 
-  ? filteredRec[0].paid[filteredRec[0].paid.length - 1].intAfterPaid 
-  : 0,
+            intAfterPaid: filteredRec?.[0]?.paid?.length
+              ? filteredRec[0].paid[filteredRec[0].paid.length - 1].intAfterPaid
+              : 0,
 
-            billDate:
-              filteredBillGenerated[0]?.billDetails.length > 0
-                ? filteredBillGenerated[0].billDetails[
-                    filteredBillGenerated[0].billDetails.length - 1
-                  ].billDate
-                : null,
+            billDate: calBillDate(),
             billNo:
               filteredBillGenerated[0]?.billDetails.length > 0
                 ? filteredBillGenerated[0].billDetails[
@@ -188,23 +250,15 @@ const MultipleReceipt = () => {
             //         filteredBillGenerated[0].billDetails.length - 1
             //       ].dueDate
             //     : null,
-      interestAfter:
-  filteredRec?.[0]?.paid?.length
-    ? filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
-      filteredBillGenerated?.[0]?.billDetails?.[filteredBillGenerated[0].billDetails.length - 1]?.dueDate
-      ? filteredRec[0].paid[filteredRec[0].paid.length - 1].date
-      : filteredBillGenerated[0].billDetails[filteredBillGenerated[0].billDetails.length - 1].dueDate
-    : filteredBillGenerated?.[0]?.billDetails?.[filteredBillGenerated[0].billDetails.length - 1]?.dueDate || null,
-
-
+            interestAfter: calInterestAfter(),
 
             intApplOn: item.data.intAppliedAmt,
             balance: calculateOutstanding(
               filteredRec[0],
               filteredBillGenerated[0],
               openBal[0]
-
             ),
+            isBillGenerated: filteredBillGenerated.length > 0,
             // filteredRec.length > 0
             //   ? filteredRec[0].balance
             //   : filteredBillGenerated[0]

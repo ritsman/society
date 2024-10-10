@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import config from "../../config";
 
 const Profile = () => {
   const [formData, setFormData] = useState([
@@ -45,7 +46,7 @@ const Profile = () => {
     // console.log(formData);
     try {
       let result = await axios.post(
-        "https://a3.arya-erp.in/api2/socapi/api/member/postProfile",
+        `${config.API_URL}/api/member/postProfile`,
         formData,
         {
           headers: {

@@ -151,7 +151,7 @@ const Approval = () => {
                     </div>
                   </td>
                   <td className="py-3 px-6 text-center">
-                    {user.status === "pending" ? (
+                    {user.status === "pending" || user.status === "active" ? (
                       <button
                         onClick={() => handleApprove(user._id)}
                         className="bg-gray-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600"

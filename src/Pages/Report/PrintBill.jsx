@@ -16,6 +16,8 @@ const PrintBill = () => {
   const dropdownRef = useRef(null);
   const [items, setItems] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [openingBal, setOpeningBal] = useState([]);
+  const [selectedBills, setSelectedBills] = useState([]);
   const [filterDetails, setFilterDetails] = useState({
     startDate: "",
     endDate: "",
@@ -23,25 +25,59 @@ const PrintBill = () => {
     memberName: "",
   });
 
-  const handleEmail = async(bill) => {
+  // Select or deselect a bill
+  const handleSelectBill = (bill) => {
+    if (selectedBills.includes(bill.billNo)) {
+      setSelectedBills(selectedBills.filter((id) => id !== bill.billNo));
+    } else {
+      setSelectedBills([...selectedBills, bill.billNo]);
+    }
+  };
 
+  // Select all bills
+  const handleSelectAllBills = () => {
+    if (selectedBills.length === filteredTableData.length) {
+      setSelectedBills([]);
+    } else {
+      setSelectedBills(filteredTableData.map((bill) => bill.billNo));
+    }
+  };
+
+  // Delete all selected bills
+  const handleDeleteSelectedBills = async () => {
+    console.log(selectedBills,"selected Bills")
     try {
-      let res = await axios.post(
-        `${config.API_URL}/api/report/send-email`,
-        {
-          email: bill.email,
-          subject: "hello world",
-          message: "hello....",
-        }
-      );
-      console.log(res)
-      toast.success("email sent")
+      const promises = selectedBills.map((billNo) => {
+        return axios.delete(`${config.API_URL}/api/society/delete-GenBill`, {
+          data: {
+            billNo, // Use billNo for deletion
+          },
+        });
+      });
+      await Promise.all(promises);
+      toast.success("Selected bills deleted successfully");
+      setSelectedBills([]); // Clear selected bills
+      fetchGeneratedBill(); // Fetch updated list of bills
     } catch (error) {
       console.log(error);
-      toast.success("error in sending email")
+      toast.error("Error in deleting bills");
     }
+  };
 
-  }
+  const handleEmail = async (bill) => {
+    try {
+      let res = await axios.post(`${config.API_URL}/api/report/send-email`, {
+        email: bill.email,
+        subject: "hello world",
+        message: "hello....",
+      });
+      console.log(res);
+      toast.success("email sent");
+    } catch (error) {
+      console.log(error);
+      toast.success("error in sending email");
+    }
+  };
 
   const handleSearch = () => {
     const filtered = tableData.filter((bill) => {
@@ -59,26 +95,26 @@ const PrintBill = () => {
 
       return isDateInRange && isMemberMatch;
     });
-     console.log(filtered)
+    console.log(filtered);
     setFilteredTableData(filtered);
   };
 
-  const [societyData , setSocietyData] = useState({})
+  const [societyData, setSocietyData] = useState({});
 
-   useEffect(() => {
-     fetchData1();
-   }, []);
+  useEffect(() => {
+    fetchData1();
+  }, []);
 
-   const fetchData1 = async () => {
-     try {
-       const res = await axios.get(
+  const fetchData1 = async () => {
+    try {
+      const res = await axios.get(
         `${config.API_URL}/api/society/getSocProfile`
-       );
-          setSocietyData(res.data[0]) 
-     } catch (error) {
-       console.error(error);
-     }
-   };
+      );
+      setSocietyData(res.data[0]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     handleSearch();
@@ -135,13 +171,22 @@ const PrintBill = () => {
     fetchBills();
   }, []);
 
+  useEffect(() => {
+    try {
+      fetch(`${config.API_URL}/api/transaction/getOpeningBalance`)
+        .then((response) => response.json())
+        .then((data) => setOpeningBal(data))
+        .catch((error) => console.error(error));
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
   const fetchBills = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
-        `${config.API_URL}/api/society/getBills`
-      );
+      const res = await axios.get(`${config.API_URL}/api/society/getBills`);
       console.log(res.data);
       setItems(res.data);
     } catch (error) {
@@ -163,7 +208,7 @@ const PrintBill = () => {
 
   useEffect(() => {
     fetchGeneratedBill();
-  }, [items]);
+  }, [items, openingBal]);
 
   async function fetchGeneratedBill() {
     try {
@@ -173,20 +218,22 @@ const PrintBill = () => {
       console.log(res.data.data);
       let arr = res.data.data.flatMap((item) => {
         let arr2 = items.filter((row) => row.data.memberId == item.memberId);
-        let heads = arr2[0].data.head.filter((item) => Number(item.value) != 0);
+        // let heads = arr2[0].data.head.filter((item) => Number(item.value) != 0);
+        let openBal = openingBal.filter((e) => e.id == item.memberId);
 
         return item.billDetails.map((item2) => {
           return {
-            heads: heads,
-            memberId : item.memberId,
+            heads: item2.head.filter((item) => Number(item.value) != 0),
+            memberId: item.memberId,
             billNo: item2.billNo,
             date: item2.billDate,
-            email : arr2[0].data.email,
+            dueDate: item2.dueDate,
+            email: arr2[0]?.data.email,
             flatNo: arr2[0]?.data.flatNo,
             member: item.memberName,
             netAmt: item2.currentBillAmt,
             interest: item2.interest,
-            balance:  Number(item2.currentBillAmt),
+            balance: Number(item2.prevBalance) + Number(item2.currentBillAmt),
             prevBalance: Number(item2.prevBalance),
           };
         });
@@ -202,48 +249,43 @@ const PrintBill = () => {
     }
   }
 
- const handleSendEmailToAll = async () => {
-   const sentEmails = new Set(); 
-   let emailsSentCount = 0; 
-   let errorOccurred = false;
+  const handleSendEmailToAll = async () => {
+    const sentEmails = new Set();
+    let emailsSentCount = 0;
+    let errorOccurred = false;
 
-   for (let bill of filteredTableData) {
-     if (!sentEmails.has(bill.email)) {
-       try {
-         await axios.post(
-           `${config.API_URL}/api/report/send-email`,
-           {
-             email: bill.email,
-             subject: "Hello World",
-             message: "Hello...",
-           }
-         );
-         sentEmails.add(bill.email); 
-         emailsSentCount++;
-       } catch (error) {
-         console.log(error);
-         errorOccurred = true; 
-       }
-     }
-   }
+    for (let bill of filteredTableData) {
+      if (!sentEmails.has(bill.email)) {
+        try {
+          await axios.post(`${config.API_URL}/api/report/send-email`, {
+            email: bill.email,
+            subject: "Hello World",
+            message: "Hello...",
+          });
+          sentEmails.add(bill.email);
+          emailsSentCount++;
+        } catch (error) {
+          console.log(error);
+          errorOccurred = true;
+        }
+      }
+    }
 
-   // Trigger the toast only once after all emails have been processed
-   if (emailsSentCount > 0) {
-     toast.success(`${emailsSentCount} emails sent successfully.`);
-   } else if (errorOccurred) {
-     toast.error("Error in sending some emails.");
-   } else {
-     toast.info("No emails were sent.");
-   }
- };
-
-
+    // Trigger the toast only once after all emails have been processed
+    if (emailsSentCount > 0) {
+      toast.success(`${emailsSentCount} emails sent successfully.`);
+    } else if (errorOccurred) {
+      toast.error("Error in sending some emails.");
+    } else {
+      toast.info("No emails were sent.");
+    }
+  };
 
   const handlePrintAllBills = () => {
     const doc = new jsPDF();
 
-    if(filteredTableData.length == 0){
-      alert("No bills are present , Select dates")
+    if (filteredTableData.length == 0) {
+      alert("No bills are present , Select dates");
       return;
     }
 
@@ -273,11 +315,11 @@ const PrintBill = () => {
       // Bill details
       doc.setFontSize(10);
       doc.text(`Bill No. : ${bill.billNo}`, 20, 40);
-      doc.text(`Date : ${bill.date}`, 100, 40);
-      doc.text(`Bill for Period : May-2024`, 160, 40);
+      doc.text(`Bill Date : ${bill.date}`, 100, 40);
+      // doc.text(`Bill for Period : May-2024`, 160, 40);
       doc.text(`Flat No. : ${bill.flatNo}`, 20, 45);
-      doc.text(`Due Date : 20-May-24`, 100, 45);
-      doc.text(`Area : 0`, 160, 45);
+      doc.text(`Due Date : ${bill.dueDate}`, 100, 45);
+      // doc.text(`Area : 0`, 160, 45);
 
       // Member name
       doc.text(`To,`, 20, 55);
@@ -302,22 +344,29 @@ const PrintBill = () => {
       doc.line(20, startY, 190, startY); // Line after the table content
       startY += 5;
       doc.setFont("helvetica", "bold");
-      doc.text("Total", 22, startY);
-      doc.text(Number(bill.netAmt).toFixed(2), 180, startY, { align: "right" });
+      doc.text("Sub Total", 22, startY);
+      doc.text(Number(bill.headTotal).toFixed(2), 180, startY, {
+        align: "right",
+      });
       doc.setFont("helvetica", "normal");
 
       startY += 5;
-      doc.text("Previous Balance ", 22, startY);
-      doc.text(bill.prevBalance.toFixed(2), 180, startY, { align: "right" });
+      doc.text("Previous Due ", 22, startY);
+      doc.text(bill.prevBal.toFixed(2), 180, startY, { align: "right" });
+
+      startY += 5;
+      doc.text("Interest ", 22, startY);
+      doc.text(bill.interest.toFixed(2), 180, startY, { align: "right" });
 
       startY += 5;
       doc.line(20, startY, 190, startY); // Line after the previous balance
 
       startY += 5;
-      const grandTotal = bill.netAmt + bill.prevBalance;
       doc.setFont("helvetica", "bold");
       doc.text("Grand total", 22, startY);
-      doc.text(Number(grandTotal).toFixed(2), 180, startY, { align: "right" });
+      doc.text(Number(bill.balance).toFixed(2), 180, startY, {
+        align: "right",
+      });
       doc.setFont("helvetica", "normal");
 
       startY += 5;
@@ -351,7 +400,6 @@ const PrintBill = () => {
     window.open(doc.output("bloburl"), "_blank");
   };
 
-
   //   print pdf implementation start
   const handleRowClick = (bill) => {
     const doc = new jsPDF();
@@ -366,18 +414,23 @@ const PrintBill = () => {
     });
     doc.setFontSize(10);
     // doc.text("TNA / TNA / HSG / TC / 32551", 105, 25, { align: "center" });
-    doc.text(`${societyData.address},${societyData.city},${societyData.state}`, 105, 30, {
-      align: "center",
-    });
+    doc.text(
+      `${societyData.address},${societyData.city},${societyData.state}`,
+      105,
+      30,
+      {
+        align: "center",
+      }
+    );
 
     // Bill details
     doc.setFontSize(10);
     doc.text(`Bill No. : ${bill.billNo}`, 20, 40);
-    doc.text(`Date : ${bill.date}`, 100, 40);
-    doc.text(`Bill for Period : May-2024`, 160, 40);
+    doc.text(`Bill Date : ${bill.date}`, 100, 40);
+    // doc.text(`Bill for Period : May-2024`, 160, 40);
     doc.text(`Flat No. : ${bill.flatNo}`, 20, 45);
-    doc.text(`Due Date : 20-May-24`, 100, 45);
-    doc.text(`Area : 0`, 160, 45);
+    doc.text(`Due Date : ${bill.dueDate}`, 100, 45);
+    // doc.text(`Area : 0`, 160, 45);
 
     // Member name
     doc.text(`To,`, 20, 55);
@@ -393,29 +446,36 @@ const PrintBill = () => {
     let startY = 77; // Initial Y position for the table content
     bill.heads.forEach((item) => {
       doc.text(item.head, 22, startY);
-      doc.text(Number(item.value).toFixed(2), 180, startY, { align: "right" });
+      doc.text(Number(item.value).toFixed(2), 180, startY, {
+        align: "right",
+      });
       startY += 5; // Move to the next line
     });
 
     doc.line(20, startY, 190, startY); // Line after the table content
     startY += 5;
     doc.setFont("helvetica", "bold");
-    doc.text("Total", 22, startY);
-    doc.text(Number(bill.netAmt).toFixed(2), 180, startY, { align: "right" });
+    doc.text("Sub Total", 22, startY);
+    doc.text(Number(bill.headTotal).toFixed(2), 180, startY, {
+      align: "right",
+    });
     doc.setFont("helvetica", "normal");
 
     startY += 5;
-    doc.text("Previous Balance ", 22, startY);
-    doc.text(bill.prevBalance.toFixed(2), 180, startY, { align: "right" });
+    doc.text("Previous Due ", 22, startY);
+    doc.text(bill.prevBal.toFixed(2), 180, startY, { align: "right" });
+
+    startY += 5;
+    doc.text("Interest ", 22, startY);
+    doc.text(bill.interest.toFixed(2), 180, startY, { align: "right" });
 
     startY += 5;
     doc.line(20, startY, 190, startY); // Line after the previous balance
 
     startY += 5;
-    const grandTotal = bill.netAmt + bill.prevBalance;
     doc.setFont("helvetica", "bold");
     doc.text("Grand total", 22, startY);
-    doc.text(Number(grandTotal).toFixed(2), 180, startY, { align: "right" });
+    doc.text(Number(bill.balance).toFixed(2), 180, startY, { align: "right" });
     doc.setFont("helvetica", "normal");
 
     startY += 5;
@@ -448,86 +508,27 @@ const PrintBill = () => {
     window.open(doc.output("bloburl"), "_blank");
   };
 
-  // Utility function to convert number to words (simple version)
-  const numberToWords = (num) => {
-    const a = [
-      "",
-      "One",
-      "Two",
-      "Three",
-      "Four",
-      "Five",
-      "Six",
-      "Seven",
-      "Eight",
-      "Nine",
-      "Ten",
-      "Eleven",
-      "Twelve",
-      "Thirteen",
-      "Fourteen",
-      "Fifteen",
-      "Sixteen",
-      "Seventeen",
-      "Eighteen",
-      "Nineteen",
-    ];
-    const b = [
-      "",
-      "",
-      "Twenty",
-      "Thirty",
-      "Forty",
-      "Fifty",
-      "Sixty",
-      "Seventy",
-      "Eighty",
-      "Ninety",
-    ];
-
-    const numberToWordsHelper = (num) => {
-      if (num === 0) return "Zero";
-      if (num < 20) return a[num];
-      if (num < 100) return b[Math.floor(num / 10)] + " " + a[num % 10];
-      if (num < 1000)
-        return (
-          a[Math.floor(num / 100)] +
-          " Hundred " +
-          numberToWordsHelper(num % 100)
-        );
-      if (num < 1000000)
-        return (
-          numberToWordsHelper(Math.floor(num / 1000)) +
-          " Thousand " +
-          numberToWordsHelper(num % 1000)
-        );
-      return "Number too large";
-    };
-
-    return numberToWordsHelper(num).trim();
-  };
   //   print pdf implementation end
 
-
-  const handleDeleteBill = async(bill)=>{
-    try {
-       let res = await axios.delete(
-         `${config.API_URL}/api/society/delete-GenBill`,
-         {
-           data: {
-             // Use the `data` field to send the payload in DELETE requests
-             memberId: bill.memberId,
-             billNo: bill.billNo,
-           },
-         }
-       );
-       console.log(res);
-      toast.success("bill deleted successfully")    
-    } catch (error) {
-      console.log(error)
-      toast.error("error in deleting bill")
-    }
-  }
+  // const handleDeleteBill = async (bill) => {
+  //   try {
+  //     let res = await axios.delete(
+  //       `${config.API_URL}/api/society/delete-GenBill`,
+  //       {
+  //         data: {
+  //           // Use the `data` field to send the payload in DELETE requests
+  //           memberId: bill.memberId,
+  //           billNo: bill.billNo,
+  //         },
+  //       }
+  //     );
+  //     console.log(res);
+  //     toast.success("bill deleted successfully");
+  //   } catch (error) {
+  //     console.log(error);
+  //     toast.error("error in deleting bill");
+  //   }
+  // };
   return (
     <div>
       <div className="p-4">
@@ -539,7 +540,7 @@ const PrintBill = () => {
             Search
           </button>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 mb-5">
           <div className="flex-1">
             <label className="block mb-1 text-sm font-medium text-gray-700">
               From Date
@@ -617,19 +618,70 @@ const PrintBill = () => {
             </div>
           </div>
         </div>
-        <div className="mt-2 text-right flex gap-3 justify-end px-5">
-          <button
-            onClick={handlePrintAllBills}
-            className="border-2  border-black px-2 py-1 rounded-md"
-          >
-            Print Bills
-          </button>
-          <button
-            onClick={handleSendEmailToAll}
-            className="border-2  border-black px-2 py-1 rounded-md"
-          >
-            Send Email
-          </button>
+
+        <div className=" text-right flex gap-3 justify-end px-5">
+          <div className=" text-right">
+            {selectedBills.length > 0 && (
+              <Popup
+                trigger={
+                  <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                    Delete Selected Bills
+                  </button>
+                }
+                modal
+                contentStyle={{
+                  width: "400px",
+                  background: "white",
+                  borderRadius: "0.5rem",
+                  padding: "1rem",
+                }}
+                overlayStyle={{
+                  background: "rgba(0, 0, 0, 0.5)",
+                }}
+              >
+                {(close) => (
+                  <div className="text-center">
+                    <p className="text-xl font-bold mb-4">
+                      Are you sure you want to delete the selected bills?
+                    </p>
+                    <div className="flex justify-center space-x-4">
+                      <button
+                        onClick={() => {
+                          handleDeleteSelectedBills();
+                          close();
+                        }}
+                        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
+                        onClick={close}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </Popup>
+            )}
+          </div>
+          <div>
+            <button
+              onClick={handlePrintAllBills}
+              className="border-2  border-black px-2 py-1 rounded-md"
+            >
+              Print Bills
+            </button>
+          </div>
+          <div>
+            <button
+              onClick={handleSendEmailToAll}
+              className="border-2  border-black px-2 py-1 rounded-md"
+            >
+              Send Email
+            </button>
+          </div>
         </div>
         {/* table view */}
         <div className="mt-5">
@@ -637,13 +689,23 @@ const PrintBill = () => {
             <table className="min-w-full bg-white">
               <thead>
                 <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                  <th className="py-3 px-6 text-center">
+                    <input
+                      type="checkbox"
+                      onChange={() => {
+                        handleSelectAllBills();
+                      }}
+                      checked={
+                        selectedBills.length === filteredTableData.length
+                      }
+                    />
+                  </th>
                   <th className="py-3 px-6 text-center">Bill No</th>
                   <th className="py-3 px-6 text-center">Date</th>
                   <th className="py-3 px-6 text-center">Flat No</th>
                   <th className="py-3 px-6 text-center">Member Name</th>
                   <th className="py-3 px-6 text-center">Outstanding </th>
                   <th className="py-3 px-6 text-center">Interest</th>
-                  <th className="py-3 px-6 text-center">Previous Due</th>
                   <th className="py-3 px-6 text-center">Total Amount</th>
                   <th className="py-3 px-6 text-center">Action</th>
                 </tr>
@@ -656,6 +718,18 @@ const PrintBill = () => {
                       key={bill.billNo}
                       className="border-b cursor-pointer border-gray-200 hover:bg-gray-100"
                     >
+                      <td className="py-3 px-6 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedBills.includes(bill.billNo)}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+
+                            handleSelectBill(bill);
+                          }}
+                        />
+                      </td>
                       <td className="py-3 px-6 text-left whitespace-nowrap">
                         {bill.billNo}
                       </td>
@@ -664,9 +738,7 @@ const PrintBill = () => {
                       <td className="py-3 px-6 text-center">{bill.member}</td>
                       <td className="py-3 px-6 text-center">{bill.netAmt}</td>
                       <td className="py-3 px-6 text-center">{bill.interest}</td>
-                      <td className="py-3 px-6 text-center">
-                        {bill.prevBalance}
-                      </td>
+
                       <td className="py-3 px-6 text-center">{bill.balance}</td>
                       <td className="py-3 px-6 flex gap-2">
                         <button
@@ -678,54 +750,7 @@ const PrintBill = () => {
                         >
                           Send Email
                         </button>
-                        <Popup
-                          trigger={
-                            <button className=" bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
-                              Delete bill
-                            </button>
-                          }
-                          position="center"
-                          contentStyle={{
-                            width: "400px",
-                            background: "white",
-                            borderRadius: "0.5rem",
-                            padding: "1rem",
-                            boxShadow: "0 0 10px rgba(0, 0, 0, 0.2)",
-                          }}
-                          overlayStyle={{
-                            background: "rgba(0, 0, 0, 0.5)",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                          modal
-                        >
-                          {(close) => (
-                            <div className="text-center ">
-                              <div className="text-xl text-black font-bold mb-4">
-                                Are you Sure, You want to Delete ?
-                              </div>
-                              <div className="flex justify-center space-x-4">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteBill(bill);
-                                    close();
-                                  }}
-                                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-                                >
-                                  Delete
-                                </button>
-                                <button
-                                  className="bg-gray-300 text-black px-4 py-2 rounded-md hover:bg-gray-400"
-                                  onClick={close}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </Popup>
+                      
                       </td>
                     </tr>
                   )

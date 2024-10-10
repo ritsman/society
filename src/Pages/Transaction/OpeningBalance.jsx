@@ -22,12 +22,31 @@ const OpeningBalance = () => {
   const [head, setHead] = useState([]);
   const [lists, setList] = useState([]);
   const [column, setColumn] = useState([]);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [gridRow , setGridRow] = useState([])
   const [column1, setColumn1] = useState([]);
   const [tableRow1, setTableRow1] = useState([]);
   const [isEdited, setIsEdited] = useState([]);
 
   const [chkstat2, setChkStat2] = useState({});
+
+    const handleSearch = (event) => {
+      const trimmedSearchTerm = event.target.value.toLowerCase();
+      setSearchTerm(trimmedSearchTerm);
+
+      if (trimmedSearchTerm) {
+        setTableRow(
+          gridRow.filter(
+            (row) =>
+              row.name.toLowerCase().includes(trimmedSearchTerm) ||
+              row.flatNo.toString().includes(trimmedSearchTerm)
+          )
+        );
+      } else {
+        setTableRow(gridRow);
+      }
+    };
+
 
   registerAllModules();
   const hotTableRef = useRef(null);
@@ -67,6 +86,15 @@ const OpeningBalance = () => {
 
   //asdflkadsf
   const tableHeads = [
+    {
+      data: "date",
+      type: "date",
+      dateFormat: "YYYY-MM-DD",
+      correctFormat: true,
+      allowInvalid: false,
+      readOnly: false,
+    },
+
     { data: "name", title: "Name", readOnly: true },
     { data: "mobileNo", title: "Mobile No", readOnly: true },
     { data: "email", title: "Email", readOnly: true },
@@ -95,25 +123,30 @@ const OpeningBalance = () => {
     let arr = data.map((item) => {
       let list = lists.filter(item2=>item2.id == item._id);
       console.log(list)
-           
+
+const currentDate = new Date();
+const formattedDate = `${currentDate.getFullYear()}-${String(
+  currentDate.getMonth() + 1
+).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
       return {
+        date: formattedDate,
         name: item.name,
-        id:item._id,
+        id: item._id,
         mobileNo: item.registeredMobileNo,
         email: item.email,
         address: item.permanentAddress,
         flatNo: item.flatNo,
         wingNo: item.wingNo,
         principal: list[0]?.principal || 0,
-        interest : list[0]?.interest || 0,
-        total :list[0]?.total || 0,
+        interest: list[0]?.interest || 0,
+        total: list[0]?.total || 0,
         head: head.map((row, index) => ({
           heads: row,
           value: item.head?.[index]?.value || 0,
         })),
       };
     });
-
+    setGridRow(arr);
     setTableRow(arr);
   }, [head, data]);
 
@@ -208,6 +241,8 @@ const OpeningBalance = () => {
     setTableRow1(arr);
   }, [tableRow]);
 
+
+
   const handleAfterChange = (changes, source) => {
     if (source === "loadData") return; // Skip on data load
 
@@ -215,6 +250,8 @@ const OpeningBalance = () => {
       // Loop through the changes
       changes.forEach(([rowIndex, prop, oldValue, newValue]) => {
         // Check if the changed property is "principal"
+
+            
 
              if (prop === "interest" && oldValue !== newValue) {
                // Get the current row data
@@ -315,7 +352,7 @@ const OpeningBalance = () => {
     <div>
       <h1 className="text-center text-2xl ">Opening Balance</h1>
 
-      <div className="flex items-center space-x-4 pt-10 px-10">
+      {/* <div className="flex items-center space-x-4 pt-10 px-10">
         <div className="flex flex-col gap-3">
           <label>Op. Balance type</label>
           <select
@@ -377,14 +414,23 @@ const OpeningBalance = () => {
             Search
           </button>
         </div>
-      </div>
+      </div> */}
       <div className="mt-10 px-10">
-        <button
-          onClick={handleSave}
-          className="px-4 py-2 border-2 mb-5 rounded-md bg-gray-600 text-white"
-        >
-          Save
-        </button>
+        <div>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 border-2 mb-5 rounded-md bg-gray-600 text-white"
+          >
+            Save
+          </button>
+          <input
+            type="text"
+            placeholder="Search by Name and flat no"
+            value={searchTerm}
+            onChange={handleSearch}
+            className=" w-[300px] px-4 py-1 border rounded"
+          />
+        </div>
         <div className="w-full h-full mt-5">
           {tableRow1.length > 0 && column1.length > 0 ? (
             <HotTable
@@ -405,7 +451,7 @@ const OpeningBalance = () => {
               autoWrapCol={true}
             />
           ) : (
-            "loading.."
+            "No data found !"
           )}
         </div>
       </div>

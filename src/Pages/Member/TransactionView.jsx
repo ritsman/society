@@ -4,6 +4,28 @@ import { useNavigate } from "react-router-dom";
 import config from "../../config";
 const TransactionView = () => {
   const [members, setMembers] = useState([]);
+  const [gridRow , setGridRow] = useState([])
+      const [searchTerm, setSearchTerm] = useState("");
+
+
+      
+     const handleSearch = (event) => {
+       const trimmedSearchTerm = event.target.value.toLowerCase();
+       setSearchTerm(trimmedSearchTerm);
+
+       if (trimmedSearchTerm) {
+         setMembers(
+           gridRow.filter(
+             (row) =>
+               row.name.toLowerCase().includes(trimmedSearchTerm) ||
+               row.flatNo.toString().includes(trimmedSearchTerm)
+           )
+         );
+       } else {
+         setMembers(gridRow);
+       }
+     };
+
 
   const navigate = useNavigate();
 
@@ -14,6 +36,7 @@ const TransactionView = () => {
           `${config.API_URL}/api/member/getMemberList`
         );
         console.log(res);
+        setGridRow(res.data)
         setMembers(res.data);
       } catch (error) {
         console.error(error);
@@ -28,7 +51,14 @@ const TransactionView = () => {
   };
   return (
     <div>
-      <div className="overflow-x-auto">
+      <input
+        type="text"
+        placeholder="Search by Name and flat no"
+        value={searchTerm}
+        onChange={handleSearch}
+        className=" w-[300px] px-4 py-1 border rounded"
+      />
+      <div className="overflow-x-auto mt-5">
         <table className="min-w-full bg-white">
           <thead className="bg-gray-100">
             <tr>

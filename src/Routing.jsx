@@ -53,7 +53,12 @@ import MemberReceipt from "./Pages/Report/MemberReceipt"
 import AdminPage from "./SuperAdmin/AdminPage";
 import { useAuth } from "./hooks/useAuth";
 
+
 import { Navigate } from "react-router-dom";
+import BankAccount from "./Pages/Societies/BankAccount/BankAccount";
+import PayPalCheckout from "./Pages/Societies/BankAccount/PaymentComponent";
+import PayUForm from "./Pages/Societies/BankAccount/PaymentComponent";
+import TransactionList from "./Pages/Societies/BankAccount/PayTransaction";
 
 const ProtectedRoute = ({ allowedRole, children }) => {
   const { userDetails } = useAuth();
@@ -113,7 +118,7 @@ const router = createBrowserRouter([
         path: "/member/profile",
         element: <Profile />,
       },
-        
+
       {
         path: "/member/memTransactions",
         element: <MemberTrasaction />,
@@ -227,6 +232,18 @@ const router = createBrowserRouter([
       {
         path: "society/profile",
         element: <SocietyForm />,
+      },
+      {
+        path: "society/bank-account",
+        element: <BankAccount />,
+      },
+      {
+        path: "society/bank-account/payment",
+        element: <PayUForm />,
+      },
+      {
+        path: "society/bank-account/payTransaction",
+        element: < TransactionList/>,
       },
 
       {

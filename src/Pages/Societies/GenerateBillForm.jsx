@@ -9,6 +9,8 @@ const GenerateBillForm = ({
   selectedItems,
   isSave,
   handleBillSave,
+  setFilteredData,
+  filteredData,
 }) => {
   const [receiptData, setReceiptData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -28,6 +30,8 @@ const GenerateBillForm = ({
   const [intMethod, setIntMethod] = useState("");
   const [flatInt, setFlatInt] = useState(0);
   const [isFlatInt, setIsFlatInt] = useState(0);
+    const [openingBal, setOpeningBal] = useState([]);
+
 
   function generateShortUUID() {
     return uuidv4().replace(/-/g, "").slice(0, 8);
@@ -36,9 +40,7 @@ const GenerateBillForm = ({
   useEffect(() => {
     async function fetchInt() {
       try {
-        let res = await axios.get(
-          `${config.API_URL}/api/master/getBillMaster`
-        );
+        let res = await axios.get(`${config.API_URL}/api/master/getBillMaster`);
         setInterstRate(res.data[0].interestRatePerMonth);
         setIntRebate(res.data[0].interestRebateUptoRs);
         setIntMethod(res.data[0].interestCalculationMethod);
@@ -56,9 +58,7 @@ const GenerateBillForm = ({
   useEffect(() => {
     async function fetchInt() {
       try {
-        let res = await axios.get(
-          `${config.API_URL}/api/master/getBillMaster`
-        );
+        let res = await axios.get(`${config.API_URL}/api/master/getBillMaster`);
         setIntData(res.data[0]);
         console.log(res.data[0]);
       } catch (error) {
@@ -72,35 +72,33 @@ const GenerateBillForm = ({
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    let customDate = currentDate;
 
-    if (interestData && interestData.billDate) {
+    if (interestData?.billDate) {
       const billDay = parseInt(interestData.billDate);
-      customDate = new Date(year, month, billDay);
+      const customDate = new Date(year, month, billDay);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        billDate: formatDate(customDate),
+      }));
     }
 
-    console.log(customDate);
-
-    setFormData((prevData) => ({
-      ...prevData,
-      billDate: formatDate(customDate),
-    }));
-
     fetchBills();
-  }, [isSave, interestData]);
+  }, [interestData?.billDate]); // Only depend on billDate from interestData
 
+  // Second useEffect to update due date when billDate or billDueDays changes
   useEffect(() => {
-    // Automatically set the billDueDate to 20 days after billDate
-    if (formData.billDate) {
+    if (formData.billDate && interestData?.billDueDays) {
       const billDate = new Date(formData.billDate);
       const dueDate = new Date(billDate);
-      dueDate.setDate(billDate.getDate() + Number(interestData.billDueDays)); // Add 20 days
+      dueDate.setDate(billDate.getDate() + Number(interestData.billDueDays));
+
       setFormData((prevData) => ({
         ...prevData,
         billDueDate: formatDate(dueDate),
       }));
     }
-  }, [formData.billDate]);
+  }, [formData.billDate, interestData?.billDueDays]);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
@@ -111,12 +109,106 @@ const GenerateBillForm = ({
     return `${year}-${month}-${day}`;
   };
 
+      useEffect(() => {
+        try {
+          fetch(`${config.API_URL}/api/transaction/getOpeningBalance`)
+            .then((response) => response.json())
+            .then((data) => setOpeningBal(data))
+            .catch((error) => console.error(error));
+        } catch (error) {
+          console.log(error);
+        }
+      }, []);
+
   const handleChange = (e) => {
+ const { name, value } = e.target;
+
+
+ if (name === "billDate") {
+             console.log("line no 139", items);
+
+   items.forEach((item) => {
+     // Filter the generated data and receipts
+
+     const GenData = billGenerated.filter(
+       (item2) => item2.memberId === item.data.memberId
+     );
+     const filterReceipt = receiptData.filter(
+       (a) => a.memberId === item.data.memberId
+     );
+  
+     const openBal = openingBal.filter(item2=>item2.id == item.data.memberId)
+
+     // Calculate the interest using your intCalculator function
+     const interest = intCalculator(
+       GenData[0],
+       value,
+       filterReceipt[0],
+       item,
+       openBal
+     );
+      console.log(interest)
+     // Use a functional update to ensure the latest filteredData is used
+     setFilteredData((prevData) => {
+       const updatedData = [...prevData];
+
+       // Find the index of the item in filteredData that corresponds to the current item
+       const index = updatedData.findIndex(
+         (data) => data.memberId === item.data.memberId
+       );
+
+       // Update the interest value in the updatedData array
+       if (index !== -1) {
+         updatedData[index] = {
+           ...updatedData[index],
+           interest: Number(interest), // Update the interest value
+         };
+       }
+        console.log(updatedData)
+       return updatedData; // Return the updated array
+     });
+   });
+ }
+
+    // Validate the date format (YYYY-MM-DD)
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+
+    // Allow empty input or valid date format only
+    if (value === "" || regex.test(value)) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleChange2 = (e) => {
     const { name, value } = e.target;
+
+    // Validate the date format (YYYY-MM-DD)
+
+    // Allow empty input or valid date format only
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+  };
+  const handleInput = (e) => {
+    const { value } = e.target;
+
+    // Check if the input has 4 digits in the year
+    const yearLength = value.split("-")[0].length;
+
+    // Allow input only if year length is less than 4
+    if (yearLength < 4 || e.target.value.length < 10) {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    } else {
+      e.target.value = e.target.value.slice(0, 10); // Restrict to 10 characters
+    }
   };
 
   const fetchBills = async () => {
@@ -148,13 +240,47 @@ const GenerateBillForm = ({
       console.log(error);
     }
   };
-  const intCalculator = (GenData, currBillDate, receiptData, bill) => {
-    if (!GenData || !GenData.billDetails || GenData.billDetails.length === 0) {
-      return 0;
-    }
 
+  const intCalculator = (GenData, currBillDate, receiptData, bill,openBal) => {
+
+    
     let intPerDay = (bill.data.intAppliedAmt * (interstRate / 100)) / 30;
     let intPerMonth = bill.data.intAppliedAmt * (interstRate / 100);
+
+ if (!GenData || !GenData.billDetails || GenData.billDetails.length === 0) {
+   // Ensure the date is in the correct format and treat it as UTC
+   const currBillDateParsed = new Date(currBillDate + "T00:00:00Z"); // Treat as UTC
+   const openBalDateParsed =
+     openBal.length > 0 ? new Date(openBal[0].date + "T00:00:00Z") : null; // Treat as UTC
+
+   // Check if openBal array is not empty before proceeding
+   if (openBal.length === 0) {
+     // Handle the case when openBal is empty
+     console.log("The openBal array is empty.");
+     return 0; // Return 0 or any appropriate value/response
+   }
+
+   // Calculate time difference in milliseconds
+   const differenceInTimes =
+     currBillDateParsed.getTime() - openBalDateParsed.getTime();
+
+   // Calculate the difference in days
+   const differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
+
+   // Calculate interest per day if openBal has data
+   let interestPerDay = (openBal[0].principal * (interstRate / 100)) / 30;
+
+   // Calculate interest based on the difference in days
+   let interest = differenceInDay > 0 ? interestPerDay * differenceInDay : 0;
+
+   return (Number(interest)).toFixed(2);
+ }
+
+
+
+
+    console.log("int method" , intMethod,)
+
 
     const lastBillDate = new Date(
       GenData.billDetails[GenData.billDetails.length - 1].billDate
@@ -185,26 +311,38 @@ const GenerateBillForm = ({
     const monthDiff = currentBillDate.getMonth() - intAfterDate.getMonth();
     let differenceBtwMonths = yearDiff * 12 + monthDiff;
 
+    //  const billDate = new Date(item.billDate)
+    const differenceInTimes =
+      currentBillDate.getTime() - lastBillDate.getTime();
+    const differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
+
     let interest = 0;
     if (isFlatInt && flatInt > 0) {
-      console.log(" if condition");
-
       interest = differenceBtwDays > 0 ? Number(flatInt) : 0;
     } else if (
-      intMethod == "as per bill days" &&
+      intMethod == "as per due date" &&
       !isFlatInt &&
       Number(intRebate) < Number(bill.data.prevDue)
     ) {
       console.log("else if condition", differenceBtwDays);
 
       interest = differenceBtwDays > 0 ? differenceBtwDays * intPerDay : 0;
-      console.log(interest, "interest");
+    } else if (
+      intMethod == "as per bill date" &&
+      !isFlatInt &&
+      Number(intRebate) < Number(bill.data.currentBillAmt)
+    ) {
+      console.log("inside as per bill date",intPerDay,differenceInDay);
+      interest = differenceInDay > 0 ? differenceInDay * intPerDay : 0;
     } else {
       interest = differenceBtwDays > 0 ? intPerMonth * differenceBtwMonths : 0;
-      console.log("else condition", interest);
     }
-    console.log(interest, "interestttt");
-    return interest.toFixed(2);
+    console.log(interest,"interesttttt")
+     
+    // if(openBal.length > 0){
+    //   return (Number(interest)+Number(openBal[0].interest)).toFixed(2)
+    // }
+    return (Number(interest)+Number(GenData.billDetails[GenData.billDetails.length-1].interest)).toFixed(2);
   };
 
   const handleGenerate = async () => {
@@ -231,6 +369,19 @@ const GenerateBillForm = ({
           let filterReceipt = receiptData.filter((a) => a.memberId === row);
           let uniqueBill = generateShortUUID();
           console.log(GenData);
+          let openBal = openingBal.filter(e=>e.id == row);
+
+          const calOutstanding = () => {
+            if (GenData.length > 0) {
+              let outstanding =
+                Number(
+                  GenData[0].billDetails[GenData[0].billDetails.length - 1]
+                    .outstandingBal
+                ) + Number(arr[0].data.currentBillAmt);
+              return outstanding;
+            }
+            return Number(arr[0].data.currentBillAmt);
+          };
 
           // First API call to generate the bill
           try {
@@ -242,8 +393,24 @@ const GenerateBillForm = ({
                   billNo: `BL/24/${uniqueBill}`,
                   type: formData.type,
                   billDate: formData.billDate,
+                  prevDue : arr[0].data.prevDue,
+                  openingPrincipal : openBal.length > 0 ? openBal[0].principal : 0,
+                  openingInterest : openBal.length > 0 ? openBal[0].interest : 0,
                   dueDate: billData.billDueDate,
-                  currentBillAmt: arr[0].data.total,
+                  currentBillAmt:
+                    Number(arr[0].data.currentBillAmt) +
+                    Number(
+                      intCalculator(
+                        GenData[0],
+                        formData.billDate,
+                        filterReceipt[0],
+                        arr[0],
+                        openBal
+                      )
+                    ),
+                  outstandingBal: calOutstanding(),
+                  outstandingBal1: calOutstanding(),
+                  head: arr[0].data.head,
                   interest: intCalculator(
                     GenData[0],
                     formData.billDate,
@@ -251,7 +418,7 @@ const GenerateBillForm = ({
                     arr[0]
                   ),
                   prevBalance:
-                    filterReceipt.length > 0 ? filterReceipt[0].balance : arr[0].data.prevDue,
+                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
                 },
               ],
             });
@@ -284,16 +451,61 @@ const GenerateBillForm = ({
                   ref: "",
                   billAmt: arr[0].data.total,
                   particulars: getParticular(billData.billDate),
-                  debit: arr[0].data.total,
-                  credit: "",
+                  debit:
+                    openBal.length > 0
+                      ? (Number(calOutstanding()) +
+                        Number(
+                          intCalculator(
+                            GenData[0],
+                            formData.billDate,
+                            filterReceipt[0],
+                            arr[0],
+                            openBal
+                          )
+                        ) +
+                        Number(openBal[0].principal)).toFixed(2)
+                      : Number(calOutstanding()) +
+                        Number(
+                          intCalculator(
+                            GenData[0],
+                            formData.billDate,
+                            filterReceipt[0],
+                            arr[0],
+                            openBal
+                          )
+                        ),
+                  credit: "-",
                   interest: intCalculator(
                     GenData[0],
                     formData.billDate,
                     filterReceipt[0],
-                    arr[0]
+                    arr[0],
+                    openBal
                   ),
                   paidAmt: "",
-                  balance: arr[0].data.total,
+                  balance:
+                    openBal.length > 0
+                      ? (Number(calOutstanding()) +
+                        Number(
+                          intCalculator(
+                            GenData[0],
+                            formData.billDate,
+                            filterReceipt[0],
+                            arr[0],
+                            openBal
+                          )
+                        ) +
+                       Number( openBal[0].principal)).toFixed(2)
+                      : Number(calOutstanding()) +
+                        Number(
+                          intCalculator(
+                            GenData[0],
+                            formData.billDate,
+                            filterReceipt[0],
+                            arr[0],
+                            openBal
+                          )
+                        ),
                 },
               ],
             });
@@ -307,6 +519,9 @@ const GenerateBillForm = ({
       // If all requests were successful, show a success message
       if (success) {
         toast.success("Bills successfully generated");
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         toast.error("Some bills failed to generate");
       }
@@ -334,7 +549,7 @@ const GenerateBillForm = ({
 
           // First API call to generate the bill
           try {
-           
+            console.log("hello world");
             await axios.post(`${config.API_URL}/api/society/generateBill`, {
               memberId: row,
               memberName: arr[0].data.ownerName,
@@ -452,7 +667,7 @@ const GenerateBillForm = ({
           <select
             name="type"
             value={formData.type}
-            onChange={handleChange}
+            onChange={handleChange2}
             className="w-full p-2 border rounded"
           >
             <option value="">Select Type</option>
