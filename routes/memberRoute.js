@@ -70,7 +70,7 @@ router.post(
   Profile
 );
 router.get("/getMemberList", getMemberList);
-router.delete("/deleteProfile/:id", deleteProfile);
+
 router.put(
   "/updateProfile/:id",
   (req, res, next) => {
@@ -101,4 +101,6 @@ router.get("/getOpeningMember", getOpeningMember);
 
 router.post("/Ledger/:memberId", postLedger);
 router.get("/Ledger/:memberId", getLedger);
+
+router.post("/deleteMembers",deleteProfile);
 export default router;

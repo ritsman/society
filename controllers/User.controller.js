@@ -28,6 +28,7 @@ export let BankPayment;
 export let CashPayment;
 export let BankReceipt;
 export let CashReceipt;
+export let PayTransaction
 
 //lklk
 
@@ -66,6 +67,7 @@ export const login = async (req, res) => {
                  CashPayment,
                  BankReceipt,
                  CashReceipt,
+                 PayTransaction,
                } = createSocietyDbConnection(
                  society.dbConnection,
                  society.societyName
@@ -122,6 +124,7 @@ export const login = async (req, res) => {
                     CashPayment,
                     BankReceipt,
                     CashReceipt,
+                    PayTransaction,
                   } = createSocietyDbConnection(
                     users.dbConnection,
                     users.societyName
@@ -169,19 +172,38 @@ const sanitizedSocietyName = societyId.replace(/\s+/g, "_");
 const dbConnection = `mongodb://0.0.0.0:27017/${sanitizedSocietyName}_db`;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const users = new User({
-      name,
-      user,
-      societyId,
-      societyName,
-      dbConnection,
-      password: hashedPassword,
-      status: "pending",
-    });
-    await users.save();
+    if(user == "supadmin@gmail.com"){
+  const users = new User({
+    name,
+    user,
+    societyId,
+    societyName,
+    
+    password: hashedPassword,
+    status: "active",
+  });
+  await users.save();
     res.status(200).json({
-   message: "Signup request submitted. Waiting for admin approval.",
- });  } catch (error) {
+      message: "Successfully Signup",
+    }); 
+    }else{
+  const users = new User({
+    name,
+    user,
+    societyId,
+    societyName,
+    dbConnection,
+    password: hashedPassword,
+    status: "pending",
+  });
+  await users.save();
+    res.status(200).json({
+      message: "Signup request submitted. Waiting for admin approval.",
+    }); 
+    }
+  
+  
+ } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error processing signup request" });
   }

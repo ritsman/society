@@ -85,6 +85,9 @@ export const getBankReceipt = async (req, res) => {
 //     res.send(error);
 //   }
 // };
+
+import { billGenerate } from "./User.controller.js";
+
 export const postCashReceipt = async (req, res) => {
   console.log("inside postReceipt controller");
 
@@ -139,20 +142,22 @@ export const postCashReceipt = async (req, res) => {
 
       // Subtract the remaining amount from balance
       newBalance -= remainingAmount;
+      console.log("newBalance:",newBalance,"new Interest:",newInterest,"remainingAmt:",remainingAmount)
 
       const obj = {
-        date: date || new Date(), // Assuming you want to set the current date if date is null
+        date: date , // Assuming you want to set the current date if date is null
         amount: amountNumber, // Use the numeric amount
         mode: mode,
-        OnBillAmt:balance,
+        OnBillAmt: balance,
         chequeNo: chequeNo,
         chequeDate: chequeDate,
         bank: bank,
         branch: branch,
-        interest:interest,
-        intAfterPaid : newInterest,
-        billNo:billNo,
-        billDate:billDate
+        interest: newInterest.toFixed(2),
+        interest1 : Number(interest).toFixed(2),
+        intAfterPaid: newInterest,
+        billNo: billNo,
+        billDate: billDate,
       };
 
       const update = {
@@ -173,6 +178,30 @@ export const postCashReceipt = async (req, res) => {
         upsert: true,
         new: true,
       });
+
+      //bill due update 
+
+      const bill = await billGenerate.findOne({ memberId });
+
+      if (bill && bill.billDetails && bill.billDetails.length > 0) {
+        // Get the last billDetails object
+        const lastBillDetailIndex = bill.billDetails.length - 1;
+
+        // Update the outstandingBal of the last billDetails object
+        console.log(bill.billDetails[lastBillDetailIndex].outstandingBal,"outstanding balance");
+        bill.billDetails[lastBillDetailIndex].outstandingBal -= remainingAmount;
+        bill.billDetails[lastBillDetailIndex].interest = newInterest.toFixed(2);
+
+                console.log(
+                  bill.billDetails[lastBillDetailIndex].outstandingBal,
+                  "outstanding balance"
+                );
+
+          bill.markModified("billDetails");
+        // Save the updated billGenerate document
+        await bill.save();
+        console.log("Updated billDetails with new outstanding balance.");
+      }
     }
 
     res.send("Successfully saved data");
@@ -199,6 +228,7 @@ export const postOpeningBalance = async (req, res) => {
       const { flatNo, name } = item;
       const update = {
         name: item.name,
+        date:item.date,
         id:item.id,
         mobileNo: item.mobileNo,
         email: item.email,

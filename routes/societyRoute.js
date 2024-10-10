@@ -15,6 +15,7 @@ import {
   updatePrvDue,
  
 } from "../controllers/society.controller.js";
+import {  failure, getTransactionList, payment, success } from "../controllers/Payment.controller.js";
 
 router.post("/postBills", BillAmounts);
 router.put("/update-prev-due", updatePrvDue);
@@ -32,5 +33,14 @@ router.post("/postSocProfile" , postSocProfile)
 router.get("/getSocProfile",getSocProfile)
 router.delete("/deleteSocProfile/:registrationNumber", deleteSocProfile);
 // society profile routes end
+
+
+// router.post("/create-order",createOrder);
+// router.post("/capture-order",capturePayment);
+
+router.post("/pay",payment);
+router.post("/success",success);
+router.post("/failure",failure)
+router.get("/TransactionsList",getTransactionList);
 
 export default router;

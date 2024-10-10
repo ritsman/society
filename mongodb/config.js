@@ -35,6 +35,7 @@ import { bankSchema } from "../Models/Payment.model.js";
 import { cashSchema } from "../Models/Payment.model.js";
 import { bankSchemas } from "../Models/Receipt.model.js";
 import { cashSchemas } from "../Models/Receipt.model.js";
+import { transactionSchema } from "../Models/PayTransaction.model.js";
 
 // Function to create a connection to a new society database
 export const createSocietyDbConnection = (dbURI,name) => {
@@ -119,6 +120,8 @@ export const createSocietyDbConnection = (dbURI,name) => {
 
     let CashReceipt = societyDbConnection.model("CashReceipt", cashSchemas);
 
+    let PayTransaction = societyDbConnection.model("paymentTransaction", transactionSchema);
+
 
 
   return {
@@ -141,6 +144,7 @@ export const createSocietyDbConnection = (dbURI,name) => {
     CashPayment,
     BankReceipt,
     CashReceipt,
+    PayTransaction,
   };
 };
 

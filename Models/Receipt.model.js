@@ -84,6 +84,9 @@ export const cashSchemas = new mongoose.Schema({
   interest: {
     type: String,
   },
+  interest1: {
+    type: String,
+  },
 
   name: {
     type: String,

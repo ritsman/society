@@ -196,26 +196,33 @@ export const updateProfile = async (req, res) => {
 };
 
 export const deleteProfile = async (req, res) => {
-  try {
-    const id = req.params.id;
+ const { memberIds } = req.body; // Assuming you're sending the array of IDs in the request body
 
-    console.log("deleteProfile controller reached", id);
+ if (!Array.isArray(memberIds) || memberIds.length === 0) {
+   return res
+     .status(400)
+     .json({ message: "Invalid or empty member IDs array" });
+ }
 
-    if (!id) {
-      return res.status(400).send("Missing _id in request parameters");
-    }
+ try {
+   const result = await profile.deleteMany({ _id: { $in: memberIds } });
 
-    const result = await profile.findByIdAndDelete(id);
+   if (result.deletedCount === 0) {
+     return res
+       .status(404)
+       .json({ message: "No members found with the provided IDs" });
+   }
 
-    if (!result) {
-      return res.status(404).send("Profile not found");
-    } else {
-      console.log("Deleted document:", result);
-      res.send("Successfully deleted Profile from database");
-    }
-  } catch (error) {
-    res.status(500).send(error);
-  }
+   return res
+     .status(200)
+     .json({
+       message: "Members deleted successfully",
+       deletedCount: result.deletedCount,
+     });
+ } catch (error) {
+   console.error("Error deleting members:", error);
+   return res.status(500).json({ message: "Internal server error" });
+ }
 };
 
 // opening member list

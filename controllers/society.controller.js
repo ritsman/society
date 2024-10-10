@@ -156,7 +156,8 @@ export const getBillno = async (req, res) => {
 export const generateBills = async (req, res) => {
   console.log("inside generate Bills");
   try {
-    const { memberId, memberName, billDetails } = req.body;
+    const { memberId, memberName, billDetails,prevDue } = req.body;
+    console.log(req.body)
 
     const updateBill = await billGenerate.findOneAndUpdate(
       { memberId, memberName },
@@ -164,6 +165,7 @@ export const generateBills = async (req, res) => {
         $push: {
           billDetails: { $each: billDetails },
         },
+        prevDue: prevDue,
       },
       { new: true, upsert: true }
     );
@@ -197,45 +199,40 @@ export const getGeneratedBills = async (req, res) => {
 
 // Controller function to remove a billDetails entry by billNo
 export const deleteBill = async (req, res) => {
-  console.log("inside delete bills");
-  try {
-    const { memberId, billNo } = req.body; // get memberId and billNo from the request body
-      console.log("inside delete bills",req.body);
+   try {
+     const { billNo } = req.body; // Single bill number to delete
 
+     if (!billNo) {
+       return res.status(400).json({ message: "billNo is required" });
+     }
 
-    // Find the document with the memberId and remove the billDetails entry
-    const result = await billGenerate.updateOne(
-      { memberId }, // filter by memberId
-      {
-        $pull: { billDetails: { billNo } }, // pull the specific billDetails entry with the given billNo
-      }
-    );
+     // Find members whose billDetails contain the provided billNo
+     const members = await billGenerate.find({
+       "billDetails.billNo": billNo,
+     });
 
-     const result2 = await MemberLedger.updateOne(
-       { memberId }, // filter by memberId
-       {
-         $pull: { ledger: { billNo } }, // pull the specific billDetails entry with the given billNo
-       }
-     );
-           if (result2.matchedCount === 0) {
-            console.log("member not found")
-           }
+     if (!members.length) {
+       return res
+         .status(404)
+         .json({ message: "No members with matching bill found" });
+     }
 
-           if (result2.modifiedCount === 0) {
-            console.log("ledger not found")
-           }
-    if (result.modifiedCount > 0) {
-      return res
-        .status(200)
-        .json({ message: "Bill details deleted successfully." });
-    } else {
-      return res
-        .status(404)
-        .json({ message: "No bill found with the given billNo." });
-    }
-  } catch (error) {
-    return res.status(500).json({ message: "Server error", error });
-  }
+     // Loop through each member and remove the matching bill
+     for (const member of members) {
+       // Filter out the bill with the matching billNo
+       member.billDetails = member.billDetails.filter(
+         (bill) => bill.billNo !== billNo
+       );
+
+       // Save the updated member document
+       await member.save();
+     }
+
+     res.status(200).json({ message: "Bill deleted successfully" });
+   } catch (error) {
+     console.error("Error deleting bill:", error);
+     res.status(500).json({ message: "Internal server error" });
+   }
 };
 
 

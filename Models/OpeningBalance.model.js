@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 export const mySchemas = new mongoose.Schema(
   {
+    date:String,
     name: String,
     id :String,
     mobileNo: String,

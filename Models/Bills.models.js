@@ -20,6 +20,7 @@ export const generateBillSchema = new mongoose.Schema(
   {
     memberId: String,
     memberName: String,
+    prevDue:String,
     billDetails: Array,
   },
   {
