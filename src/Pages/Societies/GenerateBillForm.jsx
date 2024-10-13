@@ -415,10 +415,17 @@ const GenerateBillForm = ({
                     GenData[0],
                     formData.billDate,
                     filterReceipt[0],
-                    arr[0]
+                    arr[0],
+                    openBal
                   ),
-                  prevBalance:
-                    filterReceipt.length > 0 ? filterReceipt[0].balance : 0,
+                  interest1: intCalculator(
+                    GenData[0],
+                    formData.billDate,
+                    filterReceipt[0],
+                    arr[0],
+                    openBal
+                  ),
+                
                 },
               ],
             });
@@ -549,7 +556,6 @@ const GenerateBillForm = ({
 
           // First API call to generate the bill
           try {
-            console.log("hello world");
             await axios.post(`${config.API_URL}/api/society/generateBill`, {
               memberId: row,
               memberName: arr[0].data.ownerName,

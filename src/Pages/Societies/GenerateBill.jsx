@@ -274,27 +274,56 @@ const GenerateBill = () => {
               row.data.wingNo == item.wingNo && row.data.flatNo == item.flatNo
           );
 
-       const getPrevDue = () => {
-         if (openBal[0]?.total === 0) {
-           if(billObj.data.ownerName == "Vaibhav dwivedi"){
-            console.log(billData)
-           }
-           return billObj?.data?.prevDue || 0;
-         }
+     const getPrevDue = () => {
+       if (openBal.length > 0) {
+         const lastBillOutstanding =
+           billGen.length > 0 && billGen[0].billDetails.length > 0
+             ? Number(
+                 billGen[0].billDetails[billGen[0].billDetails.length - 1]
+                   .outstandingBal
+               )
+             : 0;
 
-         if (billObj?.data) {
-           if (billObj.data.total === 0) {
-             // If billObj[0].data.total is 0, check openBal
-             return openBal[0]?.total || 0;
-           } else {
-             // Return billObj[0].data.prevDue if total is not 0
-             return billObj.data.prevDue;
-           }
-         }
+         const principal = Number(openBal[0].principal);
 
-         // If billObj or billObj[0].data is not available, check openBal
-         return openBal[0]?.total || 0;
-       };
+         // Return sum of last bill's outstanding balance and principal (if any)
+         return lastBillOutstanding + principal;
+       }
+
+       // If no opening balance, return the last bill's outstanding balance or 0 if no bills are found
+       return billGen.length > 0 && billGen[0].billDetails.length > 0
+         ? Number(
+             billGen[0].billDetails[billGen[0].billDetails.length - 1]
+               .outstandingBal
+           )
+         : 0;
+     };
+
+
+       const getInterest = ()=>{
+       if (
+         !billGen ||
+         billGen.length === 0 ||
+         !billGen[0].billDetails ||
+         billGen[0].billDetails.length === 0
+       ) {
+         if (openBal.length > 0) {
+           let int = Number(openBal[0].interest);
+           return int;
+         }
+         return 0;
+       } else {
+          if(billGen[0].billDetails[billGen[0].billDetails.length-1].interest1 == 0){
+              if (openBal.length > 0) {
+                let int = Number(openBal[0].interest);
+                return int;
+              }
+          }
+         let int = Number(billGen[0].billDetails[billGen[0].billDetails.length-1].interest)
+         return int;
+       }
+      
+ }
 
 
 
@@ -306,6 +335,8 @@ const GenerateBill = () => {
             flatNo: item.flatNo,
             ownerName: item.name,
             prevDue: getPrevDue(),
+            interest: getInterest(),
+
             // Fixed intAppliedAmt calculation
             intAppliedAmt: 0,
 
@@ -323,14 +354,84 @@ const GenerateBill = () => {
             currentBillAmt: 0,
 
             total:
-              billObj && billObj.data.total ? calculateTotal2(billObj.data) : 0, // Calculate total if bill data exists
+              billObj && billObj.data
+                ? calculateTotal2(billObj.data, getPrevDue(), getInterest())
+                : 0, // Calculate total if bill data exists
           };
           arr.push(obj);                        
         });
         setGridRow(arr);
         setFilteredData(arr);
       });
-  }, [heads, billData]);
+  }, [heads, billData,openingBal,billGenerated]);
+
+
+  useEffect(()=>{
+       
+  },[billData])
+
+
+  const calculateHeads2 = (updatedFiltered)=>{
+    return new Promise((resolve) => {
+      const updatedData = updatedFiltered.map((item) => {
+        // Calculate intAppliedAmt based on active heads with interestApplied
+        const currentBillAmt = item.head
+          // .filter((headItem) => headItem.interestApplied)
+          .reduce((acc, headItem) => acc + parseFloat(headItem.value || 0), 0);
+
+        // Calculate total based on all heads' values
+        // const total = item.head.reduce(
+        //   (acc, headItem) => acc + parseFloat(headItem.value || 0),
+        //   0
+        // );
+
+        // Return updated item with calculated values
+
+        return { ...item, currentBillAmt };
+      });
+
+      // Update the state with the new data
+      setFilteredData(updatedData);
+
+      // Resolve the promise once calculations are done
+      resolve(updatedData);
+    });
+  }
+
+  const calculateHeads = (row)=>{
+               console.log("total head calculated",row);
+
+    const excludeKeys = [
+      "isSelected",
+      "id",
+      "memberId",
+      "wingNo",
+      "email",
+      "flatNo",
+      "ownerName",
+      "total",
+      "intAppliedAmt",
+      "prevDue",
+      "currentBillAmt"
+
+    ];
+
+    let total = Object.keys(row).reduce((accumulatedTotal, key) => {
+      if (!excludeKeys.includes(key)) {
+        const value = Number(row[key]);
+
+        // Check if value is a number and not NaN
+        if (!isNaN(value)) {
+          return accumulatedTotal + value; // Add only valid numbers
+        }
+      }
+      return accumulatedTotal; // Skip excluded keys or invalid numbers
+    }, 0);
+
+    const formattedTotal = total.toFixed(2); // Format total to two decimal places
+    console.log(formattedTotal,"head totallllll")
+    return formattedTotal;
+  }
 
   useEffect(() => {
     fetch(`${config.API_URL}/api/master/getBillHeads`)
@@ -540,15 +641,14 @@ const GenerateBill = () => {
   };
 
 
-  const calculateTotal2 = (row) => {
+  const calculateTotal2 = (row,prevDue,interest) => {
     console.log(row);
     if (row && row.head && Array.isArray(row.head)) {
       let total = row.head.reduce(
         (acc, curr) => acc + parseInt(curr.value || 0),
         0
       );
-      console.log(row.prevDue, "previous dueeeee");
-      return (Number(total) + Number(row.prevDue)).toFixed(2);
+      return (Number(total) + Number(prevDue)+Number(interest)).toFixed(2);
     }
   };
 

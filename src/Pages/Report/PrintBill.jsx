@@ -231,10 +231,20 @@ const PrintBill = () => {
             email: arr2[0]?.data.email,
             flatNo: arr2[0]?.data.flatNo,
             member: item.memberName,
-            netAmt: item2.currentBillAmt,
-            interest: item2.interest,
-            balance: Number(item2.prevBalance) + Number(item2.currentBillAmt),
-            prevBalance: Number(item2.prevBalance),
+            headTotal: Number(item2.currentBillAmt) - Number(item2.interest),
+            prevBal:
+              Number(item2.outstandingBal1) -
+              (Number(item2.currentBillAmt) - Number(item2.interest1)) +
+              Number(item2.openingPrincipal),
+
+            netAmt:
+              Number(item2.outstandingBal1) + Number(item2.openingPrincipal),
+
+            interest: Number(item2.interest1),
+            balance:
+              Number(item2.outstandingBal1) +
+              Number(item2.openingPrincipal) +
+              Number(item2.interest1),
           };
         });
       });
