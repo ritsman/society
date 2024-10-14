@@ -299,42 +299,66 @@ const IndividualLedger = () => {
       setFilteredLedger(Ledger.ledger);
     }
   };
-
 const generateAndOpenPDF = () => {
   const doc = new jsPDF();
-
-  // Add title
   doc.setFontSize(18);
   doc.text("Member Ledger", 14, 22);
-
-  // Add member details
   doc.setFontSize(12);
   doc.text(`Member Name: ${indiMember.name}`, 14, 32);
   doc.text(`Flat No: ${indiMember.flatNo}`, 14, 40);
 
-  // Add table with "No" and "Ref" as separate columns
+  // Define the headers for the table
+  const headers = [
+    ["Date", "No", "Ref", "Particulars", "Debit", "Credit", "Net Balance"],
+  ];
+
+  // Prepare body for the table including the opening balance as the first row
+  const body = [];
+
+  // Add the opening balance row if available
+  if (openingBal.length > 0) {
+    body.push([
+      "-", // Date
+      "-", // No
+      "-", // Ref
+      "OPENING BALANCE B/F", // Particulars
+      "-", // Debit
+      "-", // Credit
+      Number(openingBal[0].total).toFixed(2), // Net Balance
+    ]);
+  }
+
+  // Add all filtered ledger transactions to the body
+  filteredLedger.forEach((transaction) => {
+     const adjustedBalance =
+       openingBal.length > 0
+         ? Number(transaction.balance) + Number(openingBal[0].total)
+         : Number(transaction.balance);
+    body.push([
+      new Date(transaction.date).toLocaleDateString(), // Date
+      transaction.tranId, // No
+      transaction.ref, // Ref
+      transaction.particulars, // Particulars
+      transaction.debit, // Debit
+      transaction.credit, // Credit
+      adjustedBalance, // Net Balance
+    ]);
+  });
+
+  // Generate the table with autoTable
   doc.autoTable({
     startY: 50,
-    head: [
-      ["Date", "No", "Ref", "Particulars", "Debit", "Credit", "Net Balance"],
-    ],
-    body: filteredLedger.map((transaction) => [
-      new Date(transaction.date).toLocaleDateString(), // Formatting date
-      transaction.tranId, // No (Transaction ID)
-      transaction.ref, // Ref (Reference field)
-      transaction.particulars, // Particulars
-      Number(transaction.debit).toFixed(2), // Debit formatted
-      Number(transaction.credit).toFixed(2), // Credit formatted
-      Number(transaction.balance).toFixed(2), // Net balance formatted
-    ]),
+    head: headers,
+    body: body,
     styles: { fontSize: 8 },
     headStyles: { fillColor: [200, 200, 200], textColor: 20 },
     alternateRowStyles: { fillColor: [245, 245, 245] },
   });
 
-  // Open the PDF in a new tab
+  // Open the PDF in a new window
   doc.output("dataurlnewwindow");
 };
+
 
 
 
@@ -456,11 +480,13 @@ const generateAndOpenPDF = () => {
                     {transaction.credit}
                   </td>
                   <td className="px-6 border py-4 whitespace-nowrap text-sm ">
-                    {Number(transaction.balance).toFixed(2)}
+                    {openingBal.length > 0
+                      ? Number(transaction.balance) +
+                        Number(openingBal[0].total)
+                      : Number(transaction.balance)}
                   </td>
                 </tr>
               ))}
-         
           </tbody>
         </table>
       </div>

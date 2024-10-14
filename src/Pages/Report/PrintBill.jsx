@@ -216,38 +216,50 @@ const PrintBill = () => {
         `${config.API_URL}/api/society/getGeneratedBills`
       );
       console.log(res.data.data);
-      let arr = res.data.data.flatMap((item) => {
-        let arr2 = items.filter((row) => row.data.memberId == item.memberId);
-        // let heads = arr2[0].data.head.filter((item) => Number(item.value) != 0);
-        let openBal = openingBal.filter((e) => e.id == item.memberId);
+     let arr = res.data.data.flatMap((item) => {
+       let arr2 = items.filter((row) => row.data.memberId == item.memberId);
+       let openBal = openingBal.filter((e) => e.id == item.memberId);
 
-        return item.billDetails.map((item2) => {
-          return {
-            heads: item2.head.filter((item) => Number(item.value) != 0),
-            memberId: item.memberId,
-            billNo: item2.billNo,
-            date: item2.billDate,
-            dueDate: item2.dueDate,
-            email: arr2[0]?.data.email,
-            flatNo: arr2[0]?.data.flatNo,
-            member: item.memberName,
-            headTotal: Number(item2.currentBillAmt) - Number(item2.interest),
-            prevBal:
-              Number(item2.outstandingBal1) -
-              (Number(item2.currentBillAmt) - Number(item2.interest1)) +
-              Number(item2.openingPrincipal),
+       return item.billDetails.map((item2, index, billDetailsArray) => {
+         // Get previous item if available, otherwise set to 0
+         let prevItem = billDetailsArray[index - 1];
+         let currPrevInterest = prevItem
+           ? Number(prevItem.currPrevInterest)
+           : 0;
 
-            netAmt:
-              Number(item2.outstandingBal1) + Number(item2.openingPrincipal),
+         return {
+           heads: item2.head.filter((item) => Number(item.value) != 0),
+           memberId: item.memberId,
+           billNo: item2.billNo,
+           date: item2.billDate,
+           dueDate: item2.dueDate,
+           email: arr2[0]?.data.email,
+           flatNo: arr2[0]?.data.flatNo,
+           member: item.memberName,
+           headTotal: Number(item2.currentBillAmt) - Number(item2.interest),
+           prevBal:
+             Number(item2.outstandingBal1) -
+             (Number(item2.currentBillAmt) - Number(item2.interest1)) +
+             Number(item2.openingPrincipal) +
+             Number(item2.openingInterest) +
+             currPrevInterest, // Using previous item's currPrevInterest or 0 if not available
 
-            interest: Number(item2.interest1),
-            balance:
-              Number(item2.outstandingBal1) +
-              Number(item2.openingPrincipal) +
-              Number(item2.interest1),
-          };
-        });
-      });
+           netAmt:
+             Number(item2.outstandingBal1) +
+             Number(item2.openingPrincipal) +
+             Number(item2.openingInterest),
+
+           interest: Number(item2.interest1),
+           balance:
+             Number(item2.outstandingBal1) +
+             Number(item2.openingPrincipal) +
+             Number(item2.openingInterest) +
+             Number(item2.interest1) +
+             currPrevInterest,
+         };
+       });
+     });
+
       arr.sort((a, b) => {
         return new Date(a.date) - new Date(b.date);
       });
