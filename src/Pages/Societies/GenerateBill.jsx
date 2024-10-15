@@ -275,6 +275,7 @@ const GenerateBill = () => {
           );
 
      const getPrevDue = () => {
+      let prevInterest;
        if (openBal.length > 0) {
          const lastBillOutstanding =
            billGen.length > 0 && billGen[0].billDetails.length > 0
@@ -284,10 +285,19 @@ const GenerateBill = () => {
                )
              : 0;
 
+           prevInterest =
+            billGen.length > 0 && billGen[0].billDetails.length > 1
+              ? Number(
+                  billGen[0].billDetails[billGen[0].billDetails.length - 2]
+                    .currPrevInterest
+                )
+              : 0;
+
          const principal = Number(openBal[0].principal);
+         const interest = Number(openBal[0].interest);
 
          // Return sum of last bill's outstanding balance and principal (if any)
-         return lastBillOutstanding + principal;
+         return lastBillOutstanding + principal + interest + (prevInterest ? Number(prevInterest):0);
        }
 
        // If no opening balance, return the last bill's outstanding balance or 0 if no bills are found
@@ -295,7 +305,7 @@ const GenerateBill = () => {
          ? Number(
              billGen[0].billDetails[billGen[0].billDetails.length - 1]
                .outstandingBal
-           )
+           ) + (prevInterest ? Number(prevInterest) : 0)
          : 0;
      };
 
@@ -307,10 +317,10 @@ const GenerateBill = () => {
          !billGen[0].billDetails ||
          billGen[0].billDetails.length === 0
        ) {
-         if (openBal.length > 0) {
-           let int = Number(openBal[0].interest);
-           return int;
-         }
+        //  if (openBal.length > 0) {
+        //    let int = Number(openBal[0].interest);
+        //    return int;
+        //  }
          return 0;
        } else {
           if(billGen[0].billDetails[billGen[0].billDetails.length-1].interest1 == 0){

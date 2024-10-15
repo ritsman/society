@@ -261,33 +261,41 @@ const GenerateBillForm = ({
 
   const intCalculator = (GenData, currBillDate, receiptData, bill,openBal) => {
     if (!GenData || !GenData.billDetails || GenData.billDetails.length === 0) {
-      // Ensure the date is in the correct format and treat it as UTC
       const currBillDateParsed = new Date(currBillDate + "T00:00:00Z"); // Treat as UTC
       const openBalDateParsed =
         openBal.length > 0 ? new Date(openBal[0].date + "T00:00:00Z") : null; // Treat as UTC
 
-      // Check if openBal array is not empty before proceeding
       if (openBal.length === 0) {
-        // Handle the case when openBal is empty
         console.log("The openBal array is empty.");
-        return 0; // Return 0 or any appropriate value/response
+        return 0; 
       }
 
-      // Calculate time difference in milliseconds
       const differenceInTimes =
         currBillDateParsed.getTime() - openBalDateParsed.getTime();
 
       // Calculate the difference in days
-      const differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
+      // const differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
+
+      let differenceInMonths = Math.floor(
+        (currBillDateParsed.getFullYear() - openBalDateParsed.getFullYear()) *
+          12 +
+          (currBillDateParsed.getMonth() - openBalDateParsed.getMonth())
+      );
 
       // Calculate interest per day if openBal has data
-      let interestPerDay = (openBal[0].principal * (interstRate / 100)) / 30;
+      // let interestPerDay = (openBal[0].principal * (interstRate / 100)) / 30;
+            let interestPerMonth =
+              (openBal[0].principal * (interstRate / 100));
+
 
       // Calculate interest based on the difference in days
-      let interest = differenceInDay > 0 ? interestPerDay * differenceInDay : 0;
+      let interest =
+        differenceInMonths > 0 ? interestPerMonth * differenceInMonths : 0;
 
       return Number(interest).toFixed(2);
     }
+
+
 
     let intPerDay =
       openBal.length > 0
@@ -303,9 +311,16 @@ const GenerateBillForm = ({
           (interstRate / 100)
         : bill.data.intAppliedAmt * (interstRate / 100);
 
+      console.log(intPerMonth, "int per month");
+
     const lastBillDate = new Date(
       GenData.billDetails[GenData.billDetails.length - 1].billDate
     );
+
+    const lastBillDueDate = new Date(
+      GenData.billDetails[GenData.billDetails.length - 1].dueDate
+    );
+
     let intAfterDate;
 
     if (!receiptData || !receiptData.paid || receiptData.paid.length === 0) {
@@ -327,6 +342,7 @@ const GenerateBillForm = ({
       (new Date(currBillDate) - intAfterDate) / (1000 * 60 * 60 * 24)
     ); // convert milliseconds to days
     console.log("Difference in days: ", differenceBtwDays);
+    
 
     const yearDiff = currentBillDate.getFullYear() - intAfterDate.getFullYear();
     const monthDiff = currentBillDate.getMonth() - intAfterDate.getMonth();
@@ -354,7 +370,7 @@ const GenerateBillForm = ({
       Number(intRebate) < Number(bill.data.currentBillAmt)
     ) {
       console.log("inside as per bill date", intPerDay, differenceInDay);
-      interest = differenceInDay > 0 ? differenceInDay * intPerDay : 0;
+      interest = differenceBtwDays > 0 ? differenceBtwDays * intPerDay : 0;
     } else {
       interest = differenceBtwDays > 0 ? intPerMonth * differenceBtwMonths : 0;
     }

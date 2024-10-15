@@ -72,9 +72,15 @@ const MultipleReceipt = () => {
        filteredBillGenerated.billDetails.length - 1
      ];
 
+     const prevBill =
+       filteredBillGenerated?.billDetails?.[
+         filteredBillGenerated.billDetails.length - 2
+       ];
+
+       
+
    if (!bill) {
      // Return 0 if no bill is found
-     console.log("here",bill)
      return 0;
    }
 
@@ -83,7 +89,11 @@ const MultipleReceipt = () => {
    // If filteredRec is empty, return the current bill amount
    if (!filteredRec || !filteredRec.paid || filteredRec.paid.length === 0) {
      console.log("bill", bill);
-     return  Number(bill.outstandingBal) + Number(bill.openingPrincipal);
+     return (
+       Number(bill.outstandingBal) +
+       Number(bill.openingPrincipal) +
+       Number(bill.openingInterest) +(prevBill ? Number(prevBill.currPrevInterest) : 0)
+     );
        
    }
 
@@ -215,6 +225,8 @@ const MultipleReceipt = () => {
             mode: paymentMethod,
             code: item.data.flatNo,
             name: item.data.ownerName,
+            openingPrincipal:filteredBillGenerated.length > 0 ? filteredBillGenerated[0].billDetails[filteredBillGenerated[0].billDetails.length-1].openingPrincipal:0,
+            openingInterest:filteredBillGenerated.length > 0 ? filteredBillGenerated[0].billDetails[filteredBillGenerated[0].billDetails.length-1].openingInterest:0,
             chequeNo: null,
             chequeDate: null,
             bank: null,

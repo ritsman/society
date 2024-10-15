@@ -146,7 +146,7 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
 
           let remainingAmount = Number(row.amount);
           let newInterest = Number(row.interest);
-          let newBalance = Number(row.balance);
+          let newBalance = Number(row.balance) - (Number(row.openingPrincipal)+Number(row.openingInterest));
 
           // Subtract from interest first
           if (remainingAmount <= newInterest) {
