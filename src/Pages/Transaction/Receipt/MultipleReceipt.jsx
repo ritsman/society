@@ -71,11 +71,14 @@ const MultipleReceipt = () => {
      filteredBillGenerated?.billDetails?.[
        filteredBillGenerated.billDetails.length - 1
      ];
-
-     const prevBill =
+     
+     let prevBill;
+     if(filteredBillGenerated.billDetails.length > 1){
+      prevBill =
        filteredBillGenerated?.billDetails?.[
          filteredBillGenerated.billDetails.length - 2
        ];
+      }
 
        
 
@@ -173,18 +176,20 @@ const MultipleReceipt = () => {
 
           const calBillDate = ()=>{
               if (filteredRec.length > 0) {
-                if (
-                  filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
-                  filteredBillGenerated[0].billDetails[
-                    filteredBillGenerated[0].billDetails.length - 1
-                  ].billDate
-                ) {
-                  return filteredRec[0].paid[filteredRec[0].paid.length - 1]
-                    .date;
-                } else {
-                  return filteredBillGenerated[0].billDetails[
-                    filteredBillGenerated[0].billDetails.length - 1
-                  ].billDate;
+                if (filteredBillGenerated.length > 0 ) {
+                  if (
+                    filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
+                    filteredBillGenerated[0].billDetails[
+                      filteredBillGenerated[0].billDetails.length - 1
+                    ].billDate
+                  ) {
+                    return filteredRec[0].paid[filteredRec[0].paid.length - 1]
+                      .date;
+                  } else {
+                    return filteredBillGenerated[0].billDetails[
+                      filteredBillGenerated[0].billDetails.length - 1
+                    ].billDate;
+                  }
                 }
               } else {
                 if (filteredBillGenerated.length > 0) {
@@ -199,17 +204,21 @@ const MultipleReceipt = () => {
 
           const calInterestAfter = ()=>{
              if( filteredRec.length > 0 ){
-                if(filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
+              if (filteredBillGenerated.length > 0) {
+                if (
+                  filteredRec[0].paid[filteredRec[0].paid.length - 1].date >
                   filteredBillGenerated[0].billDetails[
                     filteredBillGenerated[0].billDetails.length - 1
-                  ].dueDate){
-                    return filteredRec[0].paid[filteredRec[0].paid.length - 1]
-                      .date
-                  }else{
-                  return  filteredBillGenerated[0].billDetails[
-                      filteredBillGenerated[0].billDetails.length - 1
-                    ].dueDate;
-                  }
+                  ].dueDate
+                ) {
+                  return filteredRec[0].paid[filteredRec[0].paid.length - 1]
+                    .date;
+                } else {
+                  return filteredBillGenerated[0].billDetails[
+                    filteredBillGenerated[0].billDetails.length - 1
+                  ].dueDate;
+                }
+              }
              }else{
               if(filteredBillGenerated.length > 0){
                    return filteredBillGenerated[0].billDetails[
