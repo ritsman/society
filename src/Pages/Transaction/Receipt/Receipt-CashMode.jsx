@@ -15,6 +15,28 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
   const [headValues, setHeadValues] = useState([]);
   const [tableRow , setTableRow] = useState([]);
   const [openingBal, setOpeningBal] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [gridRow, setGridRow] = useState([]);
+
+
+
+    const handleSearch = (event) => {
+      const trimmedSearchTerm = event.target.value.toLowerCase();
+      setSearchTerm(trimmedSearchTerm);
+
+      if (trimmedSearchTerm) {
+        setTableRow(
+          gridRow.filter(
+            (row) =>
+              row.name.toLowerCase().includes(trimmedSearchTerm) ||
+              row.code.toString().includes(trimmedSearchTerm)
+          )
+        );
+      } else {
+        setTableRow(gridRow);
+      }
+    };
+
 
 
   function generateShortUUID() {
@@ -324,17 +346,31 @@ const ReceiptCashMode = ({ receiptData, setReceiptData, paymentMethod, pay}) => 
         arr.push(obj);
       })
         console.log(arr)
+        setGridRow(arr)
        setTableRow(arr);
   },[receiptData])
 
   return (
     <div>
-      <button
-        onClick={handleSave}
-        className="bg-gray-700 text-white font-semibold px-4 py-2 rounded-md mb-5"
-      >
-        Save
-      </button>
+      <div className="flex gap-5">
+        <div>
+          <button
+            onClick={handleSave}
+            className="bg-gray-700 text-white font-semibold px-4 py-2 rounded-md mb-5"
+          >
+            Save
+          </button>
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Search by Name and flat no"
+            value={searchTerm}
+            onChange={handleSearch}
+            className=" w-[300px] px-4 py-1 border rounded"
+          />
+        </div>
+      </div>
       <HotTable
         data={tableRow}
         colHeaders={[
