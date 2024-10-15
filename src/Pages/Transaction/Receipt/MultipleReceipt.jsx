@@ -98,9 +98,16 @@ const MultipleReceipt = () => {
    }
 
    if(bill.billDate > filteredRec.paid[filteredRec.paid.length-1].date){
-         return Number(bill.outstandingBal) + Number(bill.openingPrincipal);
+ 
+         return (
+           Number(bill.outstandingBal) +
+           Number(bill.openingPrincipal) +
+           Number(bill.openingInterest) +
+           (prevBill ? Number(prevBill.currPrevInterest) : 0)
+         );
 
    }else{
+         console.log("balanceee", Number(filteredRec.balance).toFixed(2));
             return Number(filteredRec.balance).toFixed(2);
 
    }
