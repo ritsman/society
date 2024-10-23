@@ -1,5 +1,5 @@
 // import { BankReceipt, CashReceipt } from "../Models/Receipt.model.js";
-import { BankReceipt, OpeningBalance } from "./User.controller.js";
+import { BankReceipt, OpeningBalance,PaymentCollection } from "./User.controller.js";
 import { CashReceipt } from "./User.controller.js";
 
 // import OpeningBalance from "../Models/OpeningBalance.model.js";
@@ -340,3 +340,141 @@ export const getBankPayment = async (req, res) => {
     console.log(error);
   }
 };
+
+
+// Receipt new Controller 
+export const postPaymentCollection = async (req, res) => {
+  const { memberId, memberName, ...payments } = req.body;
+
+  let newPayment = {
+    ...payments,
+  };
+
+  try {
+    // Check if member already exists
+    let existingMember = await PaymentCollection.findOne({ memberId });
+
+    if (existingMember) {
+      // Push new payment into the payments array
+      existingMember.payments.push(newPayment);
+
+      // Sort payments by date in ascending order
+      existingMember.payments.sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
+
+      // Save the updated document
+      await existingMember.save();
+
+      return res
+        .status(200)
+        .json({
+          message: "Payment added and sorted successfully",
+          existingMember,
+        });
+    } else {
+      // Create a new member with the payment
+      let newMember = new PaymentCollection({
+        memberId,
+        memberName,
+        payments: [newPayment],
+      });
+
+      // Save the new document
+      await newMember.save();
+
+      return res
+        .status(201)
+        .json({ message: "New member added with payment", newMember });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+export const getPaymentCollection = async (req, res) => {
+  try {
+    // Get the date from the request body (or query parameter)
+    const { filterDate } = req.query; // or use req.query for query params
+     console.log(filterDate,"filterDate")
+    const filterDateObject = new Date(filterDate);
+
+    if (!filterDateObject) {
+      return res.status(400).json({ error: "Invalid date provided" });
+    }
+
+    // Fetch all payments
+    const payments = await PaymentCollection.find();
+
+    // Array to store summed totals for each member
+    const membersTotals = [];
+
+    // Loop through each member's payments
+    payments.forEach((paymentDoc) => {
+      // Initialize the sums for the fields for each member
+      let totalInterestPaid = 0;
+      let totalOpeningIntPaid = 0;
+      let totalCurrentChargesPaid = 0;
+      let totalOpeningBalPaid = 0;
+      let totalAmountPaid = 0;
+
+      paymentDoc.payments.forEach((payment) => {
+        const paymentDate = new Date(payment.date);
+
+        // Check if payment date is less than the filter date
+        if (paymentDate < filterDateObject) {
+          totalInterestPaid += payment.interstPaid;
+          totalOpeningIntPaid += payment.openingIntPaid;
+          totalCurrentChargesPaid += payment.currentChargesPaid;
+          totalOpeningBalPaid += payment.openingBalPaid;
+          totalAmountPaid += payment.totalAmountPaid;
+        }
+      });
+
+      // Push the summed totals for this member into the array
+      membersTotals.push({
+        memberId: paymentDoc.memberId,
+        memberName: paymentDoc.memberName,
+        totals: {
+          totalInterestPaid,
+          totalOpeningIntPaid,
+          totalCurrentChargesPaid,
+          totalOpeningBalPaid,
+          totalAmountPaid,
+        },
+      });
+    });
+
+    // Send the array of member totals as the response
+    res.status(200).json({
+      message: "Payments filtered and summed successfully",
+      members: membersTotals,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to filter payments", details: error.message });
+  }
+};
+
+export const getAllPaymentCollection = async (req,res)=>{
+  try {
+    const payments = await PaymentCollection.find();
+
+     res.status(200).json({
+       message: "Payments filtered and summed successfully",
+       payments: payments,
+     });
+     
+  } catch (error) {
+     res
+       .status(500)
+       .json({ error: "Failed to filter payments", details: error.message });
+  }
+}
+
+
+//end

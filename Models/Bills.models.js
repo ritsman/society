@@ -28,4 +28,33 @@ export const generateBillSchema = new mongoose.Schema(
   }
 );
 
+
+export const chargesSchema = new mongoose.Schema(
+  {
+    memberId : String,
+    date : String,
+    heads : Array,
+    total : Number
+  }
+)
+
+export const billCollectionSchema = new mongoose.Schema({
+  memberId : String,
+  memberName : String,
+  flatNo : String,
+  charges : Array
+})
+
 // export const billGenerate = mongoose.model("billGenerate", generateBillSchema);
+
+// bills : [
+    //    {
+    //     date : "",
+    //     prevDue :"",
+    //     heads : "",
+    //     interest : "",
+    //     totalWithoutInterest : "",
+    //     totalWithInterest : "",
+
+    //    }
+    // ]

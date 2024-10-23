@@ -113,3 +113,12 @@ export const cashSchemas = new mongoose.Schema({
 });
 
 // export const CashReceipt = mongoose.model("CashReceipt", cashSchemas);
+
+
+export const receiptSchema = new mongoose.Schema({
+
+  memberId : String,
+  memberName : String,
+  payments : Array
+  
+})

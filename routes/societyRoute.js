@@ -13,7 +13,8 @@ import {
   getSocProfile,
   postSocProfile,
   updatePrvDue,
- 
+  postBillCollection,
+  getBillCollection
 } from "../controllers/society.controller.js";
 import {  failure, getTransactionList, payment, success } from "../controllers/Payment.controller.js";
 
@@ -42,5 +43,9 @@ router.post("/pay",payment);
 router.post("/success",success);
 router.post("/failure",failure)
 router.get("/TransactionsList",getTransactionList);
+
+
+router.post("/postBillCollection",postBillCollection)
+router.get("/getBillCollection",getBillCollection)
 
 export default router;

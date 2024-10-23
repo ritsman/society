@@ -1,8 +1,6 @@
-// import Bills from "../Models/Bills.models.js";
-import { Bills,SocProfile,billGenerate,MemberLedger } from "./User.controller.js";
-// import SocProfile from "../Models/Society/SocProfile.model.js";
+import { Bills,SocProfile,billGenerate,MemberLedger,charges } from "./User.controller.js";
+import { BillCollection } from "./User.controller.js";
 
-// import { billGenerate } from "../Models/Bills.models.js";
 
 // start of society profile
 export const postSocProfile = async (req, res) => {
@@ -75,6 +73,35 @@ export const deleteSocProfile = async (req, res) => {
 
 export const BillAmounts = async (req, res) => {
   console.log("Reached inside generateBills controllers", req.body);
+
+  // try {
+  //     req.body.map(async (item) => {
+  //             const { memberId } = item;
+  //       let existingBill = await charges.findOne({
+  //       memberId
+  //     });
+  //       if (existingBill) {
+  //       // If it exists, update the existing bill
+  //       existingBill.heads = item.head
+  //       existingBill.total = item.total
+  //       existingBill.date = item.date
+  //       await existingBill.save();
+  //     } else {
+  //       // If it does not exist, create a new bill
+  //       let newBill = new charges({
+  //          memberId : memberId,
+  //          heads : item.head,
+  //          date : "",
+  //          total : item.total
+  //       });
+  //       await newBill.save();
+  //     }
+
+  //   })
+  
+  // }catch (error) {
+  //   console.log(error)
+  // }
 
   try {
     req.body.map(async (item) => {
@@ -234,6 +261,128 @@ export const deleteBill = async (req, res) => {
      res.status(500).json({ message: "Internal server error" });
    }
 };
+
+// Bill collection controller
+export const postBillCollection = async (req, res) => {
+  console.log("inside post bill collection");
+
+  try {
+    const membersArray = req.body; // Assuming req.body is an array
+
+    for (const memberData of membersArray) {
+      const { memberId, memberName, flatNo, charges } = memberData;
+      console.log(charges);
+
+      let intHeadSum = charges[0].intAppliedHeadSum;
+      let HeadTotal = charges[0].headTotal;
+
+      // Check if a member with the same memberId exists
+      let member = await BillCollection.findOne({ memberId });
+
+      if (member) {
+        // Member exists, so handle each charge
+        for (const newCharge of charges) {
+          const existingChargeIndex = member.charges.findIndex(
+            (charge) => charge.date === newCharge.date
+          );
+
+        
+
+          console.log(existingChargeIndex,"index")
+          let chargeToStore1 = {}
+
+          // Create a new charge object excluding 'headTotal'
+           if(existingChargeIndex != -1){
+           chargeToStore1 = {
+            ...newCharge,
+            interest: member.charges[existingChargeIndex].interest,
+            totalWithoutInt: HeadTotal,
+          };
+        }
+
+           const chargeToStore2 = {
+             ...newCharge,
+             totalWithoutInt: HeadTotal,
+           };
+          delete chargeToStore1.headTotal;
+          delete chargeToStore1.total;
+          delete chargeToStore1.prevDue;
+          
+          delete chargeToStore2.headTotal;
+          delete chargeToStore2.total;
+          delete chargeToStore2.prevDue;// Remove headTotal from the charge
+          
+
+          if (existingChargeIndex !== -1) {
+            // Replace the existing charge with the new one
+            member.charges[existingChargeIndex] = chargeToStore1;
+          } else {
+            // Add the new charge if no existing charge with the same date
+            member.charges.push(chargeToStore2);
+          }
+        }
+
+        // Sort the charges array by the date field in ascending order
+        member.charges.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        await member.save();
+      } else {
+        // Member does not exist, so create a new entry and sort the charges array
+        const chargesToStore = charges.map((charge) => {
+          const { headTotal,total,prevDue, ...chargeWithoutHeadTotal } = charge; // Exclude headTotal
+          return {
+            ...chargeWithoutHeadTotal,
+            totalWithoutInt: headTotal,
+          };
+        });
+
+        chargesToStore.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const newMember = new BillCollection({
+          memberId,
+          memberName,
+          flatNo,
+          charges: chargesToStore,
+        });
+
+        await newMember.save();
+      }
+    }
+
+    res.status(200).json({ message: "Bills saved successfully" });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({ error: "Failed to store bills", details: error.message });
+  }
+};
+
+
+
+  export const getBillCollection = async(req,res)=>{
+    try {
+      // Fetch all members
+      const members = await BillCollection.find();
+
+      // Iterate through each member and sort their bills by date
+      const sortedMembers = members.map((member) => {
+        member.charges.sort((a, b) => new Date(a.date) - new Date(b.date));
+        return member;
+      });
+
+      res
+        .status(200)
+        .json({
+          message: "bills retrieved successfully",
+          bills: sortedMembers,
+        });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ error: "Failed to retrieve bills", details: error.message });
+    }
+  }
 
 
 

@@ -28,7 +28,11 @@ export let BankPayment;
 export let CashPayment;
 export let BankReceipt;
 export let CashReceipt;
-export let PayTransaction
+export let PayTransaction;
+export let charges;
+export let BillCollection;
+export let PaymentCollection;
+
 
 //lklk
 
@@ -68,6 +72,9 @@ export const login = async (req, res) => {
                  BankReceipt,
                  CashReceipt,
                  PayTransaction,
+                 charges,
+                 BillCollection,
+                 PaymentCollection,
                } = createSocietyDbConnection(
                  society.dbConnection,
                  society.societyName
@@ -125,6 +132,9 @@ export const login = async (req, res) => {
                     BankReceipt,
                     CashReceipt,
                     PayTransaction,
+                    charges,
+                    BillCollection,
+                    PaymentCollection,
                   } = createSocietyDbConnection(
                     users.dbConnection,
                     users.societyName

@@ -5,11 +5,14 @@ import {
   getCashPayment,
   getCashReceipt,
   getOpeningBalance,
+  getPaymentCollection,
   postBankPayment,
   postBankReceipt,
   postCashPayment,
   postCashReceipt,
   postOpeningBalance,
+  postPaymentCollection,
+  getAllPaymentCollection,
 } from "../controllers/Transaction.controller.js";
 
 const router = express.Router();
@@ -28,5 +31,9 @@ router.get("/getCashPayment", getCashPayment);
 
 router.post("/postOpeningBalance", postOpeningBalance);
 router.get("/getOpeningBalance", getOpeningBalance);
+
+router.post("/postPaymentCollection" , postPaymentCollection)
+router.get("/getPaymentCollection" ,getPaymentCollection )
+router.get("/getAllpaymentCollection", getAllPaymentCollection);
 
 export default router;
