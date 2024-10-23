@@ -56,9 +56,10 @@ import { useAuth } from "./hooks/useAuth";
 
 import { Navigate } from "react-router-dom";
 import BankAccount from "./Pages/Societies/BankAccount/BankAccount";
-import PayPalCheckout from "./Pages/Societies/BankAccount/PaymentComponent";
 import PayUForm from "./Pages/Societies/BankAccount/PaymentComponent";
 import TransactionList from "./Pages/Societies/BankAccount/PayTransaction";
+import NewBills from "./Pages/Societies/NewBills";
+import NewReceipt from "./Pages/Transaction/NewReceipt";
 
 const ProtectedRoute = ({ allowedRole, children }) => {
   const { userDetails } = useAuth();
@@ -230,6 +231,10 @@ const router = createBrowserRouter([
         element: <GenerateBill />,
       },
       {
+        path: "society/bills2",
+        element: <NewBills />,
+      },
+      {
         path: "society/profile",
         element: <SocietyForm />,
       },
@@ -243,7 +248,7 @@ const router = createBrowserRouter([
       },
       {
         path: "society/bank-account/payTransaction",
-        element: < TransactionList/>,
+        element: <TransactionList />,
       },
 
       {
@@ -257,6 +262,10 @@ const router = createBrowserRouter([
       {
         path: "transaction/receipt",
         element: <MultipleReceipt />,
+      },
+       {
+        path: "transaction/receipt1",
+        element: <NewReceipt />,
       },
       {
         path: "transaction/purchase",

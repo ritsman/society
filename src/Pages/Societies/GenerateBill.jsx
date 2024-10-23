@@ -333,17 +333,28 @@ const GenerateBill = () => {
          return int;
        }
       
- }
-
+       }
+      
+       function headTotal(row){
+           if (row && row.head && Array.isArray(row.head)) {
+             let total = row.head.reduce(
+               (acc, curr) => acc + parseInt(curr.value || 0),
+               0
+             );
+             return (
+               Number(total)
+              ).toFixed(2);
+           }
+       }
 
 
           let obj = {
             id: index,
             memberId: item._id,
-            wingNo: item.wingNo,
-            email: item.email,
-            flatNo: item.flatNo,
             ownerName: item.name,
+            wingNo: item.wingNo,
+            flatNo: item.flatNo,
+            headTotal : headTotal(),
             prevDue: getPrevDue(),
             interest: getInterest(),
 
@@ -366,7 +377,7 @@ const GenerateBill = () => {
             total:
               billObj && billObj.data
                 ? calculateTotal2(billObj.data, getPrevDue(), getInterest())
-                : 0, // Calculate total if bill data exists
+                : calculateTotal2("xyz", getPrevDue(), getInterest()), // Calculate total if bill data exists
           };
           arr.push(obj);                        
         });
@@ -389,13 +400,7 @@ const GenerateBill = () => {
           // .filter((headItem) => headItem.interestApplied)
           .reduce((acc, headItem) => acc + parseFloat(headItem.value || 0), 0);
 
-        // Calculate total based on all heads' values
-        // const total = item.head.reduce(
-        //   (acc, headItem) => acc + parseFloat(headItem.value || 0),
-        //   0
-        // );
-
-        // Return updated item with calculated values
+ 
 
         return { ...item, currentBillAmt };
       });
@@ -423,7 +428,7 @@ const GenerateBill = () => {
       "intAppliedAmt",
       "prevDue",
       "currentBillAmt"
-
+      
     ];
 
     let total = Object.keys(row).reduce((accumulatedTotal, key) => {
@@ -631,6 +636,7 @@ const GenerateBill = () => {
 
   // Function to handle the API call
   const handleSaveToAPI = async () => {
+    console.log(filteredData,"filtered dataaaa")
     try {
       let res = await axios.post(
         `${config.API_URL}/api/society/postBills`,
@@ -639,9 +645,9 @@ const GenerateBill = () => {
       console.log("API response:", res);
       setIsSave(false); // Reset save flag
       toast.success("Data Successfully Saved");
-         setTimeout(() => {
-           window.location.reload();
-         }, 1000);
+        //  setTimeout(() => {
+        //    window.location.reload();
+        //  }, 1000);
 
     } catch (error) {
       console.error("API error:", error);
@@ -652,13 +658,14 @@ const GenerateBill = () => {
 
 
   const calculateTotal2 = (row,prevDue,interest) => {
-    console.log(row);
     if (row && row.head && Array.isArray(row.head)) {
       let total = row.head.reduce(
         (acc, curr) => acc + parseInt(curr.value || 0),
         0
       );
       return (Number(total) + Number(prevDue)+Number(interest)).toFixed(2);
+    }else{
+      return (Number(prevDue)+Number(interest)).toFixed(2)
     }
   };
 

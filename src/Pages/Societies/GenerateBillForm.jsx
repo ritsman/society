@@ -212,6 +212,7 @@ const GenerateBillForm = ({
       [name]: value,
     }));
   };
+  
   const handleInput = (e) => {
     const { value } = e.target;
 
@@ -512,6 +513,37 @@ const GenerateBillForm = ({
           } catch (error) {
             console.log("Error generating bill for memberId:", row, error);
             success = false;
+          }
+
+          // bill collection api call 
+
+          try {
+            function calculatePrevDue(){
+
+            }
+            function calculateInterest(){
+
+            }
+            await axios.post(`${config.API_URL}/api/society/postBillCollection`, {
+                memberId : row,
+                memberName: arr[0].data.ownerName,
+                flatNo : arr[0].data.flatNo,
+                bills : [
+                  {
+                    date:formData.billDate,
+                    prevDue:calculatePrevDue(),
+                    heads : arr[0].data.head,
+                    interest : calculateInterest(),
+                    totalWithoutInt : "",
+                    totalWithInt : ""
+                  }
+                ]
+              }
+            )
+
+          } catch (error) {
+             console.log("Error generating bill for memberId:", row, error);
+             success = false;
           }
 
           function getParticular(dateStr) {

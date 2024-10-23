@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { HotTable } from "@handsontable/react";
@@ -10,11 +7,12 @@ import "handsontable/dist/handsontable.full.min.css";
 import config from "../../config";
 import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
+import { jsPDF } from "jspdf";
 
 
 registerAllModules();
 
-const ViewBills = () => {
+const NewBills = () => {
 
   const [formData, setFormData] = useState({
     type: "",
@@ -39,6 +37,8 @@ const ViewBills = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [objForEmail , setObjForEmail] = useState([]);
   const [fetchedPaymentCollection , setPaymentCollection] = useState([]);
+  const [societyData, setSocietyData] = useState({});
+
 
 
 function generateShortUUID(selectedDate) {
@@ -225,6 +225,9 @@ const createChargeObject = (value)=>{
             console.log(interest, "interest");
 
             return {
+              billNo : item && item.charges.length > 0 ? item.charges[0].BillNo:"",
+              date :  item && item.charges.length > 0 ? item.charges[0].date:"",
+              dueDate : item && item.charges.length > 0 ? item.charges[0].dueDate:"",
               memberId: bill.memberId,
               dayDiff: differenceInDay,
               prevBillsSum: prevChargeObj ? Number(prevChargeObj.prevSum) : 0,
@@ -268,6 +271,9 @@ const createChargeObject = (value)=>{
             }
 
             return {
+              billNo: item.billNo,
+              date: item.date,
+              dueDate:item.dueDate,
               memberId: item.memberId,
               heads: item.heads,
               dayDiff: item.dayDiff,
@@ -277,9 +283,8 @@ const createChargeObject = (value)=>{
               openingInterest: openBal[0]?.interest || 0,
               currentInt: item.currentInt,
               headTotal: total,
-              interest : item.interest ,
-              prevSum : item.prevSum
-
+              interest: item.interest,
+              prevSum: item.prevSum,
             };
           });
            console.log(mergedBillData);
@@ -304,6 +309,7 @@ const handleSave = async () => {
   const requests = billData
     .filter((item) => selectedItems.includes(item.memberId)) // Only include selected items
     .map((item) => {
+      console.log(item,"billdataaaa")
       // Create the axios post request for each selected item
       return axios.post(`${config.API_URL}/api/society/postBillCollection`, [
         item,
@@ -402,6 +408,22 @@ const handleSave = async () => {
     fetchInt();
   }, []);
 
+   useEffect(() => {
+     const fetchData = async () => {
+       try {
+         const res = await axios.get(
+           `${config.API_URL}/api/society/getSocProfile`
+         );
+         setSocietyData(res.data[0]);
+       } catch (error) {
+         console.error(error);
+       }
+     };
+     fetchData();
+   }, []);
+
+  
+
   useEffect(() => {
     fetch(`${config.API_URL}/api/society/getBillCollection`)
       .then((response) => response.json())
@@ -490,18 +512,18 @@ const handleSave = async () => {
             openInterest: openBal?.interest || 0,
             charges: [
               {
-                BillNo : billId,
+                BillNo: billId,
                 date: formData.billDate,
-                dueDate:formData.dueDate,
+                dueDate: formData.billDueDate,
                 prevDue: 0,
-                prevSum : 0,
+                prevSum: 0,
                 heads:
                   filteredHeads.length > 0 &&
                   Object.keys(filteredHeads[0].heads).length > 0
                     ? filteredHeads[0].heads
                     : heads,
                 headTotal: 0,
-                total:0,
+                total: 0,
                 intAppliedHeadSum: 0,
                 interest:
                   filteredBillData?.charges[filteredBillData.charges.length - 1]
@@ -786,12 +808,196 @@ const handleSendEmail = async () => {
       : "No emails were sent."
   );
 };
+      
+// generate PDF 
+ const handlePrintAllBills = () => {
+
+   const doc = new jsPDF();
+
+   if (billData.length == 0) {
+     alert("No bills are present , Select dates");
+     return;
+   }
+
+   // Set font
+   doc.setFont("helvetica");
+
+   billData.forEach((member, index) => {
+
+    console.log(mergedBillData)
+
+     const charge =
+       mergedBillData && mergedBillData.length > 0
+         ? mergedBillData.find((ele) => {
+             if (!ele.memberId) {
+               return null;
+             }
+             return ele.memberId === member.memberId;
+           })
+         : 0;
+
+     let payments = fetchedPaymentCollection.find(
+       (ele) => ele.memberId == member.memberId
+     );
+
+     let headTotal = Number(
+       Object.values(charge.heads).reduce(
+         (sum, headValue) => sum + Number(headValue),
+         0
+       )
+     );
+
+     if(headTotal == 0){
+      return;
+     }
+
+     let prevDue =  charge
+       ?  ((Number(charge.openingBalance)-(payments ? payments.totals.totalOpeningBalPaid:0) )+ (Number(charge.prevBillsSum)-(payments ? payments.totals.totalCurrentChargesPaid : 0)))
+        
+       : Number(member.openBalPrinciple);
+
+      let interest = charge
+        ? charge.dayDiff > 29
+          ? Number(charge.openingInterest) -
+            (payments ? payments.totals.totalOpeningIntPaid : 0) +
+            (Number(charge.currentInt) -
+              (payments ? payments.totals.totalInterestPaid : 0))
+          : Number(charge.openingInterest) -
+            (payments ? payments.totals.totalOpeningIntPaid : 0) +
+            (Number(charge.interest) -
+              (payments ? payments.totals.totalInterestPaid : 0))
+        : Number(member.openInterest);
+
+        let total = charge
+          ? charge.headTotal - (payments ? payments.totals.totalAmountPaid : 0)
+          : member.charges[0].total;
+   
 
 
+     if (index !== 0) {
+       doc.addPage(); // Add a new page for every bill except the first one
+     }
+
+     // Header
+     doc.setFontSize(16);
+     doc.text(`${societyData.societyName}`, 105, 20, {
+       align: "center",
+     });
+     doc.setFontSize(10);
+     doc.text(
+       `${societyData.address},${societyData.city},${societyData.state}`,
+       105,
+       30,
+       {
+         align: "center",
+       }
+     );
+
+     // Bill details
+     doc.setFontSize(10);
+     doc.text(`Bill No. : ${charge.billNo}`, 20, 40);
+     doc.text(`Bill Date : ${charge.date}`, 100, 40);
+     // doc.text(`Bill for Period : May-2024`, 160, 40);
+     doc.text(`Flat No. : ${member.flatNo}`, 20, 45);
+     doc.text(`Due Date : ${charge.dueDate}`, 100, 45);
+     // doc.text(`Area : 0`, 160, 45);
+
+     // Member name
+     doc.text(`To,`, 20, 55);
+     doc.text(`${member.memberName}`, 20, 60);
+
+     // Table header
+     doc.line(20, 65, 190, 65); // Top line of the table
+     doc.text("Particulars", 22, 70);
+     doc.text("Amount", 170, 70); // Moved to the right side
+     doc.line(20, 72, 190, 72); // Bottom line of the header row
+
+     // Table content
+     let startY = 77; // Initial Y position for the table content
+
+   Object.entries(charge.heads).forEach(([key, value]) => {
+     if (Number(value) !== 0) {
+       // Check if the value is not zero
+       doc.text(key, 22, startY);
+       doc.text(Number(value).toFixed(2), 180, startY, {
+         align: "right",
+       });
+       startY += 5;
+     }
+   });
+
+
+    //  bill.heads.forEach((item) => {
+    //    doc.text(item.head, 22, startY);
+    //    doc.text(Number(item.value).toFixed(2), 180, startY, {
+    //      align: "right",
+    //    });
+    //    startY += 5; // Move to the next line
+    //  });
+
+     doc.line(20, startY, 190, startY); // Line after the table content
+     startY += 5;
+     doc.setFont("helvetica", "bold");
+     doc.text("Sub Total", 22, startY);
+     doc.text((headTotal).toFixed(2), 180, startY, {
+       align: "right",
+     });
+     doc.setFont("helvetica", "normal");
+
+     startY += 5;
+     doc.text("Previous Due ", 22, startY);
+     doc.text(prevDue.toFixed(2), 180, startY, { align: "right" });
+
+     startY += 5;
+     doc.text("Interest ", 22, startY);
+     doc.text(interest.toFixed(2), 180, startY, { align: "right" });
+
+     startY += 5;
+     doc.line(20, startY, 190, startY); // Line after the previous balance
+
+     startY += 5;
+     doc.setFont("helvetica", "bold");
+     doc.text("Grand total", 22, startY);
+     doc.text(Number(total).toFixed(2), 180, startY, {
+       align: "right",
+     });
+     doc.setFont("helvetica", "normal");
+
+     startY += 5;
+
+     // Notes
+     startY += 8;
+     doc.setFontSize(8);
+     doc.text(
+       "Note : 1. Members are requested to make payment before 25th of the Month, failing which interest @21% P.A. will be levied.",
+       22,
+       startY
+     );
+     startY += 4;
+     doc.text(
+       "2. Please mention your Flat No. and Mobile No. on reverse of your Cheque. Receipts of the current month bill will be attached with the next bill.",
+       29,
+       startY
+     );
+
+     // Special note
+     startY += 10;
+     doc.setFontSize(10);
+
+     // Footer
+     doc.text(`${societyData.societyName}`, 190, 180, {
+       align: "right",
+     });
+   });
+
+   // Open PDF in new tab
+   window.open(doc.output("bloburl"), "_blank");
+ };
+//end
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-center text-xl font-semibold mb-5">Bills</h1>
+      <h1 className="text-center text-xl font-semibold mb-5">Generate Bills</h1>
       <div className="flex items-center justify-evenly px-5 gap-4 mb-4">
         <div>
           <label className="block mb-1 text-sm font-medium">Type</label>
@@ -846,6 +1052,7 @@ const handleSendEmail = async () => {
           </div>
           <div>
             <button
+              onClick={handlePrintAllBills}
               className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-600"
             >
               PDF
@@ -896,4 +1103,4 @@ const handleSendEmail = async () => {
   );
 };
 
-export default ViewBills;
+export default NewBills;

@@ -10,6 +10,8 @@ const Society = () => {
     { name: "Committee Member", path: "/society/committee-member" },
     { name: "Bank Account", path: "/society/bank-account" },
     { name: "Bills", path: "/society/bills" },
+    { name: "Bills2", path: "/society/bills2" },
+
     { name: "Balance Sheet", path: "/society/balance-sheet" },
     { name: "P&L", path: "/society/pl" },
     { name: "Assets", path: "/society/assets" },
