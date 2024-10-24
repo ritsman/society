@@ -6,6 +6,8 @@ import { CashReceipt } from "./User.controller.js";
 // import { BankPayment, CashPayment } from "../Models/Payment.model.js";
 import { BankPayment } from "./User.controller.js";
 import { CashPayment } from "./User.controller.js";
+import { BillCollection } from "./User.controller.js";
+
 
 // Bank controller
 
@@ -225,7 +227,33 @@ export const postOpeningBalance = async (req, res) => {
   console.log("inside post Opening Balance controller");
   try {
     req.body.map(async (item) => {
-      const { flatNo, name } = item;
+      const { flatNo, name ,intRate} = item;
+        let openPint  = (Number(item.principal) * (Number(intRate)/100)).toFixed(2);
+
+          let memberBill = await BillCollection.findOne({memberId : item.id})
+
+
+        if (memberBill) {
+          let interestUpdated = false; // Track if we updated any interest1
+
+          // Update interest1 if it exists
+          memberBill.charges.forEach((ele) => {
+            if (ele.interest1) {
+              ele.interest1 = openPint;
+              interestUpdated = true; // Flag that we updated interest1
+            }
+          });
+
+          // If we updated, mark the array as modified and save
+          if (interestUpdated) {
+            memberBill.markModified("charges"); // Mark 'charges' as modified
+            await memberBill.save(); // Save the updated document
+            console.log("Updated interest1 in memberBill");
+          } else {
+            console.log("No interest1 field found in charges");
+          }
+        }
+
       const update = {
         name: item.name,
         date:item.date,
