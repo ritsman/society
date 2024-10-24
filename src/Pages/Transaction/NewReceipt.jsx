@@ -113,6 +113,32 @@ const NewReceipt = () => {
     return updatedBillData;
   };
 
+   const fetchRecentCharges2 = (selectedDate) => {
+     const selectedDates = new Date(selectedDate);
+
+     const updatedBillData = fetchedBillData.map((item) => {
+       let mostRecentCharge = null;
+
+       item.charges.forEach((charge) => {
+         const chargeDate = new Date(charge.date);
+         if (chargeDate < selectedDates) {
+           if (
+             !mostRecentCharge ||
+             chargeDate > new Date(mostRecentCharge.date)
+           ) {
+             mostRecentCharge = charge;
+           }
+         }
+       });
+       return {
+         ...item,
+         charges: mostRecentCharge ? [mostRecentCharge] : [],
+       };
+     });
+
+     return updatedBillData;
+   };
+
   const handleChange = (e) => {
     // name = "billDate" , value="2024-01-01"
     const { name, value } = e.target;
@@ -138,6 +164,7 @@ const NewReceipt = () => {
     console.log("invoked handle change");
 
     let latestBill = fetchRecentCharges(value);
+     let latestBill2 = fetchRecentCharges2(value);
 
     // all previous bills array calculation
     let allPreviousCharges = fetchPreviousCharges(value);
@@ -162,6 +189,10 @@ const NewReceipt = () => {
 
     let filteredLatestBill = billData.map((bill) => {
       let item = latestBill.find((ele) => ele.memberId == bill.memberId);
+                  let item2 = latestBill2.find(
+                    (ele) => ele.memberId == bill.memberId
+                  );
+
 
       let openBal = openingBal.filter((ele) => ele.memberId === bill.memberId);
 
@@ -177,9 +208,9 @@ const NewReceipt = () => {
 
       let differenceInDay;
 
-      if (item && item.charges.length > 0) {
+      if (item2 && item2.charges.length > 0) {
         const differenceInTimes =
-          new Date(value).getTime() - new Date(item.charges[0].date).getTime();
+          new Date(value).getTime() - new Date(item2.charges[0].date).getTime();
 
         differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
       } else {
@@ -187,7 +218,8 @@ const NewReceipt = () => {
           new Date(value).getTime() -
           new Date(openBal.length > 0 ? openBal[0].date : null).getTime();
 
-        differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
+        // differenceInDay = Math.ceil(differenceInTimes / (1000 * 3600 * 24));
+          differenceInDay = 30;
       }
 
       let p1 = Number(prevChargeObj ? Number(prevChargeObj.intHeadSum) : 0);
@@ -223,21 +255,15 @@ const NewReceipt = () => {
 
       let total;
       console.log(Number(item.currentInt), item.dayDiff);
-      if (item.dayDiff > 30) {
+      
         total =
           Number(sumOfValues) +
           Number(item.currentInt) +
           Number(openBal.length > 0 ? openBal[0].principal : 0) +
           Number(openBal.length > 0 ? openBal[0].interest : 0) +
           Number(item.prevBillsSum);
-      } else {
-        total =
-          Number(sumOfValues) +
-          Number(item.interest) +
-          Number(openBal.length > 0 ? openBal[0].principal : 0) +
-          Number(openBal.length > 0 ? openBal[0].interest : 0) +
-          Number(item.prevBillsSum);
-      }
+     
+       
 
       return {
         memberId: item.memberId,
@@ -716,17 +742,13 @@ const updateAmount = (rowIndex, newValue) => {
         ) - Number(member.charges[0].openingBalancePaid),
         Number(
           charge
-            ? charge.dayDiff > 29
-              ? (
+            ? (
                   Number(charge.openingInterest) -
                   (payments ? payments.totals.totalOpeningIntPaid : 0) +
                   (Number(charge.currentInt) -
                     (payments ? payments.totals.totalInterestPaid : 0))
                 ).toFixed(2)
-              : Number(charge.openingInterest) -
-                (payments ? payments.totals.totalOpeningIntPaid : 0) +
-                (Number(charge.interest) -
-                  (payments ? payments.totals.totalInterestPaid : 0))
+             
             : Number(member.openInterest)
         ) -
           (Number(member.charges[0].openingInterestPaid) +

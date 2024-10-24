@@ -15,6 +15,7 @@ const OpeningBalance = () => {
   const [billSeriesName, setBillSeriesName] = useState("Maintenance Bill");
   const [netBalance, setNetBalance] = useState(0);
   const [members, setMembers] = useState([]);
+  const [interestData, setIntData] = useState({});
 
   const opBalanceTypes = ["Members", "Creditors", "General Ledger"];
   const [tableRow, setTableRow] = useState([]);
@@ -29,6 +30,21 @@ const OpeningBalance = () => {
   const [isEdited, setIsEdited] = useState([]);
 
   const [chkstat2, setChkStat2] = useState({});
+
+    useEffect(() => {
+      async function fetchInt() {
+        try {
+          let res = await axios.get(
+            `${config.API_URL}/api/master/getBillMaster`
+          );
+          setIntData(res.data[0]);
+         
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      fetchInt();
+    }, []);
 
     const handleSearch = (event) => {
       const trimmedSearchTerm = event.target.value.toLowerCase();
@@ -121,13 +137,22 @@ const OpeningBalance = () => {
     }
 
     let arr = data.map((item) => {
-      let list = lists.filter(item2=>item2.id == item._id);
-      console.log(list)
+      let list = lists.filter((item2) => item2.id == item._id);
+      console.log(list);
 
-const currentDate = new Date();
-const formattedDate = `${currentDate.getFullYear()}-${String(
-  currentDate.getMonth() + 1
-).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+         const currentDate = list[0]?.date
+           ? new Date(list[0]?.date)
+           : "YYYY-MM-DD";
+
+         let formattedDate =
+           currentDate !== "YYYY-MM-DD"
+             ? `${currentDate.getFullYear()}-${String(
+                 currentDate.getMonth() + 1
+               ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+                 2,
+                 "0"
+               )}`
+             : "YYYY-MM-DD";
       return {
         date: formattedDate,
         name: item.name,
@@ -137,13 +162,11 @@ const formattedDate = `${currentDate.getFullYear()}-${String(
         address: item.permanentAddress,
         flatNo: item.flatNo,
         wingNo: item.wingNo,
+        intRate : interestData.interestRatePerMonth,
         principal: list[0]?.principal || 0,
         interest: list[0]?.interest || 0,
         total: list[0]?.total || 0,
-        head: head.map((row, index) => ({
-          heads: row,
-          value: item.head?.[index]?.value || 0,
-        })),
+       
       };
     });
     setGridRow(arr);
@@ -221,7 +244,7 @@ const formattedDate = `${currentDate.getFullYear()}-${String(
     setColumn1(col);
     console.log(col);
   }, [column]);
-
+     
   let arr = [];
   useEffect(() => {
     tableRow.forEach((item) => {

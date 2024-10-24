@@ -112,7 +112,6 @@ function generateShortUUID(selectedDate) {
           }
         }
       });
-
       return {
         ...item,
         charges: mostRecentCharge ? [mostRecentCharge] : [],
@@ -121,6 +120,32 @@ function generateShortUUID(selectedDate) {
 
     return updatedBillData;
   };
+
+    const fetchRecentCharges2 = (selectedDate) => {
+      const selectedDates = new Date(selectedDate);
+
+      const updatedBillData = fetchedBillData.map((item) => {
+        let mostRecentCharge = null;
+
+        item.charges.forEach((charge) => {
+          const chargeDate = new Date(charge.date);
+          if (chargeDate < selectedDates) {
+            if (
+              !mostRecentCharge ||
+              chargeDate > new Date(mostRecentCharge.date)
+            ) {
+              mostRecentCharge = charge;
+            }
+          }
+        });
+        return {
+          ...item,
+          charges: mostRecentCharge ? [mostRecentCharge] : [],
+        };
+      });
+
+      return updatedBillData;
+    };
 
 
 const handleChange = (e) => {
@@ -152,6 +177,8 @@ const createChargeObject = (value)=>{
           console.log("invoked handle change");
 
           let latestBill = fetchRecentCharges(value);
+          let latestBill2 = fetchRecentCharges2(value);
+
 
           // all previous bills array calculation
           let allPreviousCharges = fetchPreviousCharges(value);
@@ -176,7 +203,11 @@ const createChargeObject = (value)=>{
 
        
           let filteredLatestBill = billData.map((bill) => {
-            let item = latestBill.find((ele) => ele.memberId == bill.memberId);
+            let item = latestBill.find(
+                          (ele) => ele.memberId == bill.memberId
+                        );
+
+            let item2 = latestBill2.find((ele) => ele.memberId == bill.memberId);
 
             let openBal = openingBal.filter(
               (ele) => ele.memberId === bill.memberId
@@ -190,14 +221,15 @@ const createChargeObject = (value)=>{
 
             console.log(prevChargeObj);
 
-            let interest = 0;
+            let interest1 = 0;
+            let interest2 = 0;
 
             let differenceInDay;
 
-            if (item && item.charges.length > 0) {
+            if (item2 && item2.charges.length > 0) {
               const differenceInTimes =
                 new Date(value).getTime() -
-                new Date(item.charges[0].date).getTime();
+                new Date(item2.charges[0].date).getTime();
 
               differenceInDay = Math.ceil(
                 differenceInTimes / (1000 * 3600 * 24)
@@ -207,27 +239,37 @@ const createChargeObject = (value)=>{
                 new Date(value).getTime() -
                 new Date(openBal.length > 0 ? openBal[0].date : null).getTime();
 
-              differenceInDay = Math.ceil(
-                differenceInTimes / (1000 * 3600 * 24)
-              );
+              // differenceInDay = Math.ceil(
+              //   differenceInTimes / (1000 * 3600 * 24)
+              // );
+              differenceInDay = 30;
             }
 
-
+             console.log(differenceInDay,"difference in day");
           
-            let p1 = Number(prevChargeObj ? Number(prevChargeObj.intHeadSum) : 0);
+            let p1 = Number(openBal.length > 0 ? openBal[0].principal : 0);
 
-            let p2 = Number(openBal.length > 0 ? openBal[0].principal : 0);
-            interest =
+            let p2 = Number(prevChargeObj ? Number(prevChargeObj.intHeadSum) : 0);
+
+            interest1 =
+              differenceInDay > 0
+                ? (((p1) * (interestRate / 100)) / 30) *
+                  (differenceInDay == 31 ? 30 : differenceInDay)
+                : 0;
+
+            interest2 =
               differenceInDay >
-              0 ? ((((p1 + p2) * (interestRate / 100)) / 30) *
+              0 ? (((( p2) * (interestRate / 100)) / 30) *
                 (differenceInDay == 31  ? 30 : differenceInDay)) : 0;
 
-            console.log(interest, "interest");
+            console.log(interest1, "interest");
 
             return {
-              billNo : item && item.charges.length > 0 ? item.charges[0].BillNo:"",
-              date :  item && item.charges.length > 0 ? item.charges[0].date:"",
-              dueDate : item && item.charges.length > 0 ? item.charges[0].dueDate:"",
+              billNo:
+                item && item.charges.length > 0 ? item.charges[0].BillNo : "",
+              date: item && item.charges.length > 0 ? item.charges[0].date : "",
+              dueDate:
+                item && item.charges.length > 0 ? item.charges[0].dueDate : "",
               memberId: bill.memberId,
               dayDiff: differenceInDay,
               prevBillsSum: prevChargeObj ? Number(prevChargeObj.prevSum) : 0,
@@ -237,9 +279,14 @@ const createChargeObject = (value)=>{
                 item && item.charges.length > 0
                   ? item.charges[0].totalWithoutInt
                   : 0,
-              currentInt: Number(interest).toFixed(2),
-              interest : item && item.charges.length > 0 ? item.charges[0].interest : 0,
-              prevSum : item && item.charges.length > 0 ? item.charges[0].prevSum : 0
+              currentInt1: Number(interest1).toFixed(2),
+              currentInt2: Number(interest2).toFixed(2),
+              interest1:
+                item && item.charges.length > 0 ? item.charges[0].interest1 : 0,
+              interest2:
+                item && item.charges.length > 0 ? item.charges[0].interest2 : 0,
+              prevSum:
+                item && item.charges.length > 0 ? item.charges[0].prevSum : 0,
             };
           });
 
@@ -253,27 +300,22 @@ const createChargeObject = (value)=>{
               .reduce((acc, curr) => acc + curr, 0);
 
             let total;
-            console.log(Number(item.currentInt),item.dayDiff);
-            if (item.dayDiff > 30) {
+            
               total =
                 Number(sumOfValues) +
-                Number(item.currentInt) +
+                Number(item.currentInt1) +
+                Number(item.currentInt2)+
                 Number(openBal.length > 0 ? openBal[0].principal : 0 ) +
                 Number(openBal.length > 0 ? openBal[0].interest:0) +
                 Number(item.prevBillsSum);
-            } else {
-              total =
-                Number(sumOfValues) +
-                Number(item.interest) +
-                Number(openBal.length > 0 ? openBal[0].principal : 0) +
-                Number(openBal.length > 0 ? openBal[0].interest : 0) +
-                Number(item.prevBillsSum);
-            }
+            
+           
+            
 
             return {
               billNo: item.billNo,
               date: item.date,
-              dueDate:item.dueDate,
+              dueDate: item.dueDate,
               memberId: item.memberId,
               heads: item.heads,
               dayDiff: item.dayDiff,
@@ -281,9 +323,12 @@ const createChargeObject = (value)=>{
               totalWithoutInt: item.totalWithoutInt,
               openingBalance: openBal[0]?.principal || 0,
               openingInterest: openBal[0]?.interest || 0,
-              currentInt: item.currentInt,
+              currentInt1: item.currentInt1,
+              currentInt2: item.currentInt2,
               headTotal: total,
-              interest: item.interest,
+              interest1: item.interest1,
+              interest2: item.interest2,
+
               prevSum: item.prevSum,
             };
           });
@@ -300,16 +345,33 @@ createChargeObject(formData.billDate)
 
 
 const handleSave = async () => {
+
   if (!formData.billDate) {
     return toast.error("Please select a bill date");
   }
- 
-  console.log(billData)
+  if(selectedItems.length == 0){
+    return toast.error("please select atleast one member")
+  }
+   
+  console.log(billData);
 
   const requests = billData
     .filter((item) => selectedItems.includes(item.memberId)) // Only include selected items
+    .filter((item) => {
+      let date = new Date(formData.billDate);
+      const day = date.getDate();
+
+      // Assuming interestData.billDate is a valid date string (like "2024-11-01")
+      let interestDate = new Date(interestData.billDate);
+      const interestDay = interestDate.getDate();
+
+      if (day !== interestDay) {
+        alert("Select appropriate date");
+        return false; // Skip this item
+      }
+      return true; // Include this item
+    })
     .map((item) => {
-      console.log(item,"billdataaaa")
       // Create the axios post request for each selected item
       return axios.post(`${config.API_URL}/api/society/postBillCollection`, [
         item,
@@ -317,6 +379,10 @@ const handleSave = async () => {
     });
 
   try {
+    if (requests.length === 0) {
+      return toast.error("bill not saved");
+    }
+
     // Run all the requests concurrently
     await Promise.all(requests);
 
@@ -329,6 +395,7 @@ const handleSave = async () => {
     toast.error("Error in saving bill data");
   }
 };
+
 
 
   const formatDate = (date) => {
@@ -525,9 +592,8 @@ const handleSave = async () => {
                 headTotal: 0,
                 total: 0,
                 intAppliedHeadSum: 0,
-                interest:
-                  filteredBillData?.charges[filteredBillData.charges.length - 1]
-                    ?.interest || 0,
+                interest1: 0,
+                interest2 : 0,
                 totalWithoutInt:
                   filteredBillData?.charges[filteredBillData.charges.length - 1]
                     ?.totalWithoutInt || 0,
@@ -568,12 +634,12 @@ const handleSave = async () => {
         const newTotal =
           bill.dayDiff > 29
             ? Number(headTotal) +
-              Number(bill.currentInt) +
+              Number(bill.currentInt1) +Number(bill.currentInt2)+
               Number(bill.openingBalance || 0) +
               Number(bill.openingInterest || 0) +
               Number(bill.prevBillsSum)
             : Number(headTotal) +
-              Number(bill.interest) +
+              Number(bill.interest1) +Number(bill.interest2)
               Number(bill.openingBalance || 0) +
               Number(bill.openingInterest || 0) +
               Number(bill.prevSum);
@@ -659,8 +725,12 @@ const handleSave = async () => {
             ?  Number(charge.prevBillsSum)
               : 0;
 
-          member.charges[0].interest = charge
-            ?  Number(charge.currentInt): 0;
+          member.charges[0].interest1 = charge
+            ?  Number(charge.currentInt1): 0;
+          
+          member.charges[0].interest2 = charge
+             ? Number(charge.currentInt2)
+             : 0;
 
  
           member.charges[0].prevSum = charge ? Number(charge.prevBillsSum) : 0;
@@ -684,13 +754,17 @@ const handleSave = async () => {
      member.memberName,
      member.flatNo,
      charge
-       ?  ((Number(charge.openingBalance)-(payments ? payments.totals.totalOpeningBalPaid:0) )+ (Number(charge.prevBillsSum)-(payments ? payments.totals.totalCurrentChargesPaid : 0)))
-        
+       ? Number(charge.openingBalance) -
+         (payments ? payments.totals.totalOpeningBalPaid : 0) +
+         (Number(charge.prevBillsSum) -
+           (payments ? payments.totals.totalCurrentChargesPaid : 0))
        : Number(member.openBalPrinciple),
      charge
-       ? charge.dayDiff > 29
-         ? ((Number(charge.openingInterest)-(payments ? payments.totals.totalOpeningIntPaid : 0)) + (Number(charge.currentInt)-(payments ? payments.totals.totalInterestPaid:0)))
-         : (Number(charge.openingInterest)-(payments? payments.totals.totalOpeningIntPaid:0)) + (Number(charge.interest)-(payments?payments.totals.totalInterestPaid:0))
+       ? Number(charge.openingInterest) -
+         (payments ? payments.totals.totalOpeningIntPaid : 0) +
+         (Number(charge.currentInt1) +
+           Number(charge.currentInt2) -
+           (payments ? payments.totals.totalInterestPaid : 0))
        : Number(member.openInterest),
    ];
 
@@ -857,14 +931,9 @@ const handleSendEmail = async () => {
        : Number(member.openBalPrinciple);
 
       let interest = charge
-        ? charge.dayDiff > 29
-          ? Number(charge.openingInterest) -
+        ?  Number(charge.openingInterest) -
             (payments ? payments.totals.totalOpeningIntPaid : 0) +
-            (Number(charge.currentInt) -
-              (payments ? payments.totals.totalInterestPaid : 0))
-          : Number(charge.openingInterest) -
-            (payments ? payments.totals.totalOpeningIntPaid : 0) +
-            (Number(charge.interest) -
+            (Number(charge.interest1)+Number(charge.interest2) -
               (payments ? payments.totals.totalInterestPaid : 0))
         : Number(member.openInterest);
 

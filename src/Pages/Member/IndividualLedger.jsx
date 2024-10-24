@@ -109,7 +109,7 @@ useEffect(() => {
           arr.push({
             date: item.date,
             particulars: `${item.BillNo}-INTEREST`,
-            debit: item.interest,
+            debit: Number(item.interest1)+Number(item.interest2),
             credit: 0,
           });
         });

@@ -1,7 +1,7 @@
 
 
 const config = {
-  API_URL: "http://localhost:3001",
+  API_URL: "https://a3.arya-erp.in/api2/socapi",
 };
 
 export default config;
